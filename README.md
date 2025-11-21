@@ -8,26 +8,32 @@
 
 本项目受[PKU-Annual-Eat](https://github.com/KingRayCao/PKU-Annual-Eat)的启发，感谢原作者的贡献。
 
-![demo](./demo.png)
+![demo](./images/demo.png)
 
 ## 使用方法
 
-### 方法一：运行一键脚本
+首先下载本代码库的文件并解压，下载方法如下图所示：
 
-1. 安装 python
-2. 双击运行 `run.bat` 脚本
-3. 按提示输入学号和校园卡密码
-4. 生成的图片和表格会保存在 `output` 文件夹中
+![download](./images/download.png)
 
-![how_to_use](./how_to_use.png)
+然后有两种可选方法生成结果：
 
-### 方法二：手动安装依赖
+1. 方法一：运行一键脚本
 
-1. 安装 python
-2. 安装依赖：`pip install -r requirements.txt`
-3. 运行脚本：`python main.py`
-4. 按提示输入学号和校园卡密码
-5. 生成的图片和表格会保存在 `output` 文件夹中
+    1. 安装 python
+    2. 双击运行 `run.bat` 脚本
+    3. 按提示输入学号和校园卡密码
+    4. 生成的图片和表格会保存在 `output` 文件夹中
+
+    ![how_to_use](./images/how_to_use.png)
+
+2. 方法二：手动安装依赖
+
+    1. 安装 python
+    2. 安装依赖：`pip install -r requirements.txt`
+    3. 运行脚本：`python main.py`
+    4. 按提示输入学号和校园卡密码
+    5. 生成的图片和表格会保存在 `output` 文件夹中
 
 ## LICENSE
 
