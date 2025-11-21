@@ -149,18 +149,21 @@ def save_csv(records: list[dict], path: str) -> None:
 
 
 def _format_merchant_label(name: str) -> str:
-    if "一" in name:
-        return name + "（南）"
-    if "二" in name:
-        return name + "（北）"
-    if "七" in name:
-        return name + "（清真）"
-    if "四" in name:
-        return name + "（东）"
+    # 根据名称中第一次出现的中文数字添加后缀
+    # 例如 "良四二层" -> "良四二层（东）"
+    for c in name:
+        if c == "一":
+            return name + "（南）"
+        if c == "二":
+            return name + "（北）"
+        if c == "七":
+            return name + "（清真）"
+        if c == "四":
+            return name + "（东）"
     return name
 
 
-def save_bar_chart(records: list[dict], path: str) -> None:
+def save_bar_chart(records: list[dict], path: str, use_region_label: bool = False) -> None:
     import matplotlib.pyplot as plt
 
     # 设置中文字体和负号显示
@@ -176,7 +179,10 @@ def save_bar_chart(records: list[dict], path: str) -> None:
 
     items = sorted(totals.items(), key=lambda x: x[1], reverse=True)
     merchants = [name for name, _ in items]
-    display_merchants = [_format_merchant_label(name) for name in merchants]
+    if use_region_label:
+        display_merchants = [_format_merchant_label(name) for name in merchants]
+    else:
+        display_merchants = merchants
     amounts = [value for _, value in items]
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -203,7 +209,7 @@ def save_bar_chart(records: list[dict], path: str) -> None:
     plt.savefig(path, dpi=150, bbox_inches="tight")
 
 
-def save_count_chart(records: list[dict], path: str) -> None:
+def save_count_chart(records: list[dict], path: str, use_region_label: bool = False) -> None:
     import matplotlib.pyplot as plt
 
     # 设置中文字体和负号显示
@@ -220,7 +226,10 @@ def save_count_chart(records: list[dict], path: str) -> None:
     # 按次数从高到低排序
     items = sorted(counts.items(), key=lambda x: x[1], reverse=True)
     merchants = [name for name, _ in items]
-    display_merchants = [_format_merchant_label(name) for name in merchants]
+    if use_region_label:
+        display_merchants = [_format_merchant_label(name) for name in merchants]
+    else:
+        display_merchants = merchants
     times = [value for _, value in items]
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -271,6 +280,13 @@ def split_date_range(begin_date: str, end_date: str, max_days: int = 31) -> list
 
 def main() -> None:
     print("百丽宫大学校园卡消费分析")
+    print("-----------------------------")
+
+    use_region_label_input = input(
+        "是否为食堂名称添加区域标注（如一食堂→一食堂（南）、四食堂→四食堂（东）\n"
+        "仅推荐良乡校区的同学输入 Y 以便区分东/南/北/清真食堂 [Y/N]: "
+    ).strip()
+    use_region_label = use_region_label_input.lower() == "y"
 
     idserial = input("请输入学号: ").strip()
     cardpwd = input("请输入六位校园卡密码: ").strip()
@@ -282,7 +298,7 @@ def main() -> None:
         return
 
     if cardpwd == "123456":
-        print("检测到你使用的是默认密码 123456，强烈建议尽快线下修改为只有你自己知道的密码。")
+        print("\n检测到你使用的是默认密码 123456，强烈建议尽快修改为只有你自己知道的密码。")
 
     try:
         print("\n正在登录校园卡系统...")
@@ -308,8 +324,8 @@ def main() -> None:
         img_count_path = os.path.join("output", "summary_count.png")
 
         save_csv(records, csv_path)
-        save_bar_chart(records, img_amount_path)
-        save_count_chart(records, img_count_path)
+        save_bar_chart(records, img_amount_path, use_region_label=use_region_label)
+        save_count_chart(records, img_count_path, use_region_label=use_region_label)
 
         total_amount = sum(r["amount"] for r in records)
         print(f"已保存明细到: {csv_path}")
