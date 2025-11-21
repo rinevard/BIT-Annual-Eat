@@ -6,11 +6,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 import requests
-from urllib3.exceptions import InsecureRequestWarning
-import urllib3
-
-# 关闭 verify=False 带来的警告
-urllib3.disable_warnings(InsecureRequestWarning)
 
 EDGE_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -33,7 +28,7 @@ def login_with_card(idserial: str, cardpwd: str) -> tuple[requests.Session, str]
     session = requests.Session()
 
     login_page_url = "https://dkykt.info.bit.edu.cn/cardpay/openCardRechargeLogin?temporaryopen=true"
-    session.get(login_page_url, headers={"User-Agent": EDGE_UA}, timeout=10, verify=False)
+    session.get(login_page_url, headers={"User-Agent": EDGE_UA}, timeout=10)
 
     login_url = "https://dkykt.info.bit.edu.cn/cardpay/cardRechargeLogin"
 
@@ -51,7 +46,7 @@ def login_with_card(idserial: str, cardpwd: str) -> tuple[requests.Session, str]
         "User-Agent": EDGE_UA,
     }
 
-    resp = session.post(login_url, json=payload, headers=headers, timeout=10, verify=False)
+    resp = session.post(login_url, json=payload, headers=headers, timeout=10)
 
     if resp.status_code != 200:
         raise RuntimeError(f"登录请求失败，HTTP 状态码 {resp.status_code}")
@@ -88,7 +83,7 @@ def fetch_trades(session: requests.Session, openid: str, begin_date: str, end_da
         "User-Agent": DINGTALK_UA,
     }
 
-    resp = session.post(url, params=params, json=payload, headers=headers, timeout=10, verify=False)
+    resp = session.post(url, params=params, json=payload, headers=headers, timeout=10)
 
     if resp.status_code != 200:
         raise RuntimeError(f"查询请求失败，HTTP 状态码 {resp.status_code}")
@@ -278,13 +273,16 @@ def main() -> None:
     print("百丽宫大学校园卡消费分析")
 
     idserial = input("请输入学号: ").strip()
-    cardpwd = input("请输入六位校园卡密码（回车使用默认值 123456）: ").strip() or "123456"
+    cardpwd = input("请输入六位校园卡密码: ").strip()
     begin_date = input("请输入开始日期 (YYYY-MM-DD，回车使用默认值 2025-01-01): ").strip() or "2025-01-01"
     end_date = input("请输入结束日期 (YYYY-MM-DD，回车使用默认值 2025-12-31): ").strip() or "2025-12-31"
 
-    if not idserial:
+    if not idserial or not cardpwd:
         print("输入不完整，已退出。")
         return
+
+    if cardpwd == "123456":
+        print("检测到你使用的是默认密码 123456，强烈建议尽快线下修改为只有你自己知道的密码。")
 
     try:
         print("\n正在登录校园卡系统...")
