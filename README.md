@@ -8,6 +8,7 @@
 
 本项目受[PKU-Annual-Eat](https://github.com/KingRayCao/PKU-Annual-Eat)启发，感谢原作者的贡献。
 
+![eatcnt](./images/eat_cnt.png)
 ![demo](./images/demo.png)
 
 ## 使用方法
