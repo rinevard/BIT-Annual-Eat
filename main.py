@@ -111,10 +111,10 @@ def to_spend_records(raw_trades: list[dict]) -> list[dict]:
 
     for item in raw_trades:
         txamt = item.get("txamt")
-        mername = item.get("mername")
+        mername_raw = item.get("mername")
         txdate = item.get("txdate")
 
-        if txamt is None or mername is None or txdate is None:
+        if txamt is None or mername_raw is None or txdate is None:
             continue
 
         try:
@@ -126,10 +126,15 @@ def to_spend_records(raw_trades: list[dict]) -> list[dict]:
         if amt >= 0:
             continue
 
+        mername = str(mername_raw).strip()
+
+        if any(keyword in mername for keyword in FILTERS):
+            continue
+
         records.append(
             {
                 "txdate": str(txdate),
-                "mername": str(mername).strip(),
+                "mername": mername,
                 # 消费额转为正数，便于阅读
                 "amount": -amt,
             }
