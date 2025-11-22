@@ -42,19 +42,27 @@
         const stats = EAT_DATA[year] || {};
         const { start, end } = getDateRangeForYear(year);
         const days = [];
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const firstDayOfWeek = (start.getDay() + 6) % 7; // 以周一为 0
+        let index = 0;
+
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1), index++) {
             const yyyy = d.getFullYear();
             const mm = String(d.getMonth() + 1).padStart(2, "0");
             const dd = String(d.getDate()).padStart(2, "0");
             const key = `${yyyy}-${mm}-${dd}`;
             const dayStats = stats[key] || { count: 0, amount: 0, merchants: [] };
-            days.push({ date: key, weekday: d.getDay(), ...dayStats });
+
+            const weekday = (d.getDay() + 6) % 7; // 周一映射为 0
+            const weekIndex = Math.floor((index + firstDayOfWeek) / 7);
+
+            days.push({ date: key, weekday, weekIndex, ...dayStats });
         }
         return days;
     }
 
     function countWeeks(days) {
-        return Math.ceil(days.length / 7);
+        if (days.length === 0) return 0;
+        return days[days.length - 1].weekIndex + 1;
     }
 
     function computeMaxCount(days) {
@@ -91,9 +99,12 @@
         // Weekday labels (一三五)
         const weekdayLabels = document.createElement("div");
         weekdayLabels.className = "weekday-labels";
-        ["一", "三", "五"].forEach((label) => {
+        const weekdayTexts = ["一", "三", "五"];
+        const weekdayRows = [1, 3, 5]; // 对应周一、周三、周五
+        weekdayTexts.forEach((label, idx) => {
             const div = document.createElement("div");
             div.textContent = label;
+            div.style.gridRowStart = weekdayRows[idx];
             weekdayLabels.appendChild(div);
         });
 
@@ -102,17 +113,17 @@
         // Month labels (top)
         const monthLabels = document.createElement("div");
         monthLabels.className = "month-labels";
+        let lastMonth = null;
         for (let w = 0; w < weekCount; w++) {
             const monthDiv = document.createElement("div");
-            // 取这一周的第一天作为代表
-            const idx = w * 7;
-            if (idx < days.length) {
-                const d = new Date(days[idx].date);
-                const month = d.getMonth() + 1;
-                if (w === 0 || d.getDate() <= 7) {
+            // 找出这一列对应周的第一天作为代表
+            const weekDay = days.find((d) => d.weekIndex === w);
+            if (weekDay) {
+                const dObj = new Date(weekDay.date);
+                const month = dObj.getMonth() + 1;
+                if (month !== lastMonth) {
                     monthDiv.textContent = month + "月";
-                } else {
-                    monthDiv.textContent = "";
+                    lastMonth = month;
                 }
             }
             monthLabels.appendChild(monthDiv);
@@ -121,10 +132,10 @@
         const grid = document.createElement("div");
         grid.className = "heatmap-grid";
 
-        days.forEach((day, index) => {
+        days.forEach((day) => {
             const cell = document.createElement("div");
-            const weekday = (day.weekday + 6) % 7; // 把周一映射为 0
-            const weekIndex = Math.floor(index / 7);
+            const weekday = day.weekday; // 0 = 周一
+            const weekIndex = day.weekIndex;
 
             cell.className = "day-cell";
             cell.dataset.date = day.date;
