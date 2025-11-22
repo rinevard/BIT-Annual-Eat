@@ -241,6 +241,9 @@
 
     function showDayDetail(year, day) {
         detail.innerHTML = "";
+        if (!day || !day.count) {
+            return;
+        }
         const h2 = document.createElement("h2");
         h2.textContent = day.date;
         detail.appendChild(h2);

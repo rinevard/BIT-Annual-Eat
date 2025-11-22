@@ -10,40 +10,58 @@
 </head>
 
 <body>
-    <h1 contenteditable="true" id="user-title">[点击编辑]的BIT吃饭总结</h1>
+    <div class="page">
+        <h1 class="header-title">BIT 校园卡吃饭年度报告</h1>
 
-    <div id="summary-section">
-        <h2>一眼总览</h2>
-        <div id="summary-cards" class="summary-grid"></div>
-        <div id="summary-highlight" class="summary-highlight"></div>
-    </div>
+        <div class="layout">
+            <!-- 左侧：头像 + 总览 -->
+            <aside class="sidebar">
+                <div class="avatar-wrapper">
+                    <div class="avatar">🍚</div>
+                    <div class="avatar-hint">（未来可以在这里上传头像）</div>
+                </div>
 
-    <div id="achievements-section">
-        <div id="achievements-header">
-            <h2>成就墙</h2>
-            <button id="view-all-achievements">查看全部成就</button>
+                <div class="profile-name">
+                    <span id="user-title" contenteditable="true">[点击编辑]的BIT吃饭总结</span>
+                </div>
+
+                <div id="summary-section">
+                    <div id="summary-cards" class="summary-grid"></div>
+                    <div id="summary-highlight" class="summary-highlight"></div>
+                </div>
+            </aside>
+
+            <!-- 右侧：成就 + 饭力图 -->
+            <main class="main">
+                <div id="achievements-section">
+                    <div id="achievements-header">
+                        <h2>成就墙</h2>
+                        <button id="view-all-achievements">查看全部成就</button>
+                    </div>
+                    <div id="pinned-achievements" class="achievements-grid"></div>
+                </div>
+
+                <div id="year-switcher"></div>
+                <div id="heatmap-container">
+                    <div id="heatmap"></div>
+                </div>
+                <div id="day-detail"></div>
+            </main>
         </div>
-        <div id="pinned-achievements" class="achievements-grid"></div>
-    </div>
 
-    <div id="achievements-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>所有成就</h2>
-                <button id="close-achievements-modal">×</button>
-            </div>
-            <div class="modal-body" id="all-achievements-list"></div>
-            <div class="modal-footer">
-                <span id="achievements-summary">您已解锁 0/0</span>
+        <div id="achievements-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>所有成就</h2>
+                    <button id="close-achievements-modal">×</button>
+                </div>
+                <div class="modal-body" id="all-achievements-list"></div>
+                <div class="modal-footer">
+                    <span id="achievements-summary">您已解锁 0/0</span>
+                </div>
             </div>
         </div>
     </div>
-
-    <div id="year-switcher"></div>
-    <div id="heatmap-container">
-        <div id="heatmap"></div>
-    </div>
-    <div id="day-detail"></div>
 
     <script>
         const EAT_DATA = __EAT_DATA__;
