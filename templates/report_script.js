@@ -82,6 +82,9 @@
 
         heatmap.innerHTML = "";
 
+        const scroll = document.createElement("div");
+        scroll.className = "heatmap-scroll";
+
         const container = document.createElement("div");
         container.style.display = "flex";
 
@@ -143,7 +146,8 @@
         container.appendChild(weekdayLabels);
         container.appendChild(main);
 
-        heatmap.appendChild(container);
+        scroll.appendChild(container);
+        heatmap.appendChild(scroll);
     }
 
     function showDayDetail(year, day) {
@@ -233,9 +237,8 @@
         },
     };
 
-    const PIN_KEY = "bit_annual_eat_pins";
     const MAX_PINS = 6;
-    const TITLE_KEY = "bit_annual_eat_title";
+    let pinnedIdsState = [];
 
     function buildMergedAchievements() {
         const merged = [];
@@ -248,19 +251,12 @@
     }
 
     function loadPinnedIds(allAchievements) {
-        try {
-            const raw = localStorage.getItem(PIN_KEY);
-            if (!raw) return [];
-            const arr = JSON.parse(raw);
-            const validIds = new Set(allAchievements.map((a) => a.id));
-            return arr.filter((id) => validIds.has(id));
-        } catch {
-            return [];
-        }
+        const validIds = new Set(allAchievements.map((a) => a.id));
+        return pinnedIdsState.filter((id) => validIds.has(id));
     }
 
     function savePinnedIds(ids) {
-        localStorage.setItem(PIN_KEY, JSON.stringify(ids));
+        pinnedIdsState = [...ids];
     }
 
     function renderPinnedAchievements(allAchievements) {
@@ -275,6 +271,7 @@
                 .filter((a) => a.unlocked)
                 .sort((a, b) => b.rarity - a.rarity)
                 .slice(0, MAX_PINS);
+            savePinnedIds(pinned.map((a) => a.id));
         } else {
             const map = new Map(allAchievements.map((a) => [a.id, a]));
             pinned = pinnedIds.map((id) => map.get(id)).filter((a) => a && a.unlocked);
@@ -313,6 +310,12 @@
 
             card.appendChild(icon);
             card.appendChild(text);
+
+            const timeEl = document.createElement("div");
+            timeEl.className = "achievement-time";
+            timeEl.textContent = a.unlocked_at || "";
+
+            card.appendChild(timeEl);
 
             container.appendChild(card);
         });
@@ -424,26 +427,6 @@
             });
         }
 
-        // 顶部标题可编辑并持久化
-        const titleEl = document.getElementById("user-title");
-        if (titleEl) {
-            try {
-                const saved = localStorage.getItem(TITLE_KEY);
-                if (saved) {
-                    titleEl.textContent = saved;
-                }
-            } catch {
-                // ignore
-            }
-
-            titleEl.addEventListener("blur", () => {
-                try {
-                    localStorage.setItem(TITLE_KEY, titleEl.textContent.trim());
-                } catch {
-                    // ignore
-                }
-            });
-        }
     }
 
     buildYearButtons();

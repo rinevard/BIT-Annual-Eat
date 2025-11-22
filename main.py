@@ -417,7 +417,7 @@ def main() -> None:
         print(f"总消费金额: {total_amount:.2f} 元")
 
         save_html_report(records, html_report_path)
-        print(f"已生成年度吃饭饭力图报告: {html_report_path}")
+        print(f"已生成吃饭报告: {html_report_path}")
     except Exception as exc:  # noqa: BLE001
         print("发生错误:", exc)
 

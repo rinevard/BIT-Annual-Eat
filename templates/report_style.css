@@ -1,6 +1,7 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  margin: 16px;
+  margin: 0;
+  padding: 16px 24px;
 }
 
 #year-switcher {
@@ -48,6 +49,13 @@ body {
   border: 1px solid #e0e0e0;
   border-radius: 6px;
   background-color: #fafafa;
+}
+
+.achievement-time {
+  margin-left: auto;
+  font-size: 11px;
+  color: #999;
+  align-self: flex-start;
 }
 
 .achievement-card.locked {
@@ -155,10 +163,15 @@ body {
 
 #heatmap-container {
   margin-top: 12px;
+  overflow-x: auto;
 }
 
 #heatmap {
   position: relative;
+}
+
+.heatmap-scroll {
+  display: inline-block;
 }
 
 .heatmap-grid {
