@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Any
 
@@ -296,7 +296,7 @@ def ach_regular(ctx: AchContext) -> AchievementResult:
 
 
 def ach_full_timer(ctx: AchContext) -> AchievementResult:
-    """编外人员：就餐天数 >= 200 天。"""
+    """全勤奖：就餐天数 >= 200 天。"""
 
     days_count = len(ctx.dates)
     unlocked = days_count >= 200
@@ -453,6 +453,131 @@ def ach_good_meals(ctx: AchContext) -> AchievementResult:
     )
 
 
+def ach_perfect_week(ctx: AchContext) -> AchievementResult:
+    """完美一周：连续七天一日三餐。"""
+    meals_by_date: dict[str, set[str]] = defaultdict(set)
+
+    for rec in ctx.records_sorted_by_time:
+        dt: datetime = rec["__dt"]
+        date_str = dt.date().isoformat()
+        h = dt.hour
+        if h < 10:
+            meals_by_date[date_str].add("breakfast")
+        elif h < 15:
+            meals_by_date[date_str].add("lunch")
+        elif h < 22:
+            meals_by_date[date_str].add("dinner")
+
+    if not meals_by_date:
+        return AchievementResult(id="perfect_week", unlocked=False)
+
+    date_keys = sorted(meals_by_date.keys())
+    first_date = datetime.fromisoformat(date_keys[0]).date()
+    last_date = datetime.fromisoformat(date_keys[-1]).date()
+
+    unlock_dt: datetime | None = None
+    span_start: str | None = None
+    span_end: str | None = None
+
+    cur = first_date
+    streak = 0
+    while cur <= last_date:
+        date_str = cur.isoformat()
+        meals = meals_by_date.get(date_str)
+        if meals is not None and len(meals) >= 3:
+            if streak == 0:
+                span_start = date_str
+            streak += 1
+            if streak >= 7:
+                span_end = date_str
+                for rec in reversed(ctx.records_sorted_by_time):
+                    dt = rec["__dt"]
+                    if dt.date().isoformat() == date_str:
+                        unlock_dt = dt
+                        break
+                break
+        else:
+            streak = 0
+        cur += timedelta(days=1)
+
+    return AchievementResult(
+        id="perfect_week",
+        unlocked=unlock_dt is not None,
+        unlocked_at=_format_dt(unlock_dt),
+        extra={"start_date": span_start, "end_date": span_end}
+        if unlock_dt is not None and span_start is not None and span_end is not None
+        else None,
+    )
+
+
+def ach_cosmic_meal(ctx: AchContext) -> AchievementResult:
+    """宇宙饭：连续五天每天在不一样的商家吃饭"""
+    merchants_by_date: dict[str, list[str]] = defaultdict(list)
+
+    for rec in ctx.records_sorted_by_time:
+        dt: datetime = rec["__dt"]
+        date_str = dt.date().isoformat()
+        mer = str(rec.get("mername", ""))
+        if mer:
+            merchants_by_date[date_str].append(mer)
+
+    if not merchants_by_date:
+        return AchievementResult(id="cosmic_meal", unlocked=False)
+
+    date_keys = sorted(merchants_by_date.keys())
+    first_date = datetime.fromisoformat(date_keys[0]).date()
+    last_date = datetime.fromisoformat(date_keys[-1]).date()
+
+    window: list[Any] = []
+    unlock_dt: datetime | None = None
+    span_start: str | None = None
+    span_end: str | None = None
+
+    cur = first_date
+    while cur <= last_date:
+        window.append(cur)
+        if len(window) > 5:
+            window.pop(0)
+
+        if len(window) == 5:
+            used_merchants: set[str] = set()
+            valid = True
+            for d in window:
+                ds = d.isoformat()
+                todays_merchants = merchants_by_date.get(ds, [])
+                if not todays_merchants:
+                    valid = False
+                    break
+                for mer in todays_merchants:
+                    if mer in used_merchants:
+                        valid = False
+                        break
+                    used_merchants.add(mer)
+                if not valid:
+                    break
+
+            if valid:
+                span_start = window[0].isoformat()
+                span_end = window[-1].isoformat()
+                for rec in reversed(ctx.records_sorted_by_time):
+                    dt = rec["__dt"]
+                    if dt.date().isoformat() == span_end:
+                        unlock_dt = dt
+                        break
+                break
+
+        cur += timedelta(days=1)
+
+    return AchievementResult(
+        id="cosmic_meal",
+        unlocked=unlock_dt is not None,
+        unlocked_at=_format_dt(unlock_dt),
+        extra={"start_date": span_start, "end_date": span_end}
+        if unlock_dt is not None and span_start is not None and span_end is not None
+        else None,
+    )
+
+
 def ach_my_turn(ctx: AchContext) -> AchievementResult:
     """我的回合：2 分钟内连续刷卡 2 次。"""
 
@@ -589,6 +714,8 @@ CHECKERS = [
     ach_another_year,
     ach_missing_breakfast,
     ach_good_meals,
+    ach_perfect_week,
+    ach_cosmic_meal,
     ach_my_turn,
     ach_error_404,
     ach_hello_world,

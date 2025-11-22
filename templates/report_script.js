@@ -259,8 +259,8 @@
             emoji: "🤝",
         },
         full_timer: {
-            title: "编外人员",
-            desc: "全勤奖",
+            title: "全勤奖",
+            desc: "感谢你对食堂的支持",
             rarity: 4,
             condition: "全年就餐天数大于200天",
             emoji: "🏅",
@@ -296,7 +296,7 @@
         good_meals: {
             title: "好好吃饭",
             desc: "你拥有令人羡慕的健康作息",
-            rarity: 3,
+            rarity: 2,
             condition: "单日内同时有早、中、晚三餐记录",
             emoji: "🥗",
         },
@@ -334,6 +334,20 @@
             rarity: 4,
             condition: "全年消费总金额恰为学号后四位的倍数",
             emoji: "🧐",
+        },
+        perfect_week: {
+            title: "完美一周",
+            desc: "医生看了都说好",
+            rarity: 4,
+            condition: "连续七天一日三餐",
+            emoji: "👨‍⚕",
+        },
+        cosmic_meal: {
+            title: "宇宙饭",
+            desc: "对战开始时：如果你的商家里没有相同的商家，获得本成就",
+            rarity: 4,
+            condition: "连续五天每天在不一样的商家吃饭",
+            emoji: "🌌",
         },
     };
 
