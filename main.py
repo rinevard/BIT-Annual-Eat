@@ -22,6 +22,8 @@ DINGTALK_UA = (
     "Architecture/x86_64 webDt/PC"
 )
 
+FILTERS = ["浴室", "医院"] # 如果名称包含这些字符串，将被过滤掉
+
 
 def login_with_card(idserial: str, cardpwd: str) -> tuple[requests.Session, str]:
     """使用校园卡证件号 + 六位卡密码登录充值系统，返回 (Session, openid)。"""
@@ -249,6 +251,85 @@ def save_count_chart(records: list[dict], path: str) -> None:
     plt.gca().invert_yaxis()
     plt.savefig(path, dpi=150, bbox_inches="tight")
 
+
+def build_daily_stats(records: list[dict]) -> dict:
+    """按年和日期聚合每天的用餐次数与金额及商户明细。
+
+    返回结构大致为：
+    {
+        "2025": {
+            "2025-03-01": {"count": 3, "amount": 25.5, "merchants": [{"name": "一食堂", "amount": 10.0}, ...]},
+            ...
+        },
+        ...
+    }
+    """
+
+    stats: dict[str, dict[str, dict]] = {}
+
+    for r in records:
+        raw_date = str(r["txdate"])
+        # 只保留日期部分（YYYY-MM-DD），忽略具体时间，便于按天聚合
+        date_str = raw_date[:10]
+        mername = r["mername"]
+        amount = float(r["amount"])
+
+        year = date_str[:4]
+        stats.setdefault(year, {})
+        day_stats = stats[year].setdefault(date_str, {"count": 0, "amount": 0.0, "merchants": defaultdict(float)})
+
+        day_stats["count"] += 1
+        day_stats["amount"] += amount
+        day_stats["merchants"][mername] += amount
+
+    # 将 merchants 从 dict 压平成列表，按金额从高到低排序
+    normalized: dict[str, dict[str, dict]] = {}
+    for year, days in stats.items():
+        normalized[year] = {}
+        for date_str, info in days.items():
+            merchants_dict: dict[str, float] = info["merchants"]
+            merchants_list = [
+                {"name": name, "amount": amt}
+                for name, amt in sorted(merchants_dict.items(), key=lambda x: x[1], reverse=True)
+            ]
+            normalized[year][date_str] = {
+                "count": info["count"],
+                "amount": info["amount"],
+                "merchants": merchants_list,
+            }
+
+    return normalized
+
+
+def save_html_report(records: list[dict], path: str) -> None:
+    """生成包含年度吃饭饭力图的本地 HTML 报告。"""
+
+    daily_stats = build_daily_stats(records)
+
+    base_tpl_path = os.path.join("templates", "report_base.html")
+    style_path = os.path.join("templates", "report_style.css")
+    script_path = os.path.join("templates", "report_script.js")
+
+    with open(base_tpl_path, "r", encoding="utf-8") as f:
+        base_tpl = f.read()
+    with open(style_path, "r", encoding="utf-8") as f:
+        style = f.read()
+    with open(script_path, "r", encoding="utf-8") as f:
+        script = f.read()
+
+    data_json = json.dumps(daily_stats, ensure_ascii=False)
+
+    html = (
+        base_tpl
+        .replace("/*__INLINE_STYLE__*/", style)
+        .replace("//__INLINE_SCRIPT__", script)
+        .replace("__EAT_DATA__", data_json)
+    )
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
+
 def split_date_range(begin_date: str, end_date: str, max_days: int = 31) -> list[tuple[str, str]]:
     """将总的起止日期拆分为若干不超过 max_days 天的小段，因为查询接口似乎有日期范围限制。
 
@@ -318,10 +399,15 @@ def main() -> None:
         save_count_chart(records, img_count_path)
 
         total_amount = sum(r["amount"] for r in records)
+        html_report_path = os.path.join("output", "report.html")
+
         print(f"已保存明细到: {csv_path}")
         print(f"已保存按商户消费金额柱状图到: {img_amount_path}")
         print(f"已保存按商户消费次数柱状图到: {img_count_path}")
         print(f"总消费金额: {total_amount:.2f} 元")
+
+        save_html_report(records, html_report_path)
+        print(f"已生成年度吃饭饭力图报告: {html_report_path}")
     except Exception as exc:  # noqa: BLE001
         print("发生错误:", exc)
 
