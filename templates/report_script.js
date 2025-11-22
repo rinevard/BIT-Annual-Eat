@@ -274,6 +274,41 @@
         }
     }
 
+    function setupAvatarUpload() {
+        const avatar = document.querySelector(".avatar");
+        const fileInput = document.getElementById("avatar-input");
+        if (!avatar || !fileInput) {
+            return;
+        }
+
+        avatar.addEventListener("click", () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener("change", () => {
+            const files = fileInput.files;
+            if (!files || files.length === 0) {
+                return;
+            }
+            const file = files[0];
+            if (!file.type || !file.type.startsWith("image/")) {
+                alert("请选择图片文件作为头像");
+                fileInput.value = "";
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const result = e.target && e.target.result;
+                if (!result) return;
+                avatar.style.backgroundImage = `url(${result})`;
+                avatar.style.backgroundSize = "cover";
+                avatar.style.backgroundPosition = "center";
+                avatar.textContent = "";
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
     // === 成就系统 ===
 
     // 静态成就元数据（根据 achievements.md）
@@ -457,7 +492,20 @@
         const base = allAchievements.filter((a) => !isHiddenAchievement(a));
         const total = base.length;
         const unlocked = allAchievements.filter((a) => a.unlocked).length;
-        el.textContent = `您已解锁 ${unlocked}/${total}`;
+        const hiddenUnlocked = allAchievements.filter(
+            (a) => isHiddenAchievement(a) && a.unlocked
+        ).length;
+
+        el.innerHTML = "";
+        const baseText = document.createTextNode(`您已解锁 ${unlocked}/${total}`);
+        el.appendChild(baseText);
+
+        if (hiddenUnlocked > 0) {
+            const hint = document.createElement("span");
+            hint.className = "hidden-achievements-hint";
+            hint.textContent = `（包含 ${hiddenUnlocked} 个隐藏成就！）`;
+            el.appendChild(hint);
+        }
     }
 
     function loadPinnedIds(allAchievements) {
@@ -687,4 +735,5 @@
     buildYearButtons();
     renderYear(currentYear);
     setupAchievementsUI();
+    setupAvatarUpload();
 })();

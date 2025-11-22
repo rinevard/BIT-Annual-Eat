@@ -42,6 +42,7 @@ body {
   width: 220px;
   height: 220px;
   border-radius: 50%;
+  overflow: hidden;
   background: linear-gradient(135deg, #d0d7de, #8c959f);
   border: 1px solid #afb8c1;
   display: inline-flex;
@@ -49,13 +50,35 @@ body {
   justify-content: center;
   font-size: 56px;
   color: #ffffff;
+  cursor: pointer;
   box-shadow: 0 0 0 1px #ffffff, 0 8px 20px rgba(27, 31, 36, 0.15);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .avatar-hint {
   margin-top: 8px;
   font-size: 12px;
   color: #57606a;
+}
+
+.avatar-upload-button {
+  margin-top: 8px;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid #d0d7de;
+  background-color: #f6f8fa;
+  color: #24292f;
+  cursor: pointer;
+}
+
+.avatar-upload-button:hover {
+  background-color: #eaeef2;
 }
 
 .profile-name {
@@ -241,6 +264,11 @@ body {
 .modal-footer {
   padding: 8px 12px;
   border-top: 1px solid #eee;
+}
+
+.hidden-achievements-hint {
+  color: #e19049;
+  margin-left: 4px;
 }
 
 .modal-body {
