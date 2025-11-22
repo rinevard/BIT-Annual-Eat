@@ -266,8 +266,8 @@
             emoji: "🏅",
         },
         default_setting: {
-            title: "默认设置",
-            desc: "人类的本质是复读机，口味也是",
+            title: "西西弗斯",
+            desc: "我们必须想象你是幸福的",
             rarity: 3,
             condition: "在同一个商家消费次数大于20次",
             emoji: "🔁",
@@ -344,7 +344,7 @@
         },
         cosmic_meal: {
             title: "宇宙饭",
-            desc: "对战开始时：如果你的商家里没有相同的商家，获得本成就",
+            desc: "如果你的商家里没有相同的商家，获得本成就",
             rarity: 4,
             condition: "连续五天每天在不一样的商家吃饭",
             emoji: "🌌",

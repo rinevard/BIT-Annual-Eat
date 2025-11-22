@@ -322,7 +322,7 @@ def ach_full_timer(ctx: AchContext) -> AchievementResult:
 
 
 def ach_default_setting(ctx: AchContext) -> AchievementResult:
-    """默认设置：在同一个商家消费次数 > 20 次。"""
+    """西西弗斯：在同一个商家消费次数 > 20 次。"""
 
     counts: dict[str, int] = defaultdict(int)
     unlock_dt: datetime | None = None
