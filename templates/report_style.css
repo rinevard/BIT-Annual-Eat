@@ -112,15 +112,26 @@ body {
   flex-direction: column;
 }
 
-.modal-header,
-.modal-footer {
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 8px 12px;
   border-bottom: 1px solid #eee;
 }
 
+#close-achievements-modal {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
 .modal-footer {
+  padding: 8px 12px;
   border-top: 1px solid #eee;
-  border-bottom: none;
 }
 
 .modal-body {
@@ -132,6 +143,11 @@ body {
   display: flex;
   align-items: center;
   padding: 4px 0;
+  cursor: pointer;
+}
+
+.all-achievement-row.locked {
+  cursor: default;
 }
 
 .all-achievement-row .achievement-icon {
@@ -157,6 +173,11 @@ body {
 
 .pin-checkbox {
   margin-right: 8px;
+}
+
+.pin-checkbox:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* 饭力图区域 */
@@ -224,7 +245,7 @@ body {
   font-size: 10px;
   color: #666;
   margin-right: 4px;
-  padding-top: 17px;
+  padding-top: 34px;
 }
 
 .weekday-labels div {

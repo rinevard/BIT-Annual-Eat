@@ -94,11 +94,11 @@
         const container = document.createElement("div");
         container.style.display = "flex";
 
-        // Weekday labels (一三五)
+        // Weekday labels (一三五七)
         const weekdayLabels = document.createElement("div");
         weekdayLabels.className = "weekday-labels";
-        const weekdayTexts = ["一", "三", "五"];
-        const weekdayRows = [1, 3, 5]; // 对应周一、周三、周五
+        const weekdayTexts = ["一", "三", "五", "七"];
+        const weekdayRows = [1, 3, 5, 7]; // 对应周一、周三、周五、周日
         weekdayTexts.forEach((label, idx) => {
             const div = document.createElement("div");
             div.textContent = label;
@@ -348,20 +348,79 @@
 
         const pinnedIds = new Set(loadPinnedIds(allAchievements));
 
-        allAchievements
-            .filter((a) => a.unlocked)
-            .forEach((a) => {
-                const row = document.createElement("div");
-                row.className = "all-achievement-row";
+        const sorted = allAchievements
+            .map((a, index) => ({
+                data: a,
+                index,
+                isPinned: pinnedIds.has(a.id),
+                isUnlocked: !!a.unlocked,
+            }))
+            .sort((x, y) => {
+                if (x.isPinned !== y.isPinned) {
+                    return x.isPinned ? -1 : 1;
+                }
+                if (x.isUnlocked !== y.isUnlocked) {
+                    return x.isUnlocked ? -1 : 1;
+                }
+                return x.index - y.index;
+            });
 
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.className = "pin-checkbox";
-                checkbox.checked = pinnedIds.has(a.id);
+        sorted.forEach((wrapper) => {
+            const a = wrapper.data;
 
-                checkbox.onchange = () => {
+            const row = document.createElement("div");
+            row.className = "all-achievement-row";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.className = "pin-checkbox";
+            checkbox.checked = pinnedIds.has(a.id);
+
+            const icon = document.createElement("div");
+            icon.className = "achievement-icon";
+
+            const info = document.createElement("div");
+            info.className = "all-achievement-info";
+
+            const meta = document.createElement("div");
+            meta.className = "all-achievement-meta";
+
+            const titleEl = document.createElement("div");
+            titleEl.className = "achievement-title";
+            titleEl.textContent = a.title;
+
+            const descEl = document.createElement("div");
+            descEl.className = "achievement-desc";
+            descEl.textContent = a.desc;
+
+            meta.appendChild(titleEl);
+            meta.appendChild(descEl);
+
+            if (a.condition) {
+                const condEl = document.createElement("div");
+                condEl.className = "achievement-desc";
+                condEl.textContent = a.condition;
+                meta.appendChild(condEl);
+            }
+
+            info.appendChild(meta);
+
+            const timeEl = document.createElement("div");
+            timeEl.className = "all-achievement-unlock-time";
+            timeEl.textContent = a.unlocked_at ? a.unlocked_at : "未解锁";
+
+            row.appendChild(checkbox);
+            row.appendChild(icon);
+            row.appendChild(info);
+            row.appendChild(timeEl);
+
+            if (!a.unlocked) {
+                checkbox.disabled = true;
+                row.classList.add("locked");
+            } else {
+                const applyPinState = (nextChecked) => {
                     const current = new Set(loadPinnedIds(allAchievements));
-                    if (checkbox.checked) {
+                    if (nextChecked) {
                         if (current.size >= MAX_PINS && !current.has(a.id)) {
                             alert(`最多只能固定 ${MAX_PINS} 个成就`);
                             checkbox.checked = false;
@@ -376,46 +435,20 @@
                     renderPinnedAchievements(allAchievements);
                 };
 
-                const icon = document.createElement("div");
-                icon.className = "achievement-icon";
+                checkbox.onchange = () => {
+                    applyPinState(checkbox.checked);
+                };
 
-                const info = document.createElement("div");
-                info.className = "all-achievement-info";
+                row.onclick = (e) => {
+                    if (e.target === checkbox) return;
+                    const nextChecked = !checkbox.checked;
+                    checkbox.checked = nextChecked;
+                    applyPinState(nextChecked);
+                };
+            }
 
-                const meta = document.createElement("div");
-                meta.className = "all-achievement-meta";
-
-                const titleEl = document.createElement("div");
-                titleEl.className = "achievement-title";
-                titleEl.textContent = a.title;
-
-                const descEl = document.createElement("div");
-                descEl.className = "achievement-desc";
-                descEl.textContent = a.desc;
-
-                meta.appendChild(titleEl);
-                meta.appendChild(descEl);
-
-                if (a.condition) {
-                    const condEl = document.createElement("div");
-                    condEl.className = "achievement-desc";
-                    condEl.textContent = a.condition;
-                    meta.appendChild(condEl);
-                }
-
-                info.appendChild(meta);
-
-                const timeEl = document.createElement("div");
-                timeEl.className = "all-achievement-unlock-time";
-                timeEl.textContent = a.unlocked_at ? a.unlocked_at : "未解锁";
-
-                row.appendChild(checkbox);
-                row.appendChild(icon);
-                row.appendChild(info);
-                row.appendChild(timeEl);
-
-                listEl.appendChild(row);
-            });
+            listEl.appendChild(row);
+        });
     }
 
     function setupAchievementsUI() {
