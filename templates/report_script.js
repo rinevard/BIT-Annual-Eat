@@ -210,8 +210,8 @@
             emoji: "🌙",
         },
         make_it_round: {
-            title: "凑单王",
-            desc: "世界平衡了",
+            title: "凑单领域大神",
+            desc: "学校也有满减吗",
             rarity: 4,
             condition: "某日消费总金额不小于20且为10的倍数",
             emoji: "⚖️",
@@ -364,6 +364,14 @@
         return merged;
     }
 
+    function updateAchievementsSummary(allAchievements) {
+        const el = document.getElementById("achievements-summary");
+        if (!el) return;
+        const total = allAchievements.length;
+        const unlocked = allAchievements.filter((a) => a.unlocked).length;
+        el.textContent = `您已解锁 ${unlocked}/${total}`;
+    }
+
     function loadPinnedIds(allAchievements) {
         const validIds = new Set(allAchievements.map((a) => a.id));
         return pinnedIdsState.filter((id) => validIds.has(id));
@@ -494,7 +502,6 @@
             descEl.textContent = a.desc;
 
             meta.appendChild(titleEl);
-            meta.appendChild(descEl);
 
             if (a.condition) {
                 const condEl = document.createElement("div");
@@ -502,6 +509,8 @@
                 condEl.textContent = a.condition;
                 meta.appendChild(condEl);
             }
+
+            meta.appendChild(descEl);
 
             info.appendChild(meta);
 
@@ -554,6 +563,7 @@
     function setupAchievementsUI() {
         const allAchievements = buildMergedAchievements();
         renderPinnedAchievements(allAchievements);
+        updateAchievementsSummary(allAchievements);
 
         const modal = document.getElementById("achievements-modal");
         const openBtn = document.getElementById("view-all-achievements");

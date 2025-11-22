@@ -135,7 +135,7 @@ def ach_night_owl(ctx: AchContext) -> AchievementResult:
 
 
 def ach_make_it_round(ctx: AchContext) -> AchievementResult:
-    """凑单王：存在某日消费总金额 >= 20 且为 10 的倍数。"""
+    """凑单领域大神：存在某日消费总金额 >= 20 且为 10 的倍数。"""
 
     # 找出最早总金额 >=20 且为 10 的倍数的日期
     candidate_date: str | None = None
