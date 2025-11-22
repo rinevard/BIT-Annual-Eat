@@ -10,14 +10,38 @@
 </head>
 
 <body>
-    <h1>BIT 校园卡吃饭年度报告</h1>
+    <h1 contenteditable="true" id="user-title">请输入名称的饭力图</h1>
+
+    <div id="achievements-section">
+        <div id="achievements-header">
+            <h2>成就墙</h2>
+            <button id="view-all-achievements">查看全部成就</button>
+        </div>
+        <div id="pinned-achievements" class="achievements-grid"></div>
+    </div>
+
+    <div id="achievements-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>所有成就</h2>
+                <button id="close-achievements-modal">×</button>
+            </div>
+            <div class="modal-body" id="all-achievements-list"></div>
+            <div class="modal-footer">
+                <span>已选择展示的成就：最多 6 个</span>
+            </div>
+        </div>
+    </div>
+
     <div id="year-switcher"></div>
     <div id="heatmap-container">
         <div id="heatmap"></div>
-        <div id="day-detail"></div>
     </div>
+    <div id="day-detail"></div>
+
     <script>
         const EAT_DATA = __EAT_DATA__;
+        const ACH_STATE = __ACH_STATE__;
     </script>
     <script>
         //__INLINE_SCRIPT__

@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 
 import requests
 
+from achievements import evaluate_achievements
+
 EDGE_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -310,6 +312,7 @@ def save_html_report(records: list[dict], path: str) -> None:
     """生成包含年度吃饭饭力图的本地 HTML 报告。"""
 
     daily_stats = build_daily_stats(records)
+    ach_state = evaluate_achievements(records)
 
     base_tpl_path = os.path.join("templates", "report_base.html")
     style_path = os.path.join("templates", "report_style.css")
@@ -323,12 +326,14 @@ def save_html_report(records: list[dict], path: str) -> None:
         script = f.read()
 
     data_json = json.dumps(daily_stats, ensure_ascii=False)
+    ach_json = json.dumps(ach_state, ensure_ascii=False)
 
     html = (
         base_tpl
         .replace("/*__INLINE_STYLE__*/", style)
         .replace("//__INLINE_SCRIPT__", script)
         .replace("__EAT_DATA__", data_json)
+        .replace("__ACH_STATE__", ach_json)
     )
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
