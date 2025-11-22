@@ -1,13 +1,9 @@
 (function () {
-    // EAT_DATA: { "2025": { "2025-03-01": { count, amount, merchants: [{name, amount}] } } }
+    // EAT_DATA: { "2025": { "2025-03-01": { count, amount, merchants, txs } } }
 
     const yearSwitcher = document.getElementById("year-switcher");
     const heatmap = document.getElementById("heatmap");
     const detail = document.getElementById("day-detail");
-    const achievementsGrid = document.getElementById("achievements-grid");
-    const allAchievementsModal = document.getElementById("all-achievements-modal");
-    const pinSelectionList = document.getElementById("pin-selection-list");
-    const titleInput = document.getElementById("title-input");
 
     const years = Object.keys(EAT_DATA).sort();
     if (years.length === 0) {
@@ -31,6 +27,8 @@
             yearSwitcher.appendChild(btn);
         });
     }
+
+    // === 饭力图 ===
 
     function getDateRangeForYear(year) {
         const start = new Date(Number(year), 0, 1); // Jan 1
@@ -193,7 +191,7 @@
         }
     }
 
-    // === 成就系统前端逻辑 ===
+    // === 成就系统 ===
 
     // 静态成就元数据（根据 achievements.md 前 10 个）
     const ACH_META = {
