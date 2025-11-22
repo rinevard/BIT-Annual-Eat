@@ -164,14 +164,25 @@
     function showDayDetail(year, day) {
         detail.innerHTML = "";
         const h2 = document.createElement("h2");
-        h2.textContent = `${day.date}（${year}）`;
+        h2.textContent = day.date;
         detail.appendChild(h2);
 
         const p1 = document.createElement("p");
         p1.textContent = `当天在食堂吃了 ${day.count} 次，共消费 ${day.amount.toFixed(2)} 元。`;
         detail.appendChild(p1);
 
-        if (day.merchants && day.merchants.length > 0) {
+        if (day.txs && day.txs.length > 0) {
+            const ul = document.createElement("ul");
+            day.txs.forEach((tx) => {
+                const li = document.createElement("li");
+                const time = tx.time || "";
+                const mer = tx.mername || tx.name || "";
+                const amtNum = typeof tx.amount === "number" ? tx.amount : Number(tx.amount || 0);
+                li.textContent = `${time} ${mer}：${amtNum.toFixed(2)} 元`;
+                ul.appendChild(li);
+            });
+            detail.appendChild(ul);
+        } else if (day.merchants && day.merchants.length > 0) {
             const ul = document.createElement("ul");
             day.merchants.slice(0, 5).forEach((m) => {
                 const li = document.createElement("li");

@@ -278,16 +278,28 @@ def build_daily_stats(records: list[dict]) -> dict:
         raw_date = str(r["txdate"])
         # 只保留日期部分（YYYY-MM-DD），忽略具体时间，便于按天聚合
         date_str = raw_date[:10]
+        time_str = raw_date[11:19] if len(raw_date) >= 19 else ""
         mername = r["mername"]
         amount = float(r["amount"])
 
         year = date_str[:4]
         stats.setdefault(year, {})
-        day_stats = stats[year].setdefault(date_str, {"count": 0, "amount": 0.0, "merchants": defaultdict(float)})
+        day_stats = stats[year].setdefault(
+            date_str,
+            {"count": 0, "amount": 0.0, "merchants": defaultdict(float), "txs": []},
+        )
 
         day_stats["count"] += 1
         day_stats["amount"] += amount
         day_stats["merchants"][mername] += amount
+        day_stats["txs"].append(
+            {
+                "txdate": raw_date,
+                "time": time_str,
+                "mername": mername,
+                "amount": amount,
+            }
+        )
 
     # 将 merchants 从 dict 压平成列表，按金额从高到低排序
     normalized: dict[str, dict[str, dict]] = {}
@@ -299,10 +311,22 @@ def build_daily_stats(records: list[dict]) -> dict:
                 {"name": name, "amount": amt}
                 for name, amt in sorted(merchants_dict.items(), key=lambda x: x[1], reverse=True)
             ]
+            raw_txs: list[dict] = info.get("txs", [])
+            sorted_txs = sorted(raw_txs, key=lambda t: t.get("txdate", ""))
+            txs = [
+                {
+                    "time": t.get("time", ""),
+                    "mername": t.get("mername", ""),
+                    "amount": float(t.get("amount", 0.0)),
+                }
+                for t in sorted_txs
+            ]
+
             normalized[year][date_str] = {
                 "count": info["count"],
                 "amount": info["amount"],
                 "merchants": merchants_list,
+                "txs": txs,
             }
 
     return normalized
