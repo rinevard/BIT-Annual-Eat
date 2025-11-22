@@ -14,6 +14,7 @@ class AchContext:
     records_sorted_by_time: list[dict]
     dates: set[str]
     daily_amount: dict[str, float]
+    student_id_suffix: int | None = None
 
 
 @dataclass
@@ -48,12 +49,18 @@ def _format_dt(dt: datetime | None) -> str | None:
     return dt.strftime("%Y-%m-%d %H:%M")
 
 
-def build_context(records: list[dict]) -> AchContext:
+def build_context(records: list[dict], student_id: str | None = None) -> AchContext:
     """从扣费记录构建成就计算所需的上下文。"""
 
     records_with_dt: list[dict] = []
     dates: set[str] = set()
     daily_amount: dict[str, float] = defaultdict(float)
+
+    student_id_suffix: int | None = None
+    if student_id:
+        s = student_id.strip()
+        if len(s) >= 4 and s[-4:].isdigit():
+            student_id_suffix = int(s[-4:])
 
     for r in records:
         raw_date = str(r.get("txdate", ""))
@@ -79,6 +86,7 @@ def build_context(records: list[dict]) -> AchContext:
         records_sorted_by_time=records_sorted_by_time,
         dates=dates,
         daily_amount=daily_amount,
+        student_id_suffix=student_id_suffix,
     )
 
 
@@ -313,6 +321,258 @@ def ach_full_timer(ctx: AchContext) -> AchievementResult:
     )
 
 
+def ach_default_setting(ctx: AchContext) -> AchievementResult:
+    """默认设置：在同一个商家消费次数 > 20 次。"""
+
+    counts: dict[str, int] = defaultdict(int)
+    unlock_dt: datetime | None = None
+    target_mer: str | None = None
+
+    for rec in ctx.records_sorted_by_time:
+        mer = str(rec.get("mername", ""))
+        counts[mer] += 1
+        if counts[mer] == 21:
+            unlock_dt = rec["__dt"]
+            target_mer = mer
+            break
+
+    return AchievementResult(
+        id="default_setting",
+        unlocked=unlock_dt is not None,
+        unlocked_at=_format_dt(unlock_dt),
+        extra={"merchant": target_mer, "count": counts.get(target_mer, 0)}
+        if unlock_dt is not None and target_mer is not None
+        else None,
+    )
+
+
+def ach_story_start(ctx: AchContext) -> AchievementResult:
+    """故事的开始：在本年第一天吃饭。"""
+
+    if not ctx.records_sorted_by_time:
+        return AchievementResult(id="story_start", unlocked=False)
+
+    first_year = ctx.records_sorted_by_time[0]["__dt"].year
+    target_date_str = f"{first_year:04d}-01-01"
+
+    if target_date_str not in ctx.dates:
+        return AchievementResult(id="story_start", unlocked=False)
+
+    unlock_dt: datetime | None = None
+    for rec in ctx.records_sorted_by_time:
+        dt: datetime = rec["__dt"]
+        if dt.date().isoformat() == target_date_str:
+            unlock_dt = dt
+            break
+
+    return AchievementResult(
+        id="story_start",
+        unlocked=unlock_dt is not None,
+        unlocked_at=_format_dt(unlock_dt),
+        extra={"date": target_date_str} if unlock_dt is not None else None,
+    )
+
+
+def ach_another_year(ctx: AchContext) -> AchievementResult:
+    """又一年：在本年最后一天吃饭。"""
+
+    if not ctx.records_sorted_by_time:
+        return AchievementResult(id="another_year", unlocked=False)
+
+    last_year = ctx.records_sorted_by_time[-1]["__dt"].year
+    target_date_str = f"{last_year:04d}-12-31"
+
+    if target_date_str not in ctx.dates:
+        return AchievementResult(id="another_year", unlocked=False)
+
+    unlock_dt: datetime | None = None
+    for rec in reversed(ctx.records_sorted_by_time):
+        dt: datetime = rec["__dt"]
+        if dt.date().isoformat() == target_date_str:
+            unlock_dt = dt
+            break
+
+    return AchievementResult(
+        id="another_year",
+        unlocked=unlock_dt is not None,
+        unlocked_at=_format_dt(unlock_dt),
+        extra={"date": target_date_str} if unlock_dt is not None else None,
+    )
+
+
+def ach_missing_breakfast(ctx: AchContext) -> AchievementResult:
+    """消失的早餐：全年 9 点前消费次数 < 10 次。"""
+
+    early_count = 0
+    for rec in ctx.records_sorted_by_time:
+        dt: datetime = rec["__dt"]
+        if dt.hour < 9:
+            early_count += 1
+
+    unlocked = bool(ctx.records_sorted_by_time) and early_count < 10
+    last_dt: datetime | None = (
+        ctx.records_sorted_by_time[-1]["__dt"] if unlocked and ctx.records_sorted_by_time else None
+    )
+
+    return AchievementResult(
+        id="missing_breakfast",
+        unlocked=unlocked,
+        unlocked_at=_format_dt(last_dt) if last_dt is not None else None,
+        extra={"count": early_count},
+    )
+
+
+def ach_good_meals(ctx: AchContext) -> AchievementResult:
+    """好好吃饭：单日内同时有早、中、晚三餐记录。"""
+
+    meals_by_date: dict[str, set[str]] = defaultdict(set)
+    unlock_dt: datetime | None = None
+    target_date: str | None = None
+
+    for rec in ctx.records_sorted_by_time:
+        dt: datetime = rec["__dt"]
+        date_str = dt.date().isoformat()
+        h = dt.hour
+        if h < 10:
+            meals_by_date[date_str].add("breakfast")
+        elif h < 15:
+            meals_by_date[date_str].add("lunch")
+        elif h < 22:
+            meals_by_date[date_str].add("dinner")
+
+        if len(meals_by_date[date_str]) == 3:
+            unlock_dt = dt
+            target_date = date_str
+            break
+
+    return AchievementResult(
+        id="good_meals",
+        unlocked=unlock_dt is not None,
+        unlocked_at=_format_dt(unlock_dt),
+        extra={"date": target_date} if unlock_dt is not None and target_date is not None else None,
+    )
+
+
+def ach_my_turn(ctx: AchContext) -> AchievementResult:
+    """我的回合：2 分钟内连续刷卡 2 次。"""
+
+    unlock_dt: datetime | None = None
+    interval_seconds: float | None = None
+
+    prev_dt: datetime | None = None
+    for rec in ctx.records_sorted_by_time:
+        dt: datetime = rec["__dt"]
+        if prev_dt is not None:
+            delta = (dt - prev_dt).total_seconds()
+            if 0 < delta <= 120:
+                unlock_dt = dt
+                interval_seconds = delta
+                break
+        prev_dt = dt
+
+    return AchievementResult(
+        id="my_turn",
+        unlocked=unlock_dt is not None,
+        unlocked_at=_format_dt(unlock_dt),
+        extra={"interval_seconds": interval_seconds} if unlock_dt is not None else None,
+    )
+
+
+def ach_error_404(ctx: AchContext) -> AchievementResult:
+    """Error 404：单笔消费金额恰为 404 元（含 4.04 / 40.4 / 404）。"""
+
+    unlock_dt: datetime | None = None
+    amount_value: float | None = None
+
+    targets = {404, 4040, 40400}
+
+    for rec in ctx.records_sorted_by_time:
+        amount = float(rec.get("amount", 0.0))
+        cents = int(round(amount * 100))
+        if cents in targets:
+            unlock_dt = rec["__dt"]
+            amount_value = amount
+            break
+
+    return AchievementResult(
+        id="error_404",
+        unlocked=unlock_dt is not None,
+        unlocked_at=_format_dt(unlock_dt),
+        extra={"amount": amount_value} if unlock_dt is not None else None,
+    )
+
+
+def ach_hello_world(ctx: AchContext) -> AchievementResult:
+    """Hello World：本年有消费过（记录时间为第一笔消费）。"""
+
+    if not ctx.records_sorted_by_time:
+        return AchievementResult(id="hello_world", unlocked=False)
+
+    first_dt: datetime = ctx.records_sorted_by_time[0]["__dt"]
+
+    return AchievementResult(
+        id="hello_world",
+        unlocked=True,
+        unlocked_at=_format_dt(first_dt),
+        extra={"first_date": first_dt.date().isoformat()},
+    )
+
+
+def ach_pi(ctx: AchContext) -> AchievementResult:
+    """PI：单笔消费金额恰为 314 元（含 3.14 / 31.4 / 314）。"""
+
+    unlock_dt: datetime | None = None
+    amount_value: float | None = None
+
+    targets = {314, 3140, 31400}
+
+    for rec in ctx.records_sorted_by_time:
+        amount = float(rec.get("amount", 0.0))
+        cents = int(round(amount * 100))
+        if cents in targets:
+            unlock_dt = rec["__dt"]
+            amount_value = amount
+            break
+
+    return AchievementResult(
+        id="pi",
+        unlocked=unlock_dt is not None,
+        unlocked_at=_format_dt(unlock_dt),
+        extra={"amount": amount_value} if unlock_dt is not None else None,
+    )
+
+
+def ach_noticed(ctx: AchContext) -> AchievementResult:
+    """注意到：全年消费总金额恰为学号后四位的倍数。"""
+
+    suffix = ctx.student_id_suffix
+    if not suffix:
+        return AchievementResult(id="noticed", unlocked=False)
+
+    total_amount = 0.0
+    for rec in ctx.records:
+        try:
+            total_amount += float(rec.get("amount", 0.0))
+        except (TypeError, ValueError):
+            continue
+
+    total_cents = int(round(total_amount * 100))
+    unit_cents = suffix * 100
+
+    unlocked = total_cents > 0 and unit_cents > 0 and total_cents % unit_cents == 0
+
+    last_dt: datetime | None = (
+        ctx.records_sorted_by_time[-1]["__dt"] if unlocked and ctx.records_sorted_by_time else None
+    )
+
+    return AchievementResult(
+        id="noticed",
+        unlocked=unlocked,
+        unlocked_at=_format_dt(last_dt) if last_dt is not None else None,
+        extra={"total_amount": total_amount, "id_suffix": suffix},
+    )
+
+
 CHECKERS = [
     ach_early_bird,
     ach_night_owl,
@@ -324,13 +584,23 @@ CHECKERS = [
     ach_hundred_days,
     ach_regular,
     ach_full_timer,
+    ach_default_setting,
+    ach_story_start,
+    ach_another_year,
+    ach_missing_breakfast,
+    ach_good_meals,
+    ach_my_turn,
+    ach_error_404,
+    ach_hello_world,
+    ach_pi,
+    ach_noticed,
 ]
 
 
-def evaluate_achievements(records: list[dict]) -> dict[str, dict[str, Any]]:
+def evaluate_achievements(records: list[dict], student_id: str | None = None) -> dict[str, dict[str, Any]]:
     """对给定记录计算所有成就状态，返回适合注入前端的字典。"""
 
-    ctx = build_context(records)
+    ctx = build_context(records, student_id=student_id)
     result: dict[str, dict[str, Any]] = {}
 
     for checker in CHECKERS:

@@ -193,67 +193,147 @@
 
     // === 成就系统 ===
 
-    // 静态成就元数据（根据 achievements.md 前 10 个）
+    // 静态成就元数据（根据 achievements.md）
     const ACH_META = {
         early_bird: {
             title: "早八人",
             desc: "你见过早上八点的百丽宫吗",
             rarity: 3,
             condition: "06:00-08:00间消费过5次",
+            emoji: "⏰",
         },
         night_owl: {
             title: "守夜人",
             desc: "据说只要不计算晚上的卡路里，它们就不存在",
             rarity: 3,
             condition: "21:00以后消费过5次",
+            emoji: "🌙",
         },
         make_it_round: {
             title: "凑单王",
             desc: "世界平衡了",
             rarity: 4,
             condition: "某日消费总金额大于等于20且为10的倍数",
+            emoji: "⚖️",
         },
         big_meal: {
             title: "加个鸡腿",
             desc: "吃点好的！",
             rarity: 3,
             condition: "单笔消费金额 > 25元",
+            emoji: "🍗",
         },
         minimalist: {
             title: "极限生存",
             desc: "极简主义饮食践行者",
             rarity: 3,
             condition: "单笔消费金额 < 1元",
+            emoji: "🥛",
         },
         lost_kid: {
             title: "迷途之子",
             desc: "你迷路了吗",
             rarity: 4,
             condition: "全年就餐天数 < 50 天",
+            emoji: "❔",
         },
         eater: {
             title: "干饭人",
             desc: "至少你找到了食堂",
             rarity: 1,
             condition: "全年就餐天数 >= 1 天",
+            emoji: "🍽️",
         },
         hundred_days: {
             title: "百日烟火",
             desc: "100个日日夜夜的烟火",
             rarity: 2,
             condition: "全年就餐天数 >= 100 天",
+            emoji: "🍲",
         },
         regular: {
             title: "老主顾",
             desc: "食堂阿姨可能都认识你了",
             rarity: 3,
             condition: "全年就餐天数 >= 150 天",
+            emoji: "🤝",
         },
         full_timer: {
             title: "编外人员",
             desc: "全勤奖",
             rarity: 4,
             condition: "全年就餐天数 >= 200 天",
+            emoji: "🏅",
+        },
+        default_setting: {
+            title: "默认设置",
+            desc: "人类的本质是复读机，口味也是",
+            rarity: 2,
+            condition: "在同一个商家消费次数大于20次",
+            emoji: "🔁",
+        },
+        story_start: {
+            title: "故事的开始",
+            desc: "其实味道和去年没区别",
+            rarity: 4,
+            condition: "在本年第一天吃饭",
+            emoji: "📅",
+        },
+        another_year: {
+            title: "又一年",
+            desc: "明年见",
+            rarity: 4,
+            condition: "在本年最后一天吃饭",
+            emoji: "👋",
+        },
+        missing_breakfast: {
+            title: "消失的早餐",
+            desc: "那些从来不吃早饭的人，现在都怎么样了？",
+            rarity: 3,
+            condition: "全年9点前消费次数 < 10 次",
+            emoji: "👻",
+        },
+        good_meals: {
+            title: "好好吃饭",
+            desc: "你拥有令人羡慕的健康作息",
+            rarity: 3,
+            condition: "单日内同时有早、中、晚三餐记录",
+            emoji: "🥗",
+        },
+        my_turn: {
+            title: "我的回合",
+            desc: "我的回合之后——还是我的回合！",
+            rarity: 4,
+            condition: "2分钟内连续刷卡 2 次",
+            emoji: "🃏",
+        },
+        error_404: {
+            title: "Error 404",
+            desc: "404 Not Found",
+            rarity: 4,
+            condition: "单笔消费金额恰为 404 元（检查 4.04/40.4/404）",
+            emoji: "❌",
+        },
+        hello_world: {
+            title: "Hello World",
+            desc: "你好，食堂！",
+            rarity: 4,
+            condition: "本年有消费过（记录时间为第一笔消费）",
+            emoji: "👋",
+        },
+        pi: {
+            title: "PI",
+            desc: "圆食，启动！",
+            rarity: 4,
+            condition: "单笔消费金额恰为 314 元（检查 3.14/31.4/314）",
+            emoji: "🥧",
+        },
+        noticed: {
+            title: "注意到",
+            desc: "注意力惊人",
+            rarity: 4,
+            condition: "全年消费总金额恰为学号后四位的倍数",
+            emoji: "🧐",
         },
     };
 
@@ -313,6 +393,9 @@
 
             const icon = document.createElement("div");
             icon.className = "achievement-icon"; // 目前为灰色方块占位
+            if (a.emoji) {
+                icon.textContent = a.emoji;
+            }
 
             const text = document.createElement("div");
             text.className = "achievement-text";
@@ -378,6 +461,9 @@
 
             const icon = document.createElement("div");
             icon.className = "achievement-icon";
+            if (a.emoji) {
+                icon.textContent = a.emoji;
+            }
 
             const info = document.createElement("div");
             info.className = "all-achievement-info";
