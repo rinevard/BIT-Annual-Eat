@@ -24,7 +24,7 @@ body {
 }
 
 .sidebar {
-  width: 260px;
+  width: 300px;
   flex-shrink: 0;
 }
 
@@ -51,7 +51,6 @@ body {
   font-size: 56px;
   color: #ffffff;
   cursor: pointer;
-  box-shadow: 0 0 0 1px #ffffff, 0 8px 20px rgba(27, 31, 36, 0.15);
 }
 
 .avatar img {
