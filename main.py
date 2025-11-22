@@ -337,4 +337,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        # 便于在 exe 模式下查看输出内容
+        input("\n按回车键退出程序...")
