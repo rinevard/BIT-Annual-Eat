@@ -8,7 +8,6 @@
 
 本项目受[PKU-Annual-Eat](https://github.com/KingRayCao/PKU-Annual-Eat)启发，感谢原作者的贡献。
 
-![eatcnt](./images/eat_cnt.png)
 ![demo](./images/demo.png)
 
 ## 使用方法
@@ -17,14 +16,14 @@
 
 ![download](./images/download.png)
 
-然后有两种可选方法生成结果：
+有两种使用方法可选：
 
 1. 方法一：运行一键脚本
 
     1. 安装 python
     2. 双击运行 `run.bat` 脚本
     3. 按提示输入学号和校园卡密码
-    4. 生成的图片和表格会保存在 `output` 文件夹中
+    4. 生成的网页、图片和表格会保存在 `output` 文件夹中
 
     ![how_to_use](./images/how_to_use.png)
 
@@ -34,7 +33,7 @@
     2. 安装依赖：`pip install -r requirements.txt`
     3. 运行脚本：`python main.py`
     4. 按提示输入学号和校园卡密码
-    5. 生成的图片和表格会保存在 `output` 文件夹中
+    5. 生成的网页、图片和表格会保存在 `output` 文件夹中
 
 最后，强烈建议同学们修改校园卡密码以保护个人隐私和安全。校园卡的初始密码是 123456 或 000000，如果你从未修改过密码，请尽快修改为只有你自己知道的密码。据我所知目前（2025年11月）校园卡密码仅支持线下修改，良乡的同学们可以去学生服务中心修改。
 
