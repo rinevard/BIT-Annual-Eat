@@ -212,8 +212,8 @@
         make_it_round: {
             title: "凑单领域大神",
             desc: "学校也有满减吗",
-            rarity: 4,
-            condition: "某日消费总金额不小于20且为10的倍数",
+            rarity: 3,
+            condition: "单日消费总金额不小于20且为10的倍数",
             emoji: "⚖️",
         },
         big_meal: {
@@ -310,7 +310,7 @@
         error_404: {
             title: "Error 404",
             desc: "404 Not Found",
-            rarity: 4,
+            rarity: 3,
             condition: "单笔消费金额恰为4.04/40.4/404元",
             emoji: "❌",
         },
@@ -324,7 +324,7 @@
         pi: {
             title: "PI",
             desc: "圆食，启动！",
-            rarity: 4,
+            rarity: 3,
             condition: "单笔消费金额恰为3.14/31.4/314元",
             emoji: "🥧",
         },
@@ -354,6 +354,10 @@
     const MAX_PINS = 6;
     let pinnedIdsState = [];
 
+    function isHiddenAchievement(a) {
+        return a && a.rarity === 4;
+    }
+
     function buildMergedAchievements() {
         const merged = [];
         const state = typeof ACH_STATE === "object" ? ACH_STATE : {};
@@ -367,7 +371,8 @@
     function updateAchievementsSummary(allAchievements) {
         const el = document.getElementById("achievements-summary");
         if (!el) return;
-        const total = allAchievements.length;
+        const base = allAchievements.filter((a) => !isHiddenAchievement(a));
+        const total = base.length;
         const unlocked = allAchievements.filter((a) => a.unlocked).length;
         el.textContent = `您已解锁 ${unlocked}/${total}`;
     }
@@ -453,7 +458,11 @@
 
         const pinnedIds = new Set(loadPinnedIds(allAchievements));
 
-        const sorted = allAchievements
+        const visible = allAchievements.filter(
+            (a) => !(isHiddenAchievement(a) && !a.unlocked)
+        );
+
+        const sorted = visible
             .map((a, index) => ({
                 data: a,
                 index,
