@@ -58,6 +58,85 @@
         return days;
     }
 
+    function renderSummaryFromDays(year, days) {
+        const cards = document.getElementById("summary-cards");
+        const highlight = document.getElementById("summary-highlight");
+        if (!cards || !highlight) return;
+
+        let eatDays = 0;
+        let totalCount = 0;
+        let totalAmount = 0;
+        let maxDay = null;
+        let maxStreak = 0;
+        let currentStreak = 0;
+
+        days.forEach((d) => {
+            const count = d.count || 0;
+            const amount =
+                typeof d.amount === "number" ? d.amount : Number(d.amount || 0);
+
+            if (count > 0) {
+                eatDays += 1;
+                currentStreak += 1;
+                if (currentStreak > maxStreak) {
+                    maxStreak = currentStreak;
+                }
+            } else {
+                currentStreak = 0;
+            }
+
+            totalCount += count;
+            totalAmount += amount;
+
+            if (count > 0) {
+                if (
+                    !maxDay ||
+                    count > maxDay.count ||
+                    (count === maxDay.count && amount > maxDay.amount)
+                ) {
+                    maxDay = { date: d.date, count, amount };
+                }
+            }
+        });
+
+        const avgPerMeal = totalCount > 0 ? totalAmount / totalCount : 0;
+
+        cards.innerHTML = "";
+
+        function addCard(label, value) {
+            const card = document.createElement("div");
+            card.className = "summary-card";
+
+            const labelEl = document.createElement("div");
+            labelEl.className = "summary-card-label";
+            labelEl.textContent = label;
+
+            const valueEl = document.createElement("div");
+            valueEl.className = "summary-card-value";
+            valueEl.textContent = value;
+
+            card.appendChild(labelEl);
+            card.appendChild(valueEl);
+            cards.appendChild(card);
+        }
+
+        addCard("全年就餐天数", `${eatDays} 天`);
+        addCard("总用餐次数", `${totalCount} 次`);
+        addCard("总消费金额", `${totalAmount.toFixed(2)} 元`);
+        addCard(
+            "平均每餐消费",
+            totalCount > 0 ? `${avgPerMeal.toFixed(2)} 元` : "—"
+        );
+
+        if (!maxDay) {
+            highlight.textContent = `${year} 年在食堂没有消费记录。`;
+        } else {
+            highlight.textContent = `吃得最多的一天是 ${maxDay.date}：共 ${maxDay.count} 次，消费 ${maxDay.amount.toFixed(
+                2
+            )} 元；最长连续吃饭天数为 ${maxStreak} 天。`;
+        }
+    }
+
     function countWeeks(days) {
         if (days.length === 0) return 0;
         return days[days.length - 1].weekIndex + 1;
@@ -83,6 +162,7 @@
 
     function renderYear(year) {
         const days = buildDailyArrayForYear(year);
+        renderSummaryFromDays(year, days);
         const weekCount = countWeeks(days);
         const maxCount = computeMaxCount(days);
 
@@ -260,7 +340,7 @@
         },
         full_timer: {
             title: "全勤奖",
-            desc: "感谢你对食堂的支持",
+            desc: "一瞬一瞬累积起来就会变成一辈子",
             rarity: 4,
             condition: "全年就餐天数大于200天",
             emoji: "🏅",
