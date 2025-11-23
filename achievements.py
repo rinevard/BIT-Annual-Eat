@@ -15,6 +15,7 @@ class AchContext:
     dates: set[str]
     daily_amount: dict[str, float]
     student_id_suffix: int | None = None
+    used_default_password: bool | None = None
 
 
 @dataclass
@@ -49,7 +50,11 @@ def _format_dt(dt: datetime | None) -> str | None:
     return dt.strftime("%Y-%m-%d %H:%M")
 
 
-def build_context(records: list[dict], student_id: str | None = None) -> AchContext:
+def build_context(
+    records: list[dict],
+    student_id: str | None = None,
+    used_default_password: bool | None = None,
+) -> AchContext:
     """从扣费记录构建成就计算所需的上下文。"""
 
     records_with_dt: list[dict] = []
@@ -87,6 +92,7 @@ def build_context(records: list[dict], student_id: str | None = None) -> AchCont
         dates=dates,
         daily_amount=daily_amount,
         student_id_suffix=student_id_suffix,
+        used_default_password=used_default_password,
     )
 
 
@@ -263,32 +269,6 @@ def ach_hundred_days(ctx: AchContext) -> AchievementResult:
 
     return AchievementResult(
         id="hundred_days",
-        unlocked=unlocked,
-        unlocked_at=_format_dt(unlock_dt) if unlocked else None,
-        extra={"days": days_count},
-    )
-
-
-def ach_regular(ctx: AchContext) -> AchievementResult:
-    """老主顾：就餐天数 >= 150 天。"""
-
-    days_count = len(ctx.dates)
-    unlocked = days_count >= 150
-
-    unlock_dt: datetime | None = None
-    if unlocked:
-        seen: set[str] = set()
-        for rec in ctx.records_sorted_by_time:
-            dt: datetime = rec["__dt"]
-            date_str = dt.date().isoformat()
-            if date_str not in seen:
-                seen.add(date_str)
-                if len(seen) == 150:
-                    unlock_dt = dt
-                    break
-
-    return AchievementResult(
-        id="regular",
         unlocked=unlocked,
         unlocked_at=_format_dt(unlock_dt) if unlocked else None,
         extra={"days": days_count},
@@ -603,6 +583,25 @@ def ach_my_turn(ctx: AchContext) -> AchievementResult:
     )
 
 
+def ach_edge_runner(ctx: AchContext) -> AchievementResult:
+    """边缘行者：在任意小时的 59 分 59 秒完成交易。"""
+
+    unlock_dt: datetime | None = None
+
+    for rec in ctx.records_sorted_by_time:
+        dt: datetime = rec["__dt"]
+        if dt.minute == 59 and dt.second == 59:
+            unlock_dt = dt
+            break
+
+    return AchievementResult(
+        id="edge_runner",
+        unlocked=unlock_dt is not None,
+        unlocked_at=_format_dt(unlock_dt),
+        extra=None,
+    )
+
+
 def ach_error_404(ctx: AchContext) -> AchievementResult:
     """Error 404：单笔消费金额恰为 404 元（含 4.04 / 40.4 / 404）。"""
 
@@ -667,6 +666,27 @@ def ach_pi(ctx: AchContext) -> AchievementResult:
     )
 
 
+def ach_secure_call(ctx: AchContext) -> AchievementResult:
+    """加密通话：密码不是默认值 123456。"""
+
+    # 如果无法判断是否使用默认密码，则视为未解锁
+    if ctx.used_default_password is None:
+        return AchievementResult(id="secure_call", unlocked=False, unlocked_at=None, extra=None)
+
+    unlocked = not ctx.used_default_password
+
+    unlock_dt: datetime | None = None
+    if unlocked and ctx.records_sorted_by_time:
+        unlock_dt = ctx.records_sorted_by_time[0]["__dt"]
+
+    return AchievementResult(
+        id="secure_call",
+        unlocked=unlocked,
+        unlocked_at=_format_dt(unlock_dt),
+        extra=None,
+    )
+
+
 def ach_noticed(ctx: AchContext) -> AchievementResult:
     """注意到：全年消费总金额恰为学号后四位的倍数。"""
 
@@ -707,7 +727,6 @@ CHECKERS = [
     ach_lost_kid,
     ach_eater,
     ach_hundred_days,
-    ach_regular,
     ach_full_timer,
     ach_default_setting,
     ach_story_start,
@@ -717,17 +736,23 @@ CHECKERS = [
     ach_perfect_week,
     ach_cosmic_meal,
     ach_my_turn,
+    ach_edge_runner,
     ach_error_404,
     ach_hello_world,
     ach_pi,
+    ach_secure_call,
     ach_noticed,
 ]
 
 
-def evaluate_achievements(records: list[dict], student_id: str | None = None) -> dict[str, dict[str, Any]]:
+def evaluate_achievements(
+    records: list[dict],
+    student_id: str | None = None,
+    used_default_password: bool | None = None,
+) -> dict[str, dict[str, Any]]:
     """对给定记录计算所有成就状态，返回适合注入前端的字典。"""
 
-    ctx = build_context(records, student_id=student_id)
+    ctx = build_context(records, student_id=student_id, used_default_password=used_default_password)
     result: dict[str, dict[str, Any]] = {}
 
     for checker in CHECKERS:

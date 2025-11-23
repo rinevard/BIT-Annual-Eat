@@ -332,11 +332,15 @@ def build_daily_stats(records: list[dict]) -> dict:
     return normalized
 
 
-def save_html_report(records: list[dict], path: str, student_id: str | None = None) -> None:
+def save_html_report(records: list[dict], path: str, student_id: str | None = None, used_default_password: bool | None = None) -> None:
     """生成包含年度吃饭饭力图的本地 HTML 报告。"""
 
     daily_stats = build_daily_stats(records)
-    ach_state = evaluate_achievements(records, student_id=student_id)
+    ach_state = evaluate_achievements(
+        records,
+        student_id=student_id,
+        used_default_password=used_default_password,
+    )
 
     base_tpl_path = os.path.join("templates", "report_base.html")
     style_path = os.path.join("templates", "report_style.css")
@@ -440,7 +444,13 @@ def main() -> None:
         print(f"已保存按商户消费次数柱状图到: {img_count_path}")
         print(f"总消费金额: {total_amount:.2f} 元")
 
-        save_html_report(records, html_report_path, student_id=idserial)
+        used_default_password = cardpwd == "123456"
+        save_html_report(
+            records,
+            html_report_path,
+            student_id=idserial,
+            used_default_password=used_default_password,
+        )
         print(f"已生成吃饭报告: {html_report_path}")
     except Exception as exc:  # noqa: BLE001
         print("发生错误:", exc)
