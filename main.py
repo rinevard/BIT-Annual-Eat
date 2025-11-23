@@ -5,6 +5,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timedelta
 
+import hashlib
 import requests
 
 from achievements import evaluate_achievements
@@ -25,6 +26,14 @@ DINGTALK_UA = (
 )
 
 FILTERS = ["浴室", "医院"] # 如果名称包含这些字符串，将被过滤掉
+
+
+def make_student_key(student_id: str) -> str:
+    """根据学号计算本地 SHA-256 哈希十六进制字符串，上传时不暴露明文学号。"""
+
+    h = hashlib.sha256()
+    h.update(student_id.encode("utf-8"))
+    return h.hexdigest()
 
 
 def login_with_card(idserial: str, cardpwd: str) -> tuple[requests.Session, str]:
@@ -369,7 +378,7 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
         f.write(html)
 
 
-def upload_report(html_path: str) -> str | None:
+def upload_report(html_path: str, student_key: str | None = None) -> str | None:
     try:
         with open(html_path, "rb") as f:
             data = f.read()
@@ -377,12 +386,16 @@ def upload_report(html_path: str) -> str | None:
         print(f"读取文件失败: {exc}")
         return None
 
+    headers = {"Content-Type": "text/html"}
+    if student_key:
+        headers["X-Eatbit-Student-Key"] = student_key
+
     try:
         resp = requests.post(
             "https://eatbit.top/api/reports",
-            headers={"Content-Type": "text/html"},
+            headers=headers,
             data=data,
-            timeout=10,
+            timeout=30,
         )
     except requests.RequestException as exc:
         print(f"上传报告失败: {exc}")
@@ -493,8 +506,9 @@ def main() -> None:
 
         choice = input("\n是否上传报告到 eatbit.top 生成分享链接？(Y/N): ").strip().lower()
         if choice == "y":
-            print("正在上传报告到 eatbit.top...")
-            url = upload_report(html_report_path)
+            print("正在上传报告到 eatbit.top，一般不超过半分钟...")
+            student_key = make_student_key(idserial)
+            url = upload_report(html_report_path, student_key=student_key)
             if url:
                 print(f"上传成功！分享链接: {url}")
             else:
