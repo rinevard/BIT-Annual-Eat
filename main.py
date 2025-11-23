@@ -368,6 +368,44 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
     with open(path, "w", encoding="utf-8") as f:
         f.write(html)
 
+
+def upload_report(html_path: str) -> str | None:
+    try:
+        with open(html_path, "rb") as f:
+            data = f.read()
+    except OSError as exc:
+        print(f"读取文件失败: {exc}")
+        return None
+
+    try:
+        resp = requests.post(
+            "https://eatbit.top/api/reports",
+            headers={"Content-Type": "text/html"},
+            data=data,
+            timeout=10,
+        )
+    except requests.RequestException as exc:
+        print(f"上传报告失败: {exc}")
+        return None
+
+    if resp.status_code != 200:
+        print(f"上传报告失败，HTTP 状态码 {resp.status_code}")
+        return None
+
+    try:
+        info = resp.json()
+    except json.JSONDecodeError:
+        print("解析 JSON 失败")
+        return None
+
+    url = info.get("url")
+    if not url:
+        print(f"获取分享链接失败: {info!r}")
+        return None
+
+    return url
+
+
 def split_date_range(begin_date: str, end_date: str, max_days: int = 31) -> list[tuple[str, str]]:
     """将总的起止日期拆分为若干不超过 max_days 天的小段，因为查询接口似乎有日期范围限制。
 
@@ -452,6 +490,15 @@ def main() -> None:
             used_default_password=used_default_password,
         )
         print(f"已生成吃饭报告: {html_report_path}")
+
+        choice = input("\n是否上传报告到 eatbit.top 生成分享链接？(Y/N): ").strip().lower()
+        if choice == "y":
+            print("正在上传报告到 eatbit.top...")
+            url = upload_report(html_report_path)
+            if url:
+                print(f"上传成功！分享链接: {url}")
+            else:
+                print("上传失败，请稍后重试或检查网络连接。")
     except Exception as exc:  # noqa: BLE001
         print("发生错误:", exc)
 

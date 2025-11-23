@@ -5,6 +5,19 @@
     const heatmap = document.getElementById("heatmap");
     const detail = document.getElementById("day-detail");
 
+    const IS_CLOUD = window.location.hostname === "eatbit.top";
+    const HAS_PW_HASH = (window.location.hash || "").toLowerCase().includes("#pw=");
+
+    // 标志 1：是否允许在页面上编辑（头像、标题、pin 等）
+    // - 本地 HTML：始终可编辑但不可保存
+    // - 云端无 #pw：只读
+    // - 云端带 #pw：可编辑且可保存
+    const IS_EDIT_MODE = !IS_CLOUD || HAS_PW_HASH;
+
+    // 标志 2：是否允许“保存到链接”（向服务器发送 PUT 请求）
+    // 仅当运行在 eatbit.top 且带有 #pw=... 时才允许
+    const IS_SAVABLE = IS_CLOUD && HAS_PW_HASH;
+
     const years = Object.keys(EAT_DATA).sort();
     if (years.length === 0) {
         heatmap.textContent = "没有可用数据";
@@ -281,6 +294,13 @@
             return;
         }
 
+        if (!IS_EDIT_MODE) {
+            avatar.style.cursor = "default";
+            return;
+        }
+
+        avatar.style.cursor = "pointer";
+
         avatar.addEventListener("click", () => {
             fileInput.click();
         });
@@ -477,7 +497,19 @@
     };
 
     const MAX_PINS = 6;
-    let pinnedIdsState = [];
+
+    function loadInitialPinnedIds() {
+        const body = document.body;
+        if (!body || !body.dataset) return [];
+        const raw = body.dataset.pinnedIds;
+        if (!raw) return [];
+        return raw
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0);
+    }
+
+    let pinnedIdsState = loadInitialPinnedIds();
 
     function isHiddenAchievement(a) {
         return a && a.rarity === 4;
@@ -504,7 +536,7 @@
         ).length;
 
         el.innerHTML = "";
-        const baseText = document.createTextNode(`您已解锁 ${unlocked}/${total}`);
+        const baseText = document.createTextNode(`已解锁 ${unlocked}/${total}`);
         el.appendChild(baseText);
 
         if (hiddenUnlocked > 0) {
@@ -522,6 +554,10 @@
 
     function savePinnedIds(ids) {
         pinnedIdsState = [...ids];
+        const body = document.body;
+        if (body && body.dataset) {
+            body.dataset.pinnedIds = ids.join(",");
+        }
     }
 
     function renderPinnedAchievements(allAchievements) {
@@ -673,6 +709,8 @@
             if (!a.unlocked) {
                 checkbox.disabled = true;
                 row.classList.add("locked");
+            } else if (!IS_EDIT_MODE) {
+                checkbox.disabled = true;
             } else {
                 const applyPinState = (nextChecked) => {
                     const current = new Set(loadPinnedIds(allAchievements));
@@ -707,10 +745,78 @@
         });
     }
 
+    function setupSaveButton() {
+        const existing = document.getElementById("save-to-link");
+
+        if (!IS_SAVABLE) {
+            if (existing && existing.parentNode) {
+                existing.parentNode.removeChild(existing);
+            }
+            return;
+        }
+
+        const header = document.querySelector(".page-header");
+        if (!header) return;
+
+        const btn = existing || document.createElement("button");
+        if (!existing) {
+            btn.id = "save-to-link";
+            btn.textContent = "保存";
+            header.appendChild(btn);
+        }
+
+        btn.onclick = async () => {
+            const originalText = btn.textContent || "保存";
+            btn.disabled = true;
+            btn.textContent = "保存中...";
+
+            const path = window.location.pathname || "";
+            const parts = path.split("/").filter(Boolean);
+            if (parts.length < 2 || parts[0] !== "r") {
+                alert("无法解析报告 ID，保存失败。");
+                btn.disabled = false;
+                btn.textContent = originalText;
+                return;
+            }
+            const currentId = parts[1];
+            const html = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+
+            try {
+                const resp = await fetch(`/api/reports/${encodeURIComponent(currentId)}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "text/html" },
+                    body: html,
+                });
+                if (resp.ok) {
+                    btn.textContent = "已保存";
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.textContent = originalText;
+                    }, 1500);
+                } else {
+                    alert(`保存失败：HTTP ${resp.status}`);
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            } catch (e) {
+                alert("保存失败，请检查网络连接。");
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        };
+    }
+
     function setupAchievementsUI() {
         const allAchievements = buildMergedAchievements();
+
+        const userTitle = document.getElementById("user-title");
+        if (userTitle) {
+            userTitle.contentEditable = IS_EDIT_MODE ? "true" : "false";
+        }
         renderPinnedAchievements(allAchievements);
         updateAchievementsSummary(allAchievements);
+
+        setupSaveButton();
 
         const modal = document.getElementById("achievements-modal");
         const openBtn = document.getElementById("view-all-achievements");
