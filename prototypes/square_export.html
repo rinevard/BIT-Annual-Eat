@@ -32,12 +32,12 @@
         }
 
         .share-root {
-            background: #f9f9fb;
+            background: #ffffff;
             width: min(90vmin, 720px);
             aspect-ratio: 1 / 1;
             border-radius: 0;
             box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
-            padding: 24px;
+            padding: 20px 24px 24px;
             display: flex;
             flex-direction: column;
             color: #111827;
@@ -64,6 +64,25 @@
             font-size: 56px;
             color: #ffffff;
             flex-shrink: 0;
+            cursor: pointer;
+            position: relative;
+            margin-top: 12px;
+            margin-left: 6px;
+        }
+
+        .share-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 999px;
+            display: none;
+        }
+
+        .share-avatar input[type="file"] {
+            display: none;
         }
 
         .share-top-right {
@@ -71,6 +90,7 @@
             display: flex;
             flex-direction: column;
             min-width: 0;
+            padding-left: 16px;
         }
 
         .share-name-row {
@@ -84,10 +104,8 @@
         .share-username {
             font-size: 24px;
             font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 70%;
+            white-space: normal;
+            overflow-wrap: break-word;
         }
 
         .share-tagline {
@@ -122,7 +140,8 @@
             grid-auto-columns: 8px;
             grid-template-rows: repeat(10, 8px);
             gap: 1px;
-            align-self: flex-start;
+            width: 100%;
+            justify-content: space-between;
         }
 
         .share-heatmap-cell {
@@ -150,25 +169,30 @@
 
         .share-bottom {
             display: flex;
-            margin-top: 20px;
-            margin-bottom: 22px;
-            gap: 20px;
+            margin-bottom: 26px;
+            gap: 16px;
             flex: 0 0 auto;
             align-items: flex-end;
         }
 
         .share-metrics {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .share-metrics-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
+            gap: 8px;
         }
 
         .share-metric {
             background: #ffffff;
             border-radius: 12px;
             border: 1px solid #e5e7eb;
-            padding: 10px 12px;
+            padding: 8px 10px;
             display: flex;
             flex-direction: column;
             gap: 4px;
@@ -209,7 +233,7 @@
             background: #ffffff;
             border-radius: 12px;
             border: 1px solid #e5e7eb;
-            padding: 8px 10px;
+            padding: 14px 10px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -240,13 +264,6 @@
             font-size: 10px;
             color: #6b7280;
             margin-top: 2px;
-        }
-
-        .share-achievement-right {
-            font-size: 10px;
-            color: #9ca3af;
-            text-align: right;
-            white-space: nowrap;
         }
 
         .export-btn {
@@ -307,33 +324,35 @@
 
             <div class="share-bottom">
                 <div class="share-metrics">
-                    <div class="share-metric">
-                        <div class="share-metric-label">全年就餐天数</div>
-                        <div class="share-metric-value" id="metric-days">118</div>
-                        <div class="share-metric-caption">去食堂的日子</div>
-                    </div>
+                    <div class="share-metrics-grid">
+                        <div class="share-metric">
+                            <div class="share-metric-label">全年就餐天数</div>
+                            <div class="share-metric-value" id="metric-days">118</div>
+                            <div class="share-metric-caption">去食堂的日子</div>
+                        </div>
 
-                    <div class="share-metric">
-                        <div class="share-metric-label">总用餐次数</div>
-                        <div class="share-metric-value" id="metric-count">518</div>
-                        <div class="share-metric-caption">刷卡次数</div>
-                    </div>
+                        <div class="share-metric">
+                            <div class="share-metric-label">总用餐次数</div>
+                            <div class="share-metric-value" id="metric-count">518</div>
+                            <div class="share-metric-caption">刷卡次数</div>
+                        </div>
 
-                    <div class="share-metric">
-                        <div class="share-metric-label">总消费金额</div>
-                        <div class="share-metric-value" id="metric-amount">1488</div>
-                        <div class="share-metric-caption">单位：元</div>
-                    </div>
+                        <div class="share-metric">
+                            <div class="share-metric-label">总消费金额</div>
+                            <div class="share-metric-value" id="metric-amount">1488</div>
+                            <div class="share-metric-caption">单位：元</div>
+                        </div>
 
-                    <div class="share-metric">
-                        <div class="share-metric-label">平均每次消费</div>
-                        <div class="share-metric-value" id="metric-avg">12.85</div>
-                        <div class="share-metric-caption">单位：元 / 次</div>
+                        <div class="share-metric">
+                            <div class="share-metric-label">平均每次消费</div>
+                            <div class="share-metric-value" id="metric-avg">12.85</div>
+                            <div class="share-metric-caption">单位：元 / 次</div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="share-achievements">
-                    <div class="share-achievements-title">这一年的四个瞬间</div>
+                    <div class="share-achievements-title">这一年的成就</div>
 
                     <div class="share-achievement-card">
                         <div class="share-achievement-icon">👋</div>
@@ -341,7 +360,6 @@
                             <div class="share-achievement-title">Hello World</div>
                             <div class="share-achievement-desc">今年第一次在食堂刷卡的那一顿。</div>
                         </div>
-                        <div class="share-achievement-right">2025-11-01</div>
                     </div>
 
                     <div class="share-achievement-card">
@@ -350,7 +368,6 @@
                             <div class="share-achievement-title">好好吃饭</div>
                             <div class="share-achievement-desc">在同一天安排了早、中、晚三餐。</div>
                         </div>
-                        <div class="share-achievement-right">2025-11-13</div>
                     </div>
 
                     <div class="share-achievement-card">
@@ -359,16 +376,14 @@
                             <div class="share-achievement-title">加个鸡腿</div>
                             <div class="share-achievement-desc">单笔消费超过 25 元，犒劳一下自己。</div>
                         </div>
-                        <div class="share-achievement-right">2025-11-11</div>
                     </div>
 
                     <div class="share-achievement-card">
                         <div class="share-achievement-icon">🔐</div>
                         <div class="share-achievement-main">
                             <div class="share-achievement-title">加密通话</div>
-                            <div class="share-achievement-desc">你已经把校园卡密码改成了只有自己知道的样子。</div>
+                            <div class="share-achievement-desc">你已经修改了校园卡密码。</div>
                         </div>
-                        <div class="share-achievement-right">已解锁</div>
                     </div>
                 </div>
             </div>
@@ -406,7 +421,6 @@
         (function () {
             const btn = document.getElementById("export-btn");
             if (!btn || !window.html2canvas) return;
-
             btn.addEventListener("click", function () {
                 const target = document.querySelector(".share-root");
                 if (!target) return;
@@ -421,6 +435,47 @@
                     link.href = canvas.toDataURL("image/png");
                     link.click();
                 });
+            });
+        })();
+
+        (function () {
+            const avatar = document.querySelector(".share-avatar");
+
+            if (!avatar) return;
+
+            let img = avatar.querySelector(".share-avatar-img");
+            if (!img) {
+                img = document.createElement("img");
+                img.className = "share-avatar-img";
+                avatar.appendChild(img);
+            }
+
+            let input = avatar.querySelector('input[type="file"]');
+            if (!input) {
+                input = document.createElement("input");
+                input.type = "file";
+                input.accept = "image/*";
+                input.style.display = "none"; // add this line to hide the input
+                avatar.appendChild(input);
+            }
+
+            avatar.addEventListener("click", function () {
+                input.click();
+            });
+
+            input.addEventListener("change", function () {
+                const files = input.files;
+                if (!files || !files[0]) return;
+
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const result = e && e.target && e.target.result;
+                    if (!result) return;
+                    img.src = result;
+                    img.style.display = "block";
+                };
+                reader.readAsDataURL(file);
             });
         })();
     </script>
