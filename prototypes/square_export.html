@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <title>BIT 吃饭年度报告 · 分享图原型</title>
+    <style>
+        :root {
+            color-scheme: light;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #111827;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .page-root {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .share-root {
+            background: #f9f9fb;
+            width: min(90vmin, 720px);
+            aspect-ratio: 1 / 1;
+            border-radius: 0;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            color: #111827;
+        }
+
+        .share-top {
+            display: flex;
+            gap: 20px;
+            flex: 1 1 0;
+            min-height: 0;
+            align-items: center;
+        }
+
+        .share-avatar {
+            width: 180px;
+            height: 180px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #d0d7de, #8c959f);
+            border: 1px solid #afb8c1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 56px;
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+
+        .share-top-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .share-name-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-top: 4px;
+            margin-bottom: 12px;
+        }
+
+        .share-username {
+            font-size: 24px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70%;
+        }
+
+        .share-tagline {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .share-logo {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-left: 12px;
+            white-space: nowrap;
+        }
+
+        .share-heatmap-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            border-radius: 0;
+            background: transparent;
+            padding: 0;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .share-heatmap-grid {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: 8px;
+            grid-template-rows: repeat(10, 8px);
+            gap: 1px;
+            align-self: flex-start;
+        }
+
+        .share-heatmap-cell {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            background: #ececec;
+        }
+
+        .share-heatmap-cell.level-1 {
+            background: #22c55e;
+        }
+
+        .share-heatmap-cell.level-2 {
+            background: #16a34a;
+        }
+
+        .share-heatmap-cell.level-3 {
+            background: #15803d;
+        }
+
+        .share-heatmap-cell.level-4 {
+            background: #14532d;
+        }
+
+        .share-bottom {
+            display: flex;
+            margin-top: 20px;
+            margin-bottom: 22px;
+            gap: 20px;
+            flex: 0 0 auto;
+            align-items: flex-end;
+        }
+
+        .share-metrics {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .share-metric {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            aspect-ratio: 1 / 1;
+            justify-content: center;
+        }
+
+        .share-metric-label {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .share-metric-value {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .share-metric-caption {
+            font-size: 10px;
+            color: #9ca3af;
+        }
+
+        .share-achievements {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .share-achievements-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 2px;
+        }
+
+        .share-achievement-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .share-achievement-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .share-achievement-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .share-achievement-title {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .share-achievement-desc {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .share-achievement-right {
+            font-size: 10px;
+            color: #9ca3af;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .export-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            background: #f9fafb;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .export-btn:hover {
+            background: #e5e7eb;
+        }
+
+        @media (max-width: 700px) {
+            .share-root {
+                border-radius: 0;
+                padding: 16px;
+            }
+
+            .share-avatar {
+                width: 120px;
+                height: 120px;
+            }
+
+            .share-top {
+                gap: 12px;
+            }
+
+            .share-bottom {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-root">
+        <div class="share-root">
+            <div class="share-top">
+                <div class="share-avatar">🍚</div>
+                <div class="share-top-right">
+                    <div class="share-name-row">
+                        <div>
+                            <div class="share-username" contenteditable="true">用户名</div>
+                            <div class="share-tagline">的 BIT 吃饭年度报告</div>
+                        </div>
+                        <div class="share-logo">BIT · eatbit.top</div>
+                    </div>
+
+                    <div class="share-heatmap-wrapper">
+                        <div class="share-heatmap-grid" id="share-heatmap"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="share-bottom">
+                <div class="share-metrics">
+                    <div class="share-metric">
+                        <div class="share-metric-label">全年就餐天数</div>
+                        <div class="share-metric-value" id="metric-days">118</div>
+                        <div class="share-metric-caption">去食堂的日子</div>
+                    </div>
+
+                    <div class="share-metric">
+                        <div class="share-metric-label">总用餐次数</div>
+                        <div class="share-metric-value" id="metric-count">518</div>
+                        <div class="share-metric-caption">刷卡次数</div>
+                    </div>
+
+                    <div class="share-metric">
+                        <div class="share-metric-label">总消费金额</div>
+                        <div class="share-metric-value" id="metric-amount">1488</div>
+                        <div class="share-metric-caption">单位：元</div>
+                    </div>
+
+                    <div class="share-metric">
+                        <div class="share-metric-label">平均每次消费</div>
+                        <div class="share-metric-value" id="metric-avg">12.85</div>
+                        <div class="share-metric-caption">单位：元 / 次</div>
+                    </div>
+                </div>
+
+                <div class="share-achievements">
+                    <div class="share-achievements-title">这一年的四个瞬间</div>
+
+                    <div class="share-achievement-card">
+                        <div class="share-achievement-icon">👋</div>
+                        <div class="share-achievement-main">
+                            <div class="share-achievement-title">Hello World</div>
+                            <div class="share-achievement-desc">今年第一次在食堂刷卡的那一顿。</div>
+                        </div>
+                        <div class="share-achievement-right">2025-11-01</div>
+                    </div>
+
+                    <div class="share-achievement-card">
+                        <div class="share-achievement-icon">🥗</div>
+                        <div class="share-achievement-main">
+                            <div class="share-achievement-title">好好吃饭</div>
+                            <div class="share-achievement-desc">在同一天安排了早、中、晚三餐。</div>
+                        </div>
+                        <div class="share-achievement-right">2025-11-13</div>
+                    </div>
+
+                    <div class="share-achievement-card">
+                        <div class="share-achievement-icon">🍗</div>
+                        <div class="share-achievement-main">
+                            <div class="share-achievement-title">加个鸡腿</div>
+                            <div class="share-achievement-desc">单笔消费超过 25 元，犒劳一下自己。</div>
+                        </div>
+                        <div class="share-achievement-right">2025-11-11</div>
+                    </div>
+
+                    <div class="share-achievement-card">
+                        <div class="share-achievement-icon">🔐</div>
+                        <div class="share-achievement-main">
+                            <div class="share-achievement-title">加密通话</div>
+                            <div class="share-achievement-desc">你已经把校园卡密码改成了只有自己知道的样子。</div>
+                        </div>
+                        <div class="share-achievement-right">已解锁</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="export-btn" id="export-btn">保存为图片</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script>
+        (function () {
+            const grid = document.getElementById("share-heatmap");
+            if (!grid) return;
+
+            const totalDays = 365; // 一整年的天数，按每列 10 天排版
+
+            for (let i = 0; i < totalDays; i += 1) {
+                const cell = document.createElement("div");
+                cell.className = "share-heatmap-cell";
+
+                const r = Math.random();
+                let level = 0;
+                if (r > 0.8) level = 4;
+                else if (r > 0.6) level = 3;
+                else if (r > 0.4) level = 2;
+                else if (r > 0.2) level = 1;
+
+                if (level > 0) {
+                    cell.classList.add(`level-${level}`);
+                }
+
+                grid.appendChild(cell);
+            }
+        })();
+
+        (function () {
+            const btn = document.getElementById("export-btn");
+            if (!btn || !window.html2canvas) return;
+
+            btn.addEventListener("click", function () {
+                const target = document.querySelector(".share-root");
+                if (!target) return;
+
+                window.html2canvas(target, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: null,
+                }).then(function (canvas) {
+                    const link = document.createElement("a");
+                    link.download = "bit-eat-share.png";
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+                });
+            });
+        })();
+    </script>
+
+</body>
+
+</html>
