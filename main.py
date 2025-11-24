@@ -448,19 +448,19 @@ def main() -> None:
     print("百丽宫大学校园卡消费分析")
     print("-----------------------------")
 
-    idserial = input("请输入学号: ").strip()
-    cardpwd = input("请输入六位校园卡密码: ").strip()
-    begin_date = input("请输入开始日期 (YYYY-MM-DD，回车使用默认值 2025-01-01): ").strip() or "2025-01-01"
-    end_date = input("请输入结束日期 (YYYY-MM-DD，回车使用默认值 2025-12-31): ").strip() or "2025-12-31"
-
-    if not idserial or not cardpwd:
-        print("输入不完整，已退出。")
-        return
-
-    if cardpwd == "123456":
-        print("\n检测到你使用的是默认密码 123456，强烈建议尽快修改为只有你自己知道的密码。")
-
     try:
+        idserial = input("请输入学号: ").strip()
+        cardpwd = input("请输入六位校园卡密码: ").strip()
+        begin_date = input("请输入开始日期 (YYYY-MM-DD，回车使用默认值 2025-01-01): ").strip() or "2025-01-01"
+        end_date = input("请输入结束日期 (YYYY-MM-DD，回车使用默认值 2025-12-31): ").strip() or "2025-12-31"
+
+        if not idserial or not cardpwd:
+            print("输入不完整，已退出。")
+            return
+
+        if cardpwd == "123456":
+            print("\n检测到你使用的是默认密码 123456，强烈建议尽快修改为只有你自己知道的密码。")
+
         print("\n正在登录校园卡系统...")
         session, openid = login_with_card(idserial, cardpwd)
         print("登录成功，正在按时间分段拉取消费记录...")
@@ -515,6 +515,8 @@ def main() -> None:
                 print("上传失败，请稍后重试或检查网络连接。")
     except Exception as exc:  # noqa: BLE001
         print("发生错误:", exc)
+    finally:
+        input("\n按回车键退出...")
 
 
 if __name__ == "__main__":
