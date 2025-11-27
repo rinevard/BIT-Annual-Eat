@@ -5,6 +5,28 @@
     <meta charset="utf-8" />
     <title>BIT 吃饭年度报告</title>
     <style>
+        :root {
+            --bg-page: #F7F2C4;
+            --color-header: #34C759;
+            --color-avatar-wrapper: #FF69B4;
+            --color-avatar: #FFDB58;
+            --color-achievements: #A388EE;
+            --color-button: #FFDB58;
+            --color-icon: #FFA07A;
+            --color-card1: #FFA07A;
+            --color-card2: #7DF9FF;
+            --color-card3: #90EE90;
+            --color-card4: #FF6B6B;
+            --color-day-detail: #FDFD96;
+            --color-modal-header: #34C759;
+            --color-time-badge: #FFDB58;
+            --heatmap-0: #f5f5f5;
+            --heatmap-1: #FFA07A;
+            --heatmap-2: #FF7A5C;
+            --heatmap-3: #FF6B6B;
+            --heatmap-4: #FF4911;
+        }
+        
         * {
             box-sizing: border-box;
         }
@@ -13,10 +35,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #fef3c7;
-            background-image: 
-                radial-gradient(circle at 20% 80%, #fde68a 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, #bfdbfe 0%, transparent 50%);
+            background-color: var(--bg-page);
             min-height: 100vh;
         }
 
@@ -32,9 +51,8 @@
             align-items: center;
             margin-bottom: 24px;
             padding: 16px 24px;
-            background-color: #a3e635;
+            background-color: var(--color-header);
             border: 4px solid #000;
-            box-shadow: 6px 6px 0 #000;
         }
 
         .header-title {
@@ -50,7 +68,7 @@
             font-size: 14px;
             font-weight: 700;
             border: 3px solid #000;
-            background-color: #fbbf24;
+            background-color: var(--color-button);
             color: #000;
             cursor: pointer;
             box-shadow: 4px 4px 0 #000;
@@ -88,9 +106,8 @@
             text-align: center;
             margin-bottom: 20px;
             padding: 20px;
-            background-color: #f0abfc;
+            background-color: var(--color-avatar-wrapper);
             border: 4px solid #000;
-            box-shadow: 6px 6px 0 #000;
         }
 
         .avatar {
@@ -98,14 +115,13 @@
             height: 180px;
             border: 4px solid #000;
             overflow: hidden;
-            background: linear-gradient(135deg, #fbbf24, #f97316);
+            background: var(--color-avatar);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             font-size: 64px;
             color: #000;
             cursor: pointer;
-            box-shadow: 4px 4px 0 #000;
         }
 
         .avatar img {
@@ -146,7 +162,6 @@
             padding: 12px;
             background-color: #fff;
             border: 3px solid #000;
-            box-shadow: 4px 4px 0 #000;
         }
 
         .profile-subtitle {
@@ -203,23 +218,22 @@
             background-color: #fff;
             border: 3px solid #000;
             padding: 12px 14px;
-            box-shadow: 4px 4px 0 #000;
         }
 
         .summary-card:nth-child(1) {
-            background-color: #fde68a;
+            background-color: var(--color-card1);
         }
 
         .summary-card:nth-child(2) {
-            background-color: #bfdbfe;
+            background-color: var(--color-card2);
         }
 
         .summary-card:nth-child(3) {
-            background-color: #bbf7d0;
+            background-color: var(--color-card3);
         }
 
         .summary-card:nth-child(4) {
-            background-color: #fecaca;
+            background-color: var(--color-card4);
         }
 
         .summary-card-label {
@@ -244,16 +258,14 @@
             padding: 12px;
             background-color: #fff;
             border: 3px solid #000;
-            box-shadow: 4px 4px 0 #000;
         }
 
         /* 成就区域 */
         #achievements-section {
             margin-bottom: 24px;
             padding: 20px;
-            background-color: #c4b5fd;
+            background-color: var(--color-achievements);
             border: 4px solid #000;
-            box-shadow: 6px 6px 0 #000;
         }
 
         #achievements-header {
@@ -275,7 +287,7 @@
             font-size: 12px;
             font-weight: 700;
             border: 3px solid #000;
-            background-color: #fbbf24;
+            background-color: var(--color-button);
             color: #000;
             cursor: pointer;
             box-shadow: 3px 3px 0 #000;
@@ -308,7 +320,7 @@
             color: #000;
             font-weight: 600;
             align-self: flex-start;
-            background-color: #fef3c7;
+            background-color: var(--color-time-badge);
             padding: 2px 6px;
             border: 2px solid #000;
         }
@@ -322,7 +334,7 @@
             width: 48px;
             height: 48px;
             border: 3px solid #000;
-            background-color: #fde68a;
+            background-color: var(--color-icon);
             margin-right: 12px;
             display: flex;
             align-items: center;
@@ -368,7 +380,6 @@
         .modal-content {
             background: #fff;
             border: 4px solid #000;
-            box-shadow: 8px 8px 0 #000;
             width: 520px;
             max-height: 80vh;
             display: flex;
@@ -381,7 +392,7 @@
             align-items: center;
             padding: 16px 20px;
             border-bottom: 4px solid #000;
-            background-color: #a3e635;
+            background-color: var(--color-modal-header);
         }
 
         .modal-header h2 {
@@ -432,13 +443,10 @@
             border: 3px solid #000;
             margin-bottom: 8px;
             background-color: #fff;
-            box-shadow: 3px 3px 0 #000;
-            transition: all 0.1s ease;
         }
 
         .all-achievement-row:hover {
-            transform: translate(1px, 1px);
-            box-shadow: 2px 2px 0 #000;
+            background-color: #f5f5f5;
         }
 
         .all-achievement-row.locked {
@@ -467,7 +475,7 @@
             text-align: right;
             width: 120px;
             font-weight: 700;
-            background-color: #bfdbfe;
+            background-color: #FFDB58;
             padding: 4px 8px;
             border: 2px solid #000;
         }
@@ -492,7 +500,6 @@
             padding: 20px;
             background-color: #fff;
             border: 4px solid #000;
-            box-shadow: 6px 6px 0 #000;
         }
 
         #heatmap {
@@ -514,29 +521,29 @@
         .day-cell {
             width: 14px;
             height: 14px;
-            background-color: #e5e5e5;
+            background-color: var(--heatmap-0);
             cursor: pointer;
             border: 2px solid #000;
         }
 
         .day-cell.level-0 {
-            background-color: #f5f5f5;
+            background-color: var(--heatmap-0);
         }
 
         .day-cell.level-1 {
-            background-color: #bef264;
+            background-color: var(--heatmap-1);
         }
 
         .day-cell.level-2 {
-            background-color: #84cc16;
+            background-color: var(--heatmap-2);
         }
 
         .day-cell.level-3 {
-            background-color: #65a30d;
+            background-color: var(--heatmap-3);
         }
 
         .day-cell.level-4 {
-            background-color: #3f6212;
+            background-color: var(--heatmap-4);
         }
 
         .day-cell:hover {
@@ -579,9 +586,8 @@
             margin-top: 20px;
             font-size: 13px;
             padding: 16px;
-            background-color: #fef3c7;
+            background-color: var(--color-day-detail);
             border: 3px solid #000;
-            box-shadow: 4px 4px 0 #000;
         }
 
         #day-detail:empty {
@@ -637,6 +643,214 @@
             .header-title {
                 font-size: 24px;
             }
+        }
+
+        /* 配色面板 */
+        #color-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100vh;
+            background: #1a1a1a;
+            color: #fff;
+            overflow-y: auto;
+            padding: 16px;
+            border-left: 4px solid #000;
+            z-index: 9999;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        #color-panel.open {
+            transform: translateX(0);
+        }
+        
+        #color-panel-toggle {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            background: #000;
+            color: #fff;
+            border: 3px solid #000;
+            padding: 12px 8px;
+            cursor: pointer;
+            font-weight: 900;
+            font-size: 14px;
+            writing-mode: vertical-rl;
+            z-index: 9998;
+            transition: right 0.3s ease;
+        }
+        
+        #color-panel-toggle.shifted {
+            right: 280px;
+        }
+        
+        #color-panel h3 {
+            font-size: 16px;
+            margin: 0 0 16px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .color-group {
+            margin-bottom: 16px;
+        }
+        
+        .color-group-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .color-item {
+            margin-bottom: 12px;
+            opacity: 0.5;
+            transition: opacity 0.15s ease;
+        }
+        
+        .color-item:hover {
+            opacity: 1;
+        }
+        
+        .color-item-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            gap: 8px;
+        }
+        
+        .color-item label {
+            flex: 1;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .color-preview {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #000;
+        }
+        
+        .color-item .hex {
+            font-family: monospace;
+            font-size: 10px;
+            color: #888;
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 2px 4px;
+            width: 65px;
+            cursor: text;
+        }
+        
+        .color-item .hex:hover,
+        .color-item .hex:focus {
+            border-color: #444;
+            background: #222;
+            outline: none;
+            color: #fff;
+        }
+        
+        .hsl-sliders {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .slider-row span {
+            font-size: 10px;
+            color: #666;
+            width: 14px;
+        }
+        
+        .slider-row input[type="range"] {
+            flex: 1;
+            height: 12px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #333;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #000;
+        }
+        
+        .slider-row input.h-slider {
+            background: linear-gradient(to right, 
+                hsl(0,100%,50%), hsl(60,100%,50%), hsl(120,100%,50%), 
+                hsl(180,100%,50%), hsl(240,100%,50%), hsl(300,100%,50%), hsl(360,100%,50%));
+        }
+        
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .slider-row .slider-value {
+            font-family: monospace;
+            font-size: 10px;
+            color: #888;
+            width: 36px;
+            text-align: right;
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 2px;
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        
+        .slider-row .slider-value::-webkit-outer-spin-button,
+        .slider-row .slider-value::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .slider-row .slider-value:hover,
+        .slider-row .slider-value:focus {
+            border-color: #444;
+            background: #222;
+            outline: none;
+            color: #fff;
+        }
+        
+        #export-colors, #reset-colors, #import-colors {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 3px solid #000;
+            cursor: pointer;
+        }
+        
+        #export-colors {
+            background: #90EE90;
+            color: #000;
+        }
+        
+        #import-colors {
+            background: #FFD966;
+            color: #000;
+        }
+        
+        #reset-colors {
+            background: #FF6B6B;
+            color: #000;
         }
     </style>
 </head>
@@ -695,6 +909,16 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 配色面板 -->
+    <button id="color-panel-toggle">🎨 配色</button>
+    <div id="color-panel">
+        <h3>🎨 配色调节器 (HSL)</h3>
+        <div id="color-items-container"></div>
+        <button id="export-colors">导出配色方案</button>
+        <button id="import-colors">从配色方案恢复</button>
+        <button id="reset-colors">重置为默认</button>
     </div>
 
     <script>
@@ -1371,11 +1595,310 @@
         }
     }
 
+    function setupAvatarUpload() {
+        // Add your avatar upload logic here
+    }
+
     buildYearButtons();
     renderYear(currentYear);
     setupAchievementsUI();
     setupAvatarUpload();
 })();
+    </script>
+    
+    <!-- 配色面板脚本 (HSL滑块) -->
+    <script>
+    (function() {
+        const colorConfig = [
+            { group: '页面', items: [
+                { var: '--bg-page', label: '背景色', default: '#F7F2C4' }
+            ]},
+            { group: '主要模块', items: [
+                { var: '--color-header', label: '页头', default: '#34C759' },
+                { var: '--color-avatar-wrapper', label: '头像区', default: '#FF69B4' },
+                { var: '--color-avatar', label: '头像', default: '#FFDB58' },
+                { var: '--color-achievements', label: '成就区', default: '#A388EE' },
+                { var: '--color-button', label: '按钮', default: '#FFDB58' },
+                { var: '--color-icon', label: '成就图标', default: '#FFA07A' },
+                { var: '--color-day-detail', label: '日期详情', default: '#FDFD96' }
+            ]},
+            { group: '统计卡片', items: [
+                { var: '--color-card1', label: '卡片1', default: '#FFA07A' },
+                { var: '--color-card2', label: '卡片2', default: '#7DF9FF' },
+                { var: '--color-card3', label: '卡片3', default: '#90EE90' },
+                { var: '--color-card4', label: '卡片4', default: '#FF6B6B' }
+            ]},
+            { group: '热力图色阶', items: [
+                { var: '--heatmap-0', label: 'Level 0', default: '#f5f5f5' },
+                { var: '--heatmap-1', label: 'Level 1', default: '#FFA07A' },
+                { var: '--heatmap-2', label: 'Level 2', default: '#FF7A5C' },
+                { var: '--heatmap-3', label: 'Level 3', default: '#FF6B6B' },
+                { var: '--heatmap-4', label: 'Level 4', default: '#FF4911' }
+            ]}
+        ];
+
+        const CACHE_KEY = 'neo_brutalism_colors';
+
+        // 缓存读写
+        function loadCache() {
+            try {
+                return JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
+            } catch { return {}; }
+        }
+
+        function saveCache(colors) {
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(colors));
+            } catch {}
+        }
+
+        function clearCache() {
+            try {
+                localStorage.removeItem(CACHE_KEY);
+            } catch {}
+        }
+
+        const cachedColors = loadCache();
+
+        // HEX <-> HSL 转换
+        function hexToHsl(hex) {
+            let r = parseInt(hex.slice(1,3), 16) / 255;
+            let g = parseInt(hex.slice(3,5), 16) / 255;
+            let b = parseInt(hex.slice(5,7), 16) / 255;
+            let max = Math.max(r,g,b), min = Math.min(r,g,b);
+            let h, s, l = (max + min) / 2;
+            if (max === min) { h = s = 0; }
+            else {
+                let d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch(max) {
+                    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                    case g: h = ((b - r) / d + 2) / 6; break;
+                    case b: h = ((r - g) / d + 4) / 6; break;
+                }
+            }
+            return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+        }
+
+        function hslToHex(h, s, l) {
+            s /= 100; l /= 100;
+            const a = s * Math.min(l, 1 - l);
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+        }
+
+        const container = document.getElementById('color-items-container');
+        const colorItems = [];
+
+        // 生成 UI
+        colorConfig.forEach(group => {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'color-group';
+            groupDiv.innerHTML = `<div class="color-group-title">${group.group}</div>`;
+
+            group.items.forEach(item => {
+                // 优先使用缓存颜色
+                const hex = cachedColors[item.var] || getComputedStyle(document.documentElement).getPropertyValue(item.var).trim() || item.default;
+                document.documentElement.style.setProperty(item.var, hex);
+                const hsl = hexToHsl(hex);
+
+                const div = document.createElement('div');
+                div.className = 'color-item';
+                div.innerHTML = `
+                    <div class="color-item-header">
+                        <label>${item.label}</label>
+                        <div class="color-preview" style="background:${hex}"></div>
+                        <input type="text" class="hex" value="${hex}" maxlength="7">
+                    </div>
+                    <div class="hsl-sliders">
+                        <div class="slider-row">
+                            <span>H</span>
+                            <input type="range" class="h-slider" min="0" max="360" value="${hsl.h}">
+                            <input type="number" class="slider-value" value="${hsl.h}" min="0" max="360">
+                        </div>
+                        <div class="slider-row">
+                            <span>S</span>
+                            <input type="range" class="s-slider" min="0" max="100" value="${hsl.s}">
+                            <input type="number" class="slider-value" value="${hsl.s}" min="0" max="100">
+                        </div>
+                        <div class="slider-row">
+                            <span>L</span>
+                            <input type="range" class="l-slider" min="0" max="100" value="${hsl.l}">
+                            <input type="number" class="slider-value" value="${hsl.l}" min="0" max="100">
+                        </div>
+                    </div>
+                `;
+
+                const hSlider = div.querySelector('.h-slider');
+                const sSlider = div.querySelector('.s-slider');
+                const lSlider = div.querySelector('.l-slider');
+                const preview = div.querySelector('.color-preview');
+                const hexInput = div.querySelector('.hex');
+                const values = div.querySelectorAll('.slider-value');
+
+                // 更新滑块渐变背景
+                const updateSliderGradients = (h, s, l) => {
+                    sSlider.style.background = `linear-gradient(to right, hsl(${h},0%,${l}%), hsl(${h},100%,${l}%))`;
+                    lSlider.style.background = `linear-gradient(to right, hsl(${h},${s}%,0%), hsl(${h},${s}%,50%), hsl(${h},${s}%,100%))`;
+                };
+
+                // 保存到缓存
+                const persistToCache = (hexVal) => {
+                    cachedColors[item.var] = hexVal;
+                    saveCache(cachedColors);
+                };
+
+                // 从滑块更新颜色
+                const updateFromSliders = () => {
+                    const h = +hSlider.value, s = +sSlider.value, l = +lSlider.value;
+                    const newHex = hslToHex(h, s, l);
+                    document.documentElement.style.setProperty(item.var, newHex);
+                    preview.style.background = newHex;
+                    hexInput.value = newHex;
+                    values[0].value = h;
+                    values[1].value = s;
+                    values[2].value = l;
+                    updateSliderGradients(h, s, l);
+                    persistToCache(newHex);
+                };
+
+                // 从HEX输入更新
+                const updateFromHex = () => {
+                    let val = hexInput.value.trim();
+                    if (!val.startsWith('#')) val = '#' + val;
+                    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                        const hsl = hexToHsl(val);
+                        hSlider.value = hsl.h;
+                        sSlider.value = hsl.s;
+                        lSlider.value = hsl.l;
+                        values[0].value = hsl.h;
+                        values[1].value = hsl.s;
+                        values[2].value = hsl.l;
+                        document.documentElement.style.setProperty(item.var, val.toUpperCase());
+                        preview.style.background = val;
+                        hexInput.value = val.toUpperCase();
+                        updateSliderGradients(hsl.h, hsl.s, hsl.l);
+                        persistToCache(val.toUpperCase());
+                    }
+                };
+
+                // 从HSL数值输入更新
+                const updateFromValues = () => {
+                    hSlider.value = Math.max(0, Math.min(360, +values[0].value || 0));
+                    sSlider.value = Math.max(0, Math.min(100, +values[1].value || 0));
+                    lSlider.value = Math.max(0, Math.min(100, +values[2].value || 0));
+                    updateFromSliders();
+                };
+
+                // 初始化渐变
+                updateSliderGradients(hsl.h, hsl.s, hsl.l);
+
+                hSlider.addEventListener('input', updateFromSliders);
+                sSlider.addEventListener('input', updateFromSliders);
+                lSlider.addEventListener('input', updateFromSliders);
+                hexInput.addEventListener('change', updateFromHex);
+                values.forEach(v => v.addEventListener('change', updateFromValues));
+
+                colorItems.push({ var: item.var, default: item.default, label: item.label, hSlider, sSlider, lSlider, preview, hexInput, values, updateSliderGradients });
+                groupDiv.appendChild(div);
+            });
+
+            container.appendChild(groupDiv);
+        });
+
+        // 开关面板
+        const panel = document.getElementById('color-panel');
+        const toggle = document.getElementById('color-panel-toggle');
+        toggle.addEventListener('click', () => {
+            panel.classList.toggle('open');
+            toggle.classList.toggle('shifted');
+        });
+
+        // 导出
+        document.getElementById('export-colors').addEventListener('click', () => {
+            const colors = {};
+            colorItems.forEach(ci => {
+                colors[ci.label] = ci.hexInput.value;
+            });
+            const json = JSON.stringify(colors, null, 2);
+            navigator.clipboard.writeText(json).then(() => {
+                alert('配色方案已复制到剪贴板！\n\n' + json);
+            });
+        });
+
+        // 从 JSON 导入
+        document.getElementById('import-colors').addEventListener('click', () => {
+            const input = prompt('请粘贴之前导出的配色 JSON：', '');
+            if (!input) return;
+
+            let data;
+            try {
+                data = JSON.parse(input);
+            } catch (e) {
+                alert('JSON 解析失败，请确认内容是否完整。');
+                return;
+            }
+
+            if (!data || typeof data !== 'object' || Array.isArray(data)) {
+                alert('格式不正确，应为 { "标签": "#RRGGBB" } 结构。');
+                return;
+            }
+
+            let applied = 0;
+            colorItems.forEach(ci => {
+                const raw = data[ci.label];
+                if (!raw || typeof raw !== 'string') return;
+
+                let val = raw.trim();
+                if (!val.startsWith('#')) val = '#' + val;
+                if (!/^#[0-9A-Fa-f]{6}$/.test(val)) return;
+                val = val.toUpperCase();
+
+                const hsl = hexToHsl(val);
+                ci.hSlider.value = hsl.h;
+                ci.sSlider.value = hsl.s;
+                ci.lSlider.value = hsl.l;
+                ci.preview.style.background = val;
+                ci.hexInput.value = val;
+                ci.values[0].value = hsl.h;
+                ci.values[1].value = hsl.s;
+                ci.values[2].value = hsl.l;
+                ci.updateSliderGradients(hsl.h, hsl.s, hsl.l);
+                document.documentElement.style.setProperty(ci.var, val);
+                cachedColors[ci.var] = val;
+                applied++;
+            });
+
+            if (applied > 0) {
+                saveCache(cachedColors);
+                alert('已从 JSON 恢复配色（更新了 ' + applied + ' 项）。');
+            } else {
+                alert('未找到可应用的配色条目，请检查标签是否匹配。');
+            }
+        });
+
+        // 重置
+        document.getElementById('reset-colors').addEventListener('click', () => {
+            clearCache();
+            colorItems.forEach(ci => {
+                const hsl = hexToHsl(ci.default);
+                ci.hSlider.value = hsl.h;
+                ci.sSlider.value = hsl.s;
+                ci.lSlider.value = hsl.l;
+                ci.preview.style.background = ci.default;
+                ci.hexInput.value = ci.default.toUpperCase();
+                ci.values[0].value = hsl.h;
+                ci.values[1].value = hsl.s;
+                ci.values[2].value = hsl.l;
+                ci.updateSliderGradients(hsl.h, hsl.s, hsl.l);
+                document.documentElement.style.setProperty(ci.var, ci.default);
+            });
+        });
+    })();
     </script>
 </body>
 

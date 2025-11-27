@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>BIT 吃饭年度报告 - ACID MODE</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@700;900&family=JetBrains+Mono:wght@800&display=swap');
+
+        :root {
+            --bg-color: #0a0a0a;
+            --acid-green: #CCFF00;
+            --hot-pink: #FF0055;
+            --cyan: #00FFFF;
+            --card-white: #F0F0F0;
+            --border: 3px solid #000;
+            --shadow: 6px 6px 0px #000;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--acid-green); /* 激进的背景色 */
+            background-image: 
+                radial-gradient(#000 1px, transparent 1px),
+                linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 20px 20px, 100px 100px;
+            font-family: 'Noto Sans SC', sans-serif;
+            color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- 容器：像一张贴在墙上的海报 --- */
+        .poster-frame {
+            width: 100%;
+            max-width: 1100px;
+            height: 750px;
+            background: #fff;
+            border: var(--border);
+            box-shadow: 12px 12px 0px rgba(0,0,0,0.8);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            transform: rotate(-1deg); /* 微微倾斜 */
+        }
+
+        /* 装饰性胶带 */
+        .tape {
+            position: absolute;
+            width: 120px;
+            height: 40px;
+            background: rgba(255,255,255,0.4);
+            border-left: 2px dashed rgba(0,0,0,0.1);
+            border-right: 2px dashed rgba(0,0,0,0.1);
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%) rotate(2deg);
+            z-index: 100;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 30px;
+            border-bottom: var(--border);
+            padding-bottom: 10px;
+        }
+
+        .huge-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 48px;
+            font-weight: 900;
+            line-height: 0.8;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+        }
+        .huge-title span { color: var(--hot-pink); }
+
+        .meta-info {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            text-align: right;
+            font-weight: 700;
+            background: #000;
+            color: var(--acid-green);
+            padding: 4px 8px;
+        }
+
+        /* --- 主体布局 --- */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr; /* 左大右小 */
+            gap: 40px;
+            flex: 1;
+            margin-bottom: 20px;
+        }
+
+        /* 左侧 Hero */
+        .profile-section {
+            background: var(--card-white);
+            border: var(--border);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: relative;
+        }
+
+        .profile-header {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .avatar-frame {
+            width: 140px;
+            height: 140px;
+            background: #000;
+            border: var(--border);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* 名字区域 */
+        .name-block { flex: 1; }
+        .name-label {
+            font-size: 12px;
+            background: #000;
+            color: #fff;
+            display: inline-block;
+            padding: 2px 6px;
+            margin-bottom: 4px;
+            font-family: 'Noto Sans SC', sans-serif; /* 中文 */
+            font-weight: 700;
+        }
+        .user-name {
+            font-size: 42px;
+            font-weight: 900;
+            line-height: 1;
+            background: var(--acid-green);
+            border: 2px solid #000;
+            padding: 4px 8px;
+            display: inline-block;
+            transform: rotate(-2deg);
+            margin-bottom: 10px;
+        }
+        
+        /* 徽章展示架 */
+        .badges-rack {
+            margin-top: auto;
+            background: #e0e0e0;
+            border: var(--border);
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            position: relative;
+        }
+        .badges-rack::before {
+            content: '年度成就';
+            position: absolute;
+            top: -10px; left: 10px;
+            background: #000; color: #fff;
+            font-size: 12px; padding: 3px 8px;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-weight: 500;
+        }
+
+        .badge-item {
+            width: 60px; height: 60px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 3px 3px 0 #000;
+            cursor: help;
+            transition: transform 0.1s;
+        }
+        .badge-item:hover { transform: scale(1.1) rotate(5deg); }
+
+        /* 右侧 Stack */
+        .card-stack-wrapper {
+            position: relative;
+            perspective: 1000px;
+            /* 稍微留点空间给卡片乱动 */
+            padding: 20px 0; 
+        }
+
+        /* 卡片基础样式 */
+        .stat-card {
+            position: absolute;
+            top: 0; right: 0;
+            width: 100%;
+            height: 240px;
+            border: var(--border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+        }
+
+        /* --- 颜色类 (固定) --- */
+        .stat-card.color-pink { background: #ea1197; color: #fff; }
+        .stat-card.color-white { background: #ffffff; color: #000; }
+        .stat-card.color-cyan { background: #00ffff; color: #000; }
+
+        /* 针对不同颜色的边框适配 */
+        .stat-card.color-pink .stat-label { border-bottom-color: #fff; }
+        .stat-card.color-white .stat-label { border-bottom-color: #000; }
+        .stat-card.color-cyan .stat-label { border-bottom-color: #000; }
+
+        /* --- 位置类 (动态) --- */
+        /* Top: 最上层 */
+        .stat-card.pos-top { 
+            z-index: 3; 
+            transform: rotate(2deg); 
+        }
+        /* Mid: 中间层 */
+        .stat-card.pos-mid { 
+            z-index: 2; 
+            transform: rotate(-3deg) translate(10px, 10px); 
+        }
+        /* Bot: 最底层 */
+        .stat-card.pos-bot { 
+            z-index: 1; 
+            transform: rotate(1deg) translate(20px, 20px); 
+        }
+
+        /* 点击交互时的类 */
+        .stat-card:active {
+            transform: scale(0.98) rotate(0deg) !important;
+        }
+
+        .stat-label {
+            font-family: 'JetBrains Mono', 'Noto Sans SC', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            border-bottom: 3px solid #000;
+            padding-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-value {
+            font-size: 72px;
+            font-family: 'JetBrains Mono'; /* 数字还是用 Mono 帅 */
+            font-weight: 900;
+            line-height: 0.9;
+            letter-spacing: -3px;
+        }
+        .stat-desc { 
+            font-size: 16px; /* 稍微大一点适合中文 */
+            font-weight: 700; 
+            line-height: 1.4; 
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        /* --- 底部：Rhythm (回归绿色系) --- */
+        .rhythm-zone {
+            height: 180px;
+            border: var(--border);
+            background: #000;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 20px 20px 20px;
+        }
+
+        .rhythm-zone::before { display: none; }
+
+        .rhythm-tag {
+            position: absolute;
+            top: -16px; 
+            right: -10px; 
+            left: auto;
+            background: #CCFF00;
+            color: #000;
+            font-family: 'JetBrains Mono';
+            font-weight: 800;
+            padding: 2px 6px;
+            font-size: 10px;
+            z-index: 10;
+            border: 1.5px solid #000;
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            z-index: 1;
+        }
+
+        .rhythm-bar {
+            flex: 1;
+            background: #333;
+            min-height: 4px;
+            border-top: none; 
+            transition: height 0.3s ease;
+        }
+        
+        /* 绿色系高亮 */
+        .rhythm-bar.l1 { background: #1a1a1a; }
+        .rhythm-bar.l2 { background: #14532d; } /* 暗绿 */
+        .rhythm-bar.l3 { background: #8cad0c; } /* 绿 */
+        .rhythm-bar.l4 { background: #CCFF00; } /* 荧光青 */
+        .rhythm-bar.l5 { background: #00FFA3; box-shadow: 0 0 10px rgba(204, 255, 0, 0.5); } /* 酸性绿+微光 */
+
+        /* --- 贴纸装饰 --- */
+        .sticker {
+            position: absolute;
+            z-index: 50;
+            pointer-events: none;
+        }
+        .sticker-scan {
+            bottom: 20px; right: -20px;
+            background: #fff;
+            border: 2px solid #000;
+            padding: 5px;
+            transform: rotate(-10deg);
+        }
+        .barcode {
+            height: 30px;
+            width: 100px;
+            background: repeating-linear-gradient(
+                90deg,
+                #000,
+                #000 2px,
+                #fff 2px,
+                #fff 4px
+            );
+        }
+
+        /* 隐藏文件上传 */
+        #file-upload { display: none; }
+
+    </style>
+</head>
+<body>
+
+    <div class="poster-frame">
+        <div class="tape"></div>
+        
+        <!-- 顶部标题 -->
+        <div class="top-bar">
+            <div class="huge-title">
+                BIT<br>
+                EAT<span>2025</span>
+            </div>
+            <div class="meta-info">
+                EATBIT.TOP
+            </div>
+        </div>
+
+        <!-- 中间两栏 -->
+        <div class="content-grid">
+            
+            <!-- 左侧：个人档案 -->
+            <div class="profile-section">
+                <div class="profile-header">
+                    <div class="avatar-frame" onclick="document.getElementById('file-upload').click()">
+                        <img src="https://ui-avatars.com/api/?name=R&background=CCFF00&color=000&size=200" id="avatar-img">
+                        <input type="file" id="file-upload" accept="image/*">
+                    </div>
+                    <div class="name-block">
+                        <div class="name-label">个人档案</div><br>
+                        <div class="user-name" contenteditable="true">LYRAINE</div>
+                        <div style="font-weight: 700; color: #666;">#BIT EATER</div>
+                    </div>
+                </div>
+
+                <div class="badges-rack" id="badges-rack">
+                    <!-- JS Generate -->
+                </div>
+
+                <!-- 装饰性贴纸 -->
+                <div style="position: absolute; bottom: 80px; right: 20px; transform: rotate(15deg); background: #000; color: #fff; padding: 5px 10px; font-weight: 600; font-size: 14px;">
+                    查看全部
+                </div>
+            </div>
+
+            <!-- 右侧：卡片堆叠 -->
+            <div class="card-stack-wrapper" id="card-stack">
+                <!-- Cards injected via JS -->
+            </div>
+        </div>
+
+        <!-- 底部：Rhythm -->
+        <div class="rhythm-zone">
+            <div class="rhythm-tag">/// FREQ_VISUALIZER</div>
+            <div class="bar-container" id="rhythm-container">
+                <!-- Bars injected via JS -->
+            </div>
+        </div>
+
+        <!-- 装饰条形码 -->
+        <div class="sticker sticker-scan">
+            <div class="barcode"></div>
+            <div style="font-size: 8px; text-align: center; font-family: monospace;">BIT-2025-EAT</div>
+        </div>
+
+    </div>
+
+    <script>
+        /* --- Logic --- */
+        
+        // 1. Card Stack Logic
+        const stats = [
+            { title: "日常", value: "166", desc: "在学校里吃饭的日子", icon: "📅" },
+            { title: "开销", value: "3.1k", desc: "在学校花了这么多元钱", icon: "💸" },
+            { title: "用餐", value: "487", desc: "在学校吃了这么多顿饭", icon: "🍔" }
+        ];
+
+        const stackContainer = document.getElementById('card-stack');
+
+        function renderStack() {
+            stackContainer.innerHTML = '';
+            stats.forEach((stat, index) => {
+                const card = document.createElement('div');
+                
+                // 1. 分配永久颜色类 (只基于初始 index)
+                let colorClass = '';
+                if(index === 0) colorClass = 'color-pink';
+                else if(index === 1) colorClass = 'color-white';
+                else colorClass = 'color-cyan';
+                
+                card.className = `stat-card ${colorClass}`;
+                
+                card.innerHTML = `
+                    <div class="stat-label">
+                        <span>${stat.title}</span>
+                        <span>${stat.icon}</span>
+                    </div>
+                    <div class="stat-value">${stat.value}</div>
+                    <div class="stat-desc">${stat.desc}</div>
+                `;
+
+                card.onclick = () => {
+                    // 交互逻辑：点击最上层的卡片 (DOM中的最后一个)
+                    // 把它移到最底层 (DOM中的第一个)
+                    stackContainer.prepend(card);
+                    reassignClasses();
+                };
+
+                stackContainer.appendChild(card);
+            });
+        }
+
+        function reassignClasses() {
+            const cards = document.querySelectorAll('.stat-card');
+            const total = cards.length;
+            
+            cards.forEach((card, i) => {
+                // 移除所有旧的位置类
+                card.classList.remove('pos-top', 'pos-mid', 'pos-bot');
+                
+                // 重新分配位置类 (基于当前 DOM 顺序)
+                // DOM 最后一个元素在最上层
+                if (i === total - 1) card.classList.add('pos-top');
+                else if (i === total - 2) card.classList.add('pos-mid');
+                else card.classList.add('pos-bot');
+            });
+        }
+
+
+        // 2. Badges Logic
+        const badges = [
+            { icon: "⏰", name: "Early Bird" },
+            { icon: "🍗", name: "Big Meal" },
+            { icon: "🍲", name: "100 Days" },
+            { icon: "🔁", name: "Repeater" }
+        ];
+        
+        const badgeRack = document.getElementById('badges-rack');
+        badges.forEach(b => {
+            const el = document.createElement('div');
+            el.className = 'badge-item';
+            el.textContent = b.icon;
+            el.title = b.name;
+            badgeRack.appendChild(el);
+        });
+
+        // 3. Rhythm Logic (Green Style)
+        const rhythmContainer = document.getElementById('rhythm-container');
+        for(let i=0; i<60; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'rhythm-bar';
+            
+            // Random height
+            let h = Math.random() * 100;
+            
+            // Assign Level
+            if (h > 80) bar.classList.add('l5');
+            else if (h > 60) bar.classList.add('l4');
+            else if (h > 40) bar.classList.add('l3');
+            else if (h > 20) bar.classList.add('l2');
+            else bar.classList.add('l1');
+            
+            bar.style.height = Math.max(10, h) + '%';
+            rhythmContainer.appendChild(bar);
+        }
+
+        // 4. Avatar Upload
+        const fileInput = document.getElementById('file-upload');
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    document.getElementById('avatar-img').src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Init
+        renderStack();
+        reassignClasses();
+
+    </script>
+</body>
+</html>
