@@ -26,10 +26,10 @@ export default {
             if (studentKey && salt) {
                 const base = `${salt}:${studentKey}`;
                 const fullHash = await sha256Hex(base);
-                id = fullHash.slice(0, 12); // 12 位十六进制 ID
+                id = fullHash.slice(0, 8); // 8 位十六进制 ID
             } else {
                 // 没有 student_key 时退回随机 ID，兼容旧客户端
-                id = crypto.randomUUID().replace(/-/g, "").slice(0, 12);
+                id = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
             }
 
             const key = `report:${id}`;
