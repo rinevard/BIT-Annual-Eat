@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 import hashlib
+import secrets
 import requests
 
 from achievements import evaluate_achievements
@@ -341,7 +342,7 @@ def build_daily_stats(records: list[dict]) -> dict:
     return normalized
 
 
-def save_html_report(records: list[dict], path: str, student_id: str | None = None, used_default_password: bool | None = None) -> None:
+def save_html_report(records: list[dict], path: str, student_id: str | None = None, used_default_password: bool | None = None) -> str:
     """生成包含年度吃饭饭力图的本地 HTML 报告。"""
 
     daily_stats = build_daily_stats(records)
@@ -364,6 +365,7 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
 
     data_json = json.dumps(daily_stats, ensure_ascii=False)
     ach_json = json.dumps(ach_state, ensure_ascii=False)
+    edit_pw = f"{secrets.randbelow(10000):04d}"
 
     html = (
         base_tpl
@@ -371,11 +373,14 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
         .replace("//__INLINE_SCRIPT__", script)
         .replace("__EAT_DATA__", data_json)
         .replace("__ACH_STATE__", ach_json)
+        .replace("__EDIT_PW__", edit_pw)
     )
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write(html)
+
+    return edit_pw
 
 
 def upload_report(html_path: str, student_key: str | None = None) -> str | None:
@@ -496,13 +501,13 @@ def main() -> None:
         print(f"总消费金额: {total_amount:.2f} 元")
 
         used_default_password = cardpwd == "123456"
-        save_html_report(
+        edit_pw = save_html_report(
             records,
             html_report_path,
             student_id=idserial,
             used_default_password=used_default_password,
         )
-        print(f"已生成吃饭报告: {html_report_path}")
+        print(f"\n已生成网页版报告: {html_report_path}，可以用浏览器在本地查看。")
 
         choice = input("\n是否上传报告到 eatbit.top 生成分享链接？(Y/N): ").strip().lower()
         if choice == "y":
@@ -511,6 +516,7 @@ def main() -> None:
             url = upload_report(html_report_path, student_key=student_key)
             if url:
                 print(f"上传成功！分享链接: {url}")
+                print(f"编辑模式链接（请勿分享给他人）: {url}#pw={edit_pw}")
             else:
                 print("上传失败，请稍后重试或检查网络连接。")
     except Exception as exc:  # noqa: BLE001

@@ -6,7 +6,16 @@
     const detail = document.getElementById("day-detail");
 
     const IS_CLOUD = window.location.hostname === "eatbit.top";
-    const HAS_PW_HASH = (window.location.hash || "").toLowerCase().includes("#pw=");
+
+    let HAS_PW_HASH = false;
+    try {
+        const hash = window.location.hash || "";
+        const m = hash.match(/#pw=(\d{4})/i);
+        if (m && typeof EDIT_PW === "string" && m[1] === EDIT_PW) {
+            HAS_PW_HASH = true;
+        }
+    } catch (e) {
+    }
 
     // 标志 1：是否允许在页面上编辑（头像、标题、pin 等）
     // - 本地 HTML：始终可编辑但不可保存
