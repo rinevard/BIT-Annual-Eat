@@ -316,6 +316,11 @@
                 fileInput.value = "";
                 return;
             }
+            if (file.size && file.size > 300 * 1024) {
+                alert("头像图片大小不能超过 300 KB。你可以到 https://squoosh.app 压缩图片后再上传。");
+                fileInput.value = "";
+                return;
+            }
             const reader = new FileReader();
             reader.onload = (e) => {
                 const result = e.target && e.target.result;

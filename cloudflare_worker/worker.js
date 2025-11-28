@@ -5,6 +5,74 @@ async function sha256Hex(str) {
     return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * 从已保存的旧报告 HTML 中提取头像和标题，并将它们合并到这次上传的新 HTML 中。
+ *
+ * 要求：
+ * - oldHtml：之前存入 KV 的旧版报告 HTML，包含且只包含一个 `<div class="avatar">...</div>`
+ *   和一个 `<span id="user-title">...</span>` 结构。
+ * - newHtml：本次上传生成的新报告 HTML，同样应包含上述结构
+ * 
+ * 如果找不到这些标记，则直接返回 newHtml。
+ *
+ * @param {*} oldHtml  之前已经存入 KV 的旧 HTML 字符串
+ * @param {*} newHtml  本次上传的新 HTML 字符串
+ * @returns {*} 合并头像和标题后的 HTML 字符串
+ */
+function mergeAvatarAndTitle(oldHtml, newHtml) {
+    const AVATAR_MARKER = '<div class="avatar"';
+    const END_DIV = "</div>";
+
+    const USER_TITLE_MARKER = '<span id="user-title"';
+    const END_SPAN = "</span>";
+
+    let merged = newHtml;
+
+    try {
+        const avatarStartOld = oldHtml.indexOf(AVATAR_MARKER);
+        if (avatarStartOld !== -1) {
+            const avatarEndOld = oldHtml.indexOf(END_DIV, avatarStartOld);
+            const avatarStartNew = newHtml.indexOf(AVATAR_MARKER);
+            if (avatarEndOld !== -1 && avatarStartNew !== -1) {
+                const avatarEndNew = newHtml.indexOf(END_DIV, avatarStartNew);
+                if (avatarEndNew !== -1) {
+                    const oldAvatar = oldHtml.slice(avatarStartOld, avatarEndOld + END_DIV.length);
+                    merged =
+                        merged.slice(0, avatarStartNew) +
+                        oldAvatar +
+                        merged.slice(avatarEndNew + END_DIV.length);
+                }
+            }
+        }
+
+        const spanStartOld = oldHtml.indexOf(USER_TITLE_MARKER);
+        const spanStartNew = merged.indexOf(USER_TITLE_MARKER);
+        if (spanStartOld !== -1 && spanStartNew !== -1) {
+            const oldInnerStart = oldHtml.indexOf(">", spanStartOld);
+            const oldInnerEnd = oldHtml.indexOf(END_SPAN, oldInnerStart);
+            const newInnerStart = merged.indexOf(">", spanStartNew);
+            const newInnerEnd = merged.indexOf(END_SPAN, newInnerStart);
+            if (
+                oldInnerStart !== -1 &&
+                oldInnerEnd !== -1 &&
+                newInnerStart !== -1 &&
+                newInnerEnd !== -1
+            ) {
+                const oldInner = oldHtml.slice(oldInnerStart + 1, oldInnerEnd);
+                const openTag = merged.slice(spanStartNew, newInnerStart + 1);
+                merged = 
+                    merged.slice(0, spanStartNew) + 
+                    openTag + oldInner + END_SPAN + 
+                    merged.slice(newInnerEnd + END_SPAN.length);
+            }
+        }
+    } catch (e) {
+        merged = newHtml;
+    }
+
+    return merged;
+}
+
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
@@ -34,8 +102,17 @@ export default {
 
             const key = `report:${id}`;
 
+            let finalHtml = html;
+            try {
+                const oldHtml = await env.REPORTS_KV.get(key);
+                if (oldHtml) {
+                    finalHtml = mergeAvatarAndTitle(oldHtml, html);
+                }
+            } catch (e) {
+            }
+
             // 存到 KV，过期时间最长一年（单位秒）
-            await env.REPORTS_KV.put(key, html, {
+            await env.REPORTS_KV.put(key, finalHtml, {
                 expirationTtl: 60 * 60 * 24 * 365,
             });
 
