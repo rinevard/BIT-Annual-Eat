@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>BIT 吃饭年度报告 - ACID MODE</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@700;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
 
         :root {
             --bg-color: #0a0a0a;
@@ -33,6 +33,10 @@
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+        body:has(.poster-frame:hover) {
+            background-color: #668000;
         }
 
         /* --- 容器：像一张贴在墙上的海报 --- */
@@ -42,12 +46,17 @@
             height: 750px;
             background: #fff;
             border: var(--border);
-            box-shadow: 12px 12px 0px rgba(0,0,0,0.8);
+            box-shadow: none;
             position: relative;
             display: flex;
             flex-direction: column;
             padding: 40px;
             transform: rotate(-1deg); /* 微微倾斜 */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .poster-frame:hover {
+            transform: rotate(-1deg) translateY(-8px);
+            box-shadow: 16px 20px 0px rgba(0,0,0,0.8);
         }
 
         /* 装饰性胶带 */
@@ -60,7 +69,7 @@
             border-right: 2px dashed rgba(0,0,0,0.1);
             top: -15px;
             left: 50%;
-            transform: translateX(-50%) rotate(2deg);
+            transform: translateX(-50%) rotate(1deg);
             z-index: 100;
             backdrop-filter: blur(2px);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -108,11 +117,16 @@
         .profile-section {
             background: var(--card-white);
             border: var(--border);
-            box-shadow: var(--shadow);
+            box-shadow: none;
             display: flex;
             flex-direction: column;
             padding: 24px;
             position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .profile-section:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
         }
 
         .profile-header {
@@ -142,17 +156,18 @@
             margin-bottom: 4px;
             font-family: 'Noto Sans SC', sans-serif; /* 中文 */
             font-weight: 700;
+            transform: translateZ(0);
+            will-change: transform;
         }
         .user-name {
             font-size: 42px;
             font-weight: 900;
             line-height: 1;
-            background: var(--acid-green);
+            background: #CCFF00;
             border: 2px solid #000;
             padding: 4px 8px;
             display: inline-block;
-            transform: rotate(-2deg);
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
         
         /* 徽章展示架 */
@@ -173,6 +188,8 @@
             font-size: 12px; padding: 3px 8px;
             font-family: 'Noto Sans SC', sans-serif;
             font-weight: 500;
+            transform: translateZ(0);
+            will-change: transform;
         }
 
         .badge-item {
@@ -184,11 +201,14 @@
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            box-shadow: 3px 3px 0 #000;
+            box-shadow: none;
             cursor: help;
-            transition: transform 0.1s;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .badge-item:hover { transform: scale(1.1) rotate(5deg); }
+        .badge-item:hover { 
+            transform: scale(1.1) rotate(5deg); 
+            box-shadow: 3px 3px 0 #000;
+        }
 
         /* 右侧 Stack */
         .card-stack-wrapper {
@@ -199,6 +219,7 @@
         }
 
         /* 卡片基础样式 */
+        /* transform: translateZ(0) + will-change: transform 是为了避免 Chrome/Edge 上 CPU/GPU 渲染切换导致的闪烁 */
         .stat-card {
             position: absolute;
             top: 0; right: 0;
@@ -211,6 +232,8 @@
             justify-content: space-between;
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
+            transform: translateZ(0);
+            will-change: transform;
         }
 
         /* --- 颜色类 (固定) --- */
@@ -224,25 +247,25 @@
         .stat-card.color-cyan .stat-label { border-bottom-color: #000; }
 
         /* --- 位置类 (动态) --- */
-        /* Top: 最上层 */
         .stat-card.pos-top { 
             z-index: 3; 
             transform: rotate(2deg); 
         }
-        /* Mid: 中间层 */
+        .stat-card.pos-top:hover {
+            transform: rotate(0deg) translateY(-4px);
+        }
         .stat-card.pos-mid { 
             z-index: 2; 
             transform: rotate(-3deg) translate(10px, 10px); 
         }
-        /* Bot: 最底层 */
         .stat-card.pos-bot { 
             z-index: 1; 
             transform: rotate(1deg) translate(20px, 20px); 
         }
 
-        /* 点击交互时的类 */
+        /* 点击交互 */
         .stat-card:active {
-            transform: scale(0.98) rotate(0deg) !important;
+            transform: scale(0.98) rotate(4deg) !important;
         }
 
         /* 卡片飞出动画 */
@@ -258,7 +281,7 @@
 
         .stat-label {
             font-family: 'JetBrains Mono', 'Noto Sans SC', sans-serif;
-            font-weight: 900;
+            font-weight: 700;
             text-transform: uppercase;
             border-bottom: 3px solid #000;
             padding-bottom: 5px;
@@ -275,7 +298,7 @@
         }
         .stat-desc { 
             font-size: 16px; /* 稍微大一点适合中文 */
-            font-weight: 700; 
+            font-weight: 600; 
             line-height: 1.4; 
             font-family: 'Noto Sans SC', sans-serif;
         }
@@ -361,7 +384,7 @@
 <body>
 
     <div class="poster-frame">
-        <div class="tape"></div>
+        <!-- <div class="tape"></div> -->
         
         <!-- 顶部标题 -->
         <div class="top-bar">
@@ -396,7 +419,7 @@
                 </div>
 
                 <!-- 装饰性贴纸 -->
-                <div style="position: absolute; bottom: 85px; right: 19px; transform: rotate(15deg); background: #000; color: #fff; padding: 5px 10px; font-weight: 600; font-size: 14px;">
+                <div style="position: absolute; bottom: 85px; right: 19px; transform: rotate(15deg) translateZ(0); will-change: transform; background: #000; color: #fff; padding: 5px 10px; font-weight: 600; font-size: 14px;">
                     查看全部
                 </div>
             </div>
@@ -434,9 +457,9 @@
         
         // 1. Card Stack Logic
         const stats = [
-            { title: "日常", value: "166", desc: "在学校里吃饭的日子", icon: "📅" },
-            { title: "开销", value: "3.1k", desc: "在学校花了这么多元钱", icon: "💸" },
-            { title: "用餐", value: "487", desc: "在学校吃了这么多顿饭", icon: "🍔" }
+            { title: "开销", value: "3.1k", desc: "在学校花了这么多元钱"},
+            { title: "用餐", value: "487", desc: "在学校吃了这么多顿饭"},
+            { title: "日常", value: "166", desc: "在学校里吃饭的日子"},
         ];
 
         const stackContainer = document.getElementById('card-stack');
@@ -448,16 +471,15 @@
                 
                 // 1. 分配永久颜色类 (只基于初始 index)
                 let colorClass = '';
-                if(index === 0) colorClass = 'color-pink';
-                else if(index === 1) colorClass = 'color-white';
-                else colorClass = 'color-cyan';
+                if(index === 0) colorClass = 'color-cyan';
+                else if(index === 1) colorClass = 'color-pink';
+                else colorClass = 'color-white';
                 
                 card.className = `stat-card ${colorClass}`;
                 
                 card.innerHTML = `
                     <div class="stat-label">
                         <span>${stat.title}</span>
-                        <span>${stat.icon}</span>
                     </div>
                     <div class="stat-value">${stat.value}</div>
                     <div class="stat-desc">${stat.desc}</div>
