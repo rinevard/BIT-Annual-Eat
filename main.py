@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import hashlib
 import secrets
 import requests
+from PIL import Image, ImageDraw, ImageFont
 
 from achievements import evaluate_achievements
 
@@ -183,14 +184,131 @@ def _format_merchant_label(name: str) -> str:
             return name + "（东）"
     return name
 
+_FONT_CANDIDATES = [
+    "simhei.ttf",
+    "msyh.ttc",
+    "msyh.ttf",
+    "simsun.ttc",
+    "simsun.ttf",
+]
+
+
+_FONT_CACHE: dict[int, ImageFont.ImageFont] = {}
+
+
+def _load_font(size: int) -> ImageFont.ImageFont:
+    font = _FONT_CACHE.get(size)
+    if font is not None:
+        return font
+
+    for name in _FONT_CANDIDATES:
+        try:
+            font = ImageFont.truetype(name, size)
+            _FONT_CACHE[size] = font
+            return font
+        except OSError:
+            continue
+
+    font = ImageFont.load_default()
+    _FONT_CACHE[size] = font
+    return font
+
+
+def _save_horizontal_bar_chart(
+    labels: list[str],
+    values: list[float],
+    path: str,
+    title: str,
+    xlabel: str,
+    integer_values: bool = False,
+) -> None:
+    if not labels or not values:
+        return
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    width = 1200
+    left_margin = 260
+    right_margin = 160
+    top_margin = 80
+    bottom_margin = 80
+    bar_height = 24
+    bar_spacing = 12
+
+    total_bar_area = len(labels) * (bar_height + bar_spacing) - bar_spacing
+    height = max(400, top_margin + total_bar_area + bottom_margin)
+
+    img = Image.new("RGB", (width, height), "white")
+    draw = ImageDraw.Draw(img)
+
+    title_font = _load_font(28)
+    label_font = _load_font(18)
+    value_font = _load_font(16)
+    axis_font = _load_font(16)
+
+    # 标题
+    title_bbox = draw.textbbox((0, 0), title, font=title_font)
+    title_x = (width - (title_bbox[2] - title_bbox[0])) / 2     # 水平居中
+    title_y = 20
+    draw.text((title_x, title_y), title, fill="black", font=title_font)
+
+    # x 轴下面的标签
+    xlabel_bbox = draw.textbbox((0, 0), xlabel, font=axis_font)
+    xlabel_x = (width - (xlabel_bbox[2] - xlabel_bbox[0])) / 2
+    xlabel_y = height - bottom_margin + 45
+    draw.text((xlabel_x, xlabel_y), xlabel, fill="black", font=axis_font)
+
+    # 我们用 val / max_val * usable_width 计算柱子长度, 需要 max_val 大于 0
+    max_val = max(values) if values else 0.0
+    if max_val <= 0:
+        img.save(path, format="PNG")
+        return
+
+    # x 轴横线
+    usable_width = width - left_margin - right_margin
+    axis_y = height - bottom_margin + 10
+    draw.line((left_margin, axis_y, width - right_margin, axis_y), fill="black", width=1)
+
+    # x 轴坐标
+    num_ticks = 5
+    for i in range(num_ticks + 1):
+        x = left_margin + usable_width * i / num_ticks
+        draw.line((x, axis_y, x, axis_y + 5), fill="black", width=1)    # 竖直刻度线
+        tick_val = max_val * i / num_ticks
+        tick_str = f"{tick_val:.0f}" if max_val >= 10 else f"{tick_val:.2f}"
+        tick_bbox = draw.textbbox((0, 0), tick_str, font=axis_font)
+        tick_x = x - (tick_bbox[2] - tick_bbox[0]) / 2
+        tick_y = axis_y + 8
+        draw.text((tick_x, tick_y), tick_str, fill="black", font=axis_font)
+
+    current_y = top_margin
+    bar_color = (51, 122, 183)
+
+    # 商家名和柱子
+    for label, value in zip(labels, values):
+        bar_len = 0 if value <= 0 else value / max_val * usable_width
+        y0 = current_y
+        y1 = current_y + bar_height
+
+        draw.rectangle((left_margin, y0, left_margin + bar_len, y1), fill=bar_color)
+
+        label_bbox = draw.textbbox((0, 0), label, font=label_font)
+        label_x = left_margin - 10 - (label_bbox[2] - label_bbox[0])
+        label_y = y0 + (bar_height - (label_bbox[3] - label_bbox[1])) / 2
+        draw.text((label_x, label_y), label, fill="black", font=label_font)
+
+        value_str = str(int(round(value))) if integer_values else f"{value:.2f}"
+        value_bbox = draw.textbbox((0, 0), value_str, font=value_font)
+        value_x = left_margin + bar_len + 8
+        value_y = y0 + (bar_height - (value_bbox[3] - value_bbox[1])) / 2
+        draw.text((value_x, value_y), value_str, fill="black", font=value_font)
+
+        current_y += bar_height + bar_spacing
+
+    img.save(path, format="PNG")
+
 
 def save_bar_chart(records: list[dict], path: str) -> None:
-    import matplotlib.pyplot as plt
-
-    # 设置中文字体和负号显示
-    plt.rcParams["font.sans-serif"] = ["SimHei", "Microsoft YaHei", "SimSun"]
-    plt.rcParams["axes.unicode_minus"] = False
-
     if not records:
         return
 
@@ -203,37 +321,16 @@ def save_bar_chart(records: list[dict], path: str) -> None:
     display_merchants = [_format_merchant_label(name) for name in merchants]
     amounts = [value for _, value in items]
 
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    plt.figure(figsize=(10, max(4, len(display_merchants) * 0.4)))
-    plt.barh(display_merchants, amounts)
-    plt.xlabel("消费金额（元）")
-    plt.title("吃饭消费总结")
-
-    # 在每个柱子右侧标注具体金额
-    max_amount = max(amounts or [0])
-    for idx, value in enumerate(amounts):
-        plt.text(
-            value + 0.01 * max_amount,
-            idx,
-            f"{value:.2f}",
-            va="center",
-        )
-
-    # 为了给右侧标注留出空间，适当放大 x 轴范围
-    plt.xlim(0, 1.2 * max_amount if max_amount > 0 else 1)
-
-    plt.gca().invert_yaxis()
-    plt.savefig(path, dpi=150, bbox_inches="tight")
+    _save_horizontal_bar_chart(
+        display_merchants,
+        amounts,
+        path,
+        title="吃饭消费总结",
+        xlabel="消费金额（元）",
+    )
 
 
 def save_count_chart(records: list[dict], path: str) -> None:
-    import matplotlib.pyplot as plt
-
-    # 设置中文字体和负号显示
-    plt.rcParams["font.sans-serif"] = ["SimHei", "Microsoft YaHei", "SimSun"]
-    plt.rcParams["axes.unicode_minus"] = False
-
     if not records:
         return
 
@@ -241,32 +338,19 @@ def save_count_chart(records: list[dict], path: str) -> None:
     for r in records:
         counts[r["mername"]] += 1
 
-    # 按次数从高到低排序
     items = sorted(counts.items(), key=lambda x: x[1], reverse=True)
     merchants = [name for name, _ in items]
     display_merchants = [_format_merchant_label(name) for name in merchants]
     times = [value for _, value in items]
 
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    plt.figure(figsize=(10, max(4, len(display_merchants) * 0.4)))
-    plt.barh(display_merchants, times)
-    plt.xlabel("消费次数（次）")
-    plt.title("吃饭次数统计")
-
-    max_times = max(times or [0])
-    for idx, value in enumerate(times):
-        plt.text(
-            value + 0.01 * max_times,
-            idx,
-            str(value),
-            va="center",
-        )
-
-    plt.xlim(0, 1.2 * max_times if max_times > 0 else 1)
-
-    plt.gca().invert_yaxis()
-    plt.savefig(path, dpi=150, bbox_inches="tight")
+    _save_horizontal_bar_chart(
+        display_merchants,
+        times,
+        path,
+        title="吃饭次数统计",
+        xlabel="消费次数（次）",
+        integer_values=True,
+    )
 
 
 def build_daily_stats(records: list[dict]) -> dict:
@@ -507,7 +591,7 @@ def main() -> None:
             student_id=idserial,
             used_default_password=used_default_password,
         )
-        print(f"\n已生成网页版报告: {html_report_path}，可以用浏览器在本地查看。")
+        print(f"\n已生成本地网页版报告: {html_report_path}。")
 
         choice = input("\n是否上传报告到 eatbit.top 生成分享链接？(Y/N): ").strip().lower()
         if choice == "y":
@@ -519,6 +603,8 @@ def main() -> None:
                 print(f"编辑模式链接（请勿分享给他人）: {url}#pw={edit_pw}")
             else:
                 print("上传失败，请稍后重试或检查网络连接。")
+        else:
+            print(f"可以打开 {html_report_path} 以本地查看报告。")
     except Exception as exc:  # noqa: BLE001
         print("发生错误:", exc)
     finally:
