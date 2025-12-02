@@ -175,3 +175,6 @@ cython_debug/
 .pypirc
 
 output/
+
+prototypes/images/
+prototypes/refs/
