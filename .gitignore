@@ -177,4 +177,5 @@ cython_debug/
 output/
 
 prototypes/images/
+prototypes/visual/images/
 prototypes/refs/
