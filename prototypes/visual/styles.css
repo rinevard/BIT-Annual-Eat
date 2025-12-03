@@ -204,15 +204,13 @@ body:not(.has-active-card) .poster-frame:hover {
     box-shadow: none;
     cursor: help;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border-radius: 50%;
     transform: rotate(-0deg);
 }
 
 .badge-item img {
     display: block;
-    width: 63px;
-    height: 63px;
-    border-radius: 50%;
+    width: 60px;
+    height: 60px;
     border: 2px solid #000;
 }
 
