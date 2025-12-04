@@ -629,7 +629,7 @@ body:not(.has-active-card) .card.main:hover {
 }
 
 .anim-shake {
-    animation: shake 0.3s both;
+    animation: shake 0.3s;
 }
 
 @keyframes powerSlam {
@@ -701,7 +701,7 @@ body.has-active-card {
 body.has-active-card .card.main.unfocused,
 body.has-active-card .card.left.unfocused,
 body.has-active-card .card.right.unfocused {
-    filter: brightness(0.4);
+    filter: brightness(0.7);
 }
 
 body.has-active-card .card.main.focused {
