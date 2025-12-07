@@ -102,6 +102,33 @@ const BADGE_NAME_MAP = {
     badge_23: "边缘行者",
 };
 
+// 完整成就数据（用于打印机显示）
+const ACHIEVEMENTS_DATA = [
+    { id: 1, name: "迷途之子", rarity: 4, condition: "全年就餐天数 < 50 天", desc: "你迷路了吗", time: "2025-03-15" },
+    { id: 2, name: "注意到", rarity: 4, condition: "消费总金额恰为学号后四位的倍数", desc: "注意力惊人", time: "2025-04-22" },
+    { id: 3, name: "边缘行者", rarity: 4, condition: "在任意小时的第59分59秒完成交易", desc: "百丽宫有活着的传奇", time: "2025-05-08" },
+    { id: 4, name: "早八人", rarity: 3, condition: "06:00-08:00间消费过5次", desc: "你见过早上八点的百丽宫吗", time: "2025-02-28" },
+    { id: 5, name: "我的回合", rarity: 3, condition: "2分钟内连续刷卡 2 次", desc: "我的回合之后——还是我的回合！", time: "2025-03-10" },
+    { id: 6, name: "PI", rarity: 3, condition: "单笔消费金额恰为 3.14 元", desc: "圆食，启动！", time: "2025-03-14" },
+    { id: 7, name: "宇宙饭", rarity: 3, condition: "连续五天每天在不一样的商家吃饭", desc: "如果你的商家里没有相同的商家，获得本成就", time: "2025-04-01" },
+    { id: 8, name: "全勤奖", rarity: 3, condition: "全年就餐天数 >= 200 天", desc: "一瞬一瞬累积起来就会变成一辈子", time: "2025-11-20" },
+    { id: 9, name: "西西弗斯", rarity: 2, condition: "在同一个商家消费次数大于20次", desc: "我们必须想象你是幸福的", time: "2025-04-15" },
+    { id: 10, name: "Hello World", rarity: 1, condition: "本年有消费过", desc: "你好，食堂！", time: "2025-01-02" },
+    { id: 11, name: "故事的开始", rarity: 4, condition: "在本年第一天吃饭", desc: "其实味道和去年没区别", time: "2025-01-01" },
+    { id: 12, name: "又一年", rarity: 4, condition: "在本年最后一天吃饭", desc: "明年见", time: "2025-12-31" },
+    { id: 13, name: "守夜人", rarity: 3, condition: "21:00以后消费过5次", desc: "据说只要不计算晚上的卡路里，它们就不存在", time: "2025-03-20" },
+    { id: 14, name: "加个鸡腿", rarity: 3, condition: "单笔消费金额 > 25元", desc: "吃点好的！", time: "2025-02-14" },
+    { id: 15, name: "极限生存", rarity: 3, condition: "单笔消费金额 < 1元", desc: "极简主义饮食践行者", time: "2025-05-01" },
+    { id: 16, name: "消失的早餐", rarity: 3, condition: "全年9点前消费次数 < 10 次", desc: "那些从来不吃早饭的人，现在都怎么样了？", time: "2025-06-15" },
+    { id: 17, name: "好好吃饭", rarity: 3, condition: "单日内同时有早、中、晚三餐记录", desc: "你拥有令人羡慕的健康作息", time: "2025-03-05" },
+    { id: 18, name: "凑单领域大神", rarity: 3, condition: "单日消费总金额>=20且为10的倍数", desc: "学校也有满减吗", time: "2025-04-10" },
+    { id: 19, name: "Error 404", rarity: 3, condition: "单笔消费金额恰为 4.04 元", desc: "404 Not Found", time: "2025-04-04" },
+    { id: 20, name: "加密通话", rarity: 3, condition: "密码不是默认值 123456", desc: "你的账户安全系数击败了99％的同学", time: "2025-01-15" },
+    { id: 21, name: "完美一周", rarity: 3, condition: "连续七天一日三餐", desc: "医生看了都说好", time: "2025-05-20" },
+    { id: 22, name: "百日烟火", rarity: 2, condition: "全年就餐天数 >= 100 天", desc: "食堂阿姨可能都认识你了", time: "2025-07-10" },
+    { id: 23, name: "干饭人", rarity: 1, condition: "全年就餐天数 >= 1 天", desc: "至少你找到了食堂", time: "2025-01-02" },
+];
+
 // 当前已存在的 PNG 文件名（仅文件名，包含扩展名）
 // 受限于纯前端环境，无法直接遍历文件夹，因此这里作为“可编辑清单”存在：
 // 把 images 目录中的 png 文件名补充到此数组即可被自动加载。
@@ -362,18 +389,114 @@ const cardLeft = document.getElementById('cardLeft');
 const cardRight = document.getElementById('cardRight');
 const mainCard = document.getElementById('mainCard');
 
-// 填充成就墙
+// ===== 打印机成就列表逻辑 =====
 
-const fullBadgesGrid = document.getElementById('badges-grid-full');
-badges.forEach(b => {
+const ITEMS_PER_PAGE = 6; // 每页显示的成就数量
+const achievementSlot = document.getElementById('achievement-slot');
+let currentAchievementPage = 0;
+
+// 分页数据
+function getAchievementPages() {
+    const pages = [];
+    for (let i = 0; i < ACHIEVEMENTS_DATA.length; i += ITEMS_PER_PAGE) {
+        pages.push(ACHIEVEMENTS_DATA.slice(i, i + ITEMS_PER_PAGE));
+    }
+    return pages;
+}
+
+const achievementPages = getAchievementPages();
+const totalPages = achievementPages.length;
+
+// 创建成就纸张
+function createAchievementReceipt(pageIndex, state) {
     const el = document.createElement('div');
-    el.className = 'badge-item';
-    const img = document.createElement('img');
-    img.src = b.src;
+    el.className = `receipt ${state}`;
 
-    el.appendChild(img);
-    fullBadgesGrid.appendChild(el);
-});
+    const pageData = achievementPages[pageIndex];
+    const pageNum = pageIndex + 1;
+
+    // 构建成就行
+    let rowsHTML = '';
+    pageData.forEach(ach => {
+        // 查找对应图片
+        let imgSrc = 'images/badge_01.png'; // Default
+        for (const [key, val] of Object.entries(BADGE_NAME_MAP)) {
+            if (val === ach.name) {
+                imgSrc = `images/${key}.png`;
+                break;
+            }
+        }
+
+        rowsHTML += `
+            <div class="achievement-row">
+                <img class="ach-icon" src="${imgSrc}">
+                <div class="ach-content">
+                    <div class="ach-header">
+                        <span class="ach-name">${ach.name}</span>
+                        <span class="ach-time">${ach.time}</span>
+                    </div>
+                    <div class="ach-condition">${ach.condition}</div>
+                    <div class="ach-desc">${ach.desc}</div>
+                </div>
+            </div>
+        `;
+    });
+
+    el.innerHTML = `
+        <div class="receipt-title">
+            <span>PAGE ${pageNum}/${totalPages}</span>
+        </div>
+        ${rowsHTML}
+
+    `;
+
+    return el;
+}
+
+// 绑定翻页点击事件
+function bindReceiptClick(el) {
+    el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (el.classList.contains('ripped')) return;
+
+        // 1. 旧纸撕掉
+        el.classList.remove('current');
+        el.classList.add('ripped');
+
+        // 2. 容器进入打印保护模式
+        achievementSlot.classList.add('printing-active');
+
+        // 3. 切换到下一页（循环）
+        currentAchievementPage = (currentAchievementPage + 1) % totalPages;
+        const next = createAchievementReceipt(currentAchievementPage, 'printing');
+        achievementSlot.appendChild(next);
+
+        // 4. 打印动画结束后切换状态
+        setTimeout(() => {
+            next.classList.remove('printing');
+            next.classList.add('current');
+            achievementSlot.classList.remove('printing-active');
+            bindReceiptClick(next);
+        }, 400);
+
+        // 5. 垃圾回收
+        setTimeout(() => {
+            el.remove();
+        }, 800);
+    });
+}
+
+// 初始化第一页
+function initAchievementPrinter() {
+    achievementSlot.innerHTML = '';
+    currentAchievementPage = 0;
+    const first = createAchievementReceipt(0, 'current');
+    achievementSlot.appendChild(first);
+    bindReceiptClick(first);
+}
+
+// 延迟初始化（确保 DOM 就绪）
+setTimeout(initAchievementPrinter, 100);
 
 let currentState = 'none'; // 'none'、'left'、'right' 表示当前侧边卡状态
 const interactiveCards = [cardLeft, mainCard, cardRight];

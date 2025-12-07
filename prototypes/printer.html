@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Thermal Printer V3.2 - Stepped Printing</title>
+    <title>Thermal Printer V3.1 - Extrusion</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -64,11 +64,26 @@
             position: relative;
             width: 100%;
             height: var(--ticket-h);
+            /* 
+               默认不加 clip-path，以免影响正常的悬停交互和撕纸动画 
+            */
             transition: clip-path 0s;
         }
 
+        /* 
+           === 核心修改：打印状态下的视口裁剪 ===
+           当打印机正在吐纸时，给容器加一个遮罩。
+           inset(上 右 下 左)
+           上=0: 顶部切齐，隐藏所有还在上面的纸（即未打印出来的部分）。
+           下=-150vh: 底部几乎无限延伸，保证那张正在飞出去的旧纸不被截断。
+        */
         .slot.printing-active {
-            /* 保持之前的阴影修复逻辑 */
+            /* 
+            上: 0 (保持不动，切齐顶部)
+            右: -20px (向右扩宽20px，容纳右侧阴影)
+            下: -150vh (保持不动)
+            左: -20px (向左扩宽20px，容纳可能的左侧溢出)
+            */
             clip-path: inset(0 -20px -150vh -20px);
         }
 
@@ -135,6 +150,7 @@
                     var(--ink) 5px);
         }
 
+        /* 交互动画保持不变 */
         .printer-unit:hover .receipt.current {
             transform: translateY(12px) rotate(0.5deg);
         }
@@ -159,45 +175,16 @@
             }
         }
 
-        /* 
-           === 核心修改：步进打印效果 ===
-           1. duration 改为 1.2s：让用户有时间看清“打印”过程。
-           2. timing-function 改为 steps(50, end)：
-              这意味着动画不是平滑的，而是分成 50 个“帧”跳跃完成。
-              这种高频的停顿感就是机械味儿的来源。
-        */
         .receipt.printing {
             z-index: 5;
-            animation: print-feed 0.6s steps(50, end) forwards;
+            animation: print-feed 0.4s linear forwards;
         }
 
-        /* 修改 @keyframes print-feed */
         @keyframes print-feed {
             0% {
                 transform: translateY(-100%);
             }
 
-            /* 第一阶段：吐出 Header (快) */
-            30% {
-                transform: translateY(-80%);
-            }
-
-            /* 停顿：模拟数据传输/处理 (完全不动) */
-            45% {
-                transform: translateY(-80%);
-            }
-
-            /* 第二阶段：吐出 Body (慢一点) */
-            75% {
-                transform: translateY(-25%);
-            }
-
-            /* 稍微停顿一下 */
-            85% {
-                transform: translateY(-25%);
-            }
-
-            /* 第三阶段：完成 */
             100% {
                 transform: translateY(0);
             }
@@ -211,6 +198,7 @@
         <div class="printer-header">
             OUTPUT_STREAM
         </div>
+
         <div class="slot" id="slot">
             <!-- Paper area -->
         </div>
@@ -271,24 +259,31 @@
             el.addEventListener('click', () => {
                 if (el.classList.contains('ripped')) return;
 
+                // 1. 旧纸：撕掉状态
                 el.classList.remove('current');
                 el.classList.add('ripped');
+
+                // 2. 容器：进入“打印保护模式”（开启裁剪）
+                // 这确保新纸看起来是从内部出来的
                 slot.classList.add('printing-active');
 
+                // 3. 新纸：生成并开始动画
                 index = (index + 1) % database.length;
                 const next = createReceipt(database[index], 'printing');
                 slot.appendChild(next);
 
-                // === 关键修改 ===
-                // 这里的延时必须 >= CSS 中的动画时长 (1.2s = 1200ms)
-                // 我设置成 1250ms，稍微多一点点 buffer，防止偶发的闪烁
+                // 4. 状态切换：等待打印动画结束 (400ms)
                 setTimeout(() => {
                     next.classList.remove('printing');
                     next.classList.add('current');
-                    slot.classList.remove('printing-active');
-                    bindClick(next);
-                }, 650);
 
+                    // 打印完成，解除容器裁剪，允许纸张自由交互
+                    slot.classList.remove('printing-active');
+
+                    bindClick(next);
+                }, 400);
+
+                // 5. 垃圾回收
                 setTimeout(() => {
                     el.remove();
                 }, 800);

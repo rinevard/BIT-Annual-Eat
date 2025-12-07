@@ -89,17 +89,16 @@
 
         </div>
 
-        <!-- 右侧卡片 (砸入) -->
+        <!-- 右侧卡片 (打印机风格) -->
         <div class="card right" id="cardRight">
             <div class="close-btn" onclick="handleCloseRight(event)">
                 ×
             </div>
-            <div class="right-header">
-                <div class="right-title">成就</div>
-                <div class="right-subtitle">所有解锁徽章</div>
-            </div>
-            <div class="badges-grid-full" id="badges-grid-full">
-                <!-- 由 JS 填充完整成就列表 -->
+            <div class="printer-unit">
+                <div class="printer-header">ACHIEVEMENTS</div>
+                <div class="slot" id="achievement-slot">
+                    <!-- 由 JS 动态生成成就纸张 -->
+                </div>
             </div>
         </div>
 

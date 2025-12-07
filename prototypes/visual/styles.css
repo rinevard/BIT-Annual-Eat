@@ -562,22 +562,27 @@ body:not(.has-active-card) .card.main:hover {
     writing-mode: horizontal-tb;
 }
 
-/* 右侧卡片 */
+/* 右侧卡片 (容器变为透明，仅作为位置锚点) */
 .card.right {
     --dir: -1;
     --focus-offset-y: 0px;
     width: 420px;
     left: 100%;
     margin-left: 20px;
-    background: #fff;
-    border: var(--border);
+    background: transparent;
+    /* 去除背景 */
+    border: none;
+    /* 去除边框 */
+    box-shadow: none;
+    /* 去除阴影 */
     opacity: 0;
     transform: translateZ(2000px);
     pointer-events: none;
     z-index: 20;
     display: flex;
     flex-direction: column;
-    padding: 30px;
+    overflow: visible;
+    /* 允许头部溢出 */
 }
 
 /* 左右侧卡片处于场景中的稳定状态 */
@@ -588,37 +593,223 @@ body:not(.has-active-card) .card.main:hover {
     pointer-events: auto;
 }
 
-.right-header {
-    border-bottom: 4px solid #000;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-}
-
-.right-title {
-    font-family: 'JetBrains Mono';
-    font-weight: 900;
-    font-size: 32px;
-    color: var(--hot-pink);
-}
-
-.right-subtitle {
-    font-family: 'Noto Sans SC';
-    font-weight: 700;
-    font-size: 14px;
-    background: #000;
-    color: #fff;
-    display: inline-block;
-    padding: 2px 6px;
-}
-
-.badges-grid-full {
+/* === 打印机组件样式 === */
+.printer-unit {
+    position: relative;
+    width: 100%;
+    height: 100%;
     display: flex;
-    flex-wrap: wrap;
-    /* grid-template-columns: repeat(3, 1fr); */
-    gap: 25px;
-    overflow-y: auto;
-    padding-top: 8px;
-    padding-left: 10px;
+    flex-direction: column;
+    transform: rotate(-1deg);
+}
+
+.printer-header {
+    position: relative;
+    z-index: 50;
+    background: #000;
+    color: #ccff00;
+    height: 60px;
+    /* Increased from 50px */
+    /* 核心特征：头部比机身宽 */
+    width: calc(100% + 10px);
+    left: -5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    letter-spacing: 2px;
+    font-size: 16px;
+    /* Slightly larger text */
+    flex-shrink: 0;
+}
+
+.slot {
+    position: relative;
+    flex: 1;
+    /* Remove overflow: hidden to allow paper to fall out */
+    /* overflow: hidden; */
+    transition: clip-path 0s;
+}
+
+.slot.printing-active {
+    clip-path: inset(0 -20px -150vh -20px);
+}
+
+.receipt {
+    position: absolute;
+    /* 核心特征：纸张上移，看起来像插在里面 */
+    top: -20px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    border: 3px solid #000;
+    border-top: none;
+    /* 严格拷贝 padding */
+    padding: 30px 20px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 8px 8px 0px #000;
+    transform-origin: top center;
+    transition: transform 0.15s ease-out;
+    cursor: pointer;
+    z-index: 10;
+    box-sizing: border-box;
+}
+
+.receipt::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border-top: 3px dashed rgba(0, 0, 0, 0.3);
+}
+
+/* 悬停交互 (Strict Copy from printer.html) */
+.printer-unit:hover .receipt.current {
+    transform: translateY(12px) rotate(0.5deg);
+}
+
+.receipt.ripped {
+    pointer-events: none;
+    z-index: 40;
+    animation: receipt-tear-off 0.6s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+}
+
+@keyframes receipt-tear-off {
+    0% {
+        transform: translateY(8px) rotate(0.5deg);
+    }
+
+    15% {
+        transform: translateY(16px) rotate(2deg);
+    }
+
+    100% {
+        transform: translateY(120vh) translateX(-50px) rotate(-15deg);
+    }
+}
+
+.receipt.printing {
+    z-index: 5;
+    animation: receipt-print-feed 0.4s linear forwards;
+}
+
+@keyframes receipt-print-feed {
+    0% {
+        transform: translateY(-100%);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* === 成就列表特定样式 === */
+.receipt-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 800;
+    color: #666;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 3px dashed #000;
+    /* 加粗 */
+    padding-bottom: 10px;
+}
+
+.achievement-row {
+    display: flex;
+    flex-direction: row;
+    /* 水平布局：左图右文 */
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 2px dashed rgba(0, 0, 0, 0.1);
+    font-family: 'Noto Sans SC', sans-serif;
+    align-items: flex-start;
+}
+
+.achievement-row:last-child {
+    border-bottom: none;
+}
+
+.ach-icon {
+    width: 60px;
+    /* Matched main card icon size */
+    height: 60px;
+    border: 2px solid #000;
+    flex-shrink: 0;
+    background: #eee;
+    object-fit: contain;
+    background: #fff;
+    display: block;
+}
+
+.ach-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ach-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.ach-name {
+    font-weight: 900;
+    font-size: 16px;
+    color: #000;
+    line-height: 1.2;
+}
+
+.ach-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: #999;
+}
+
+.ach-condition {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--hot-pink);
+    margin: 2px 0;
+}
+
+.ach-desc {
+    font-size: 12px;
+    color: #444;
+    line-height: 1.3;
+}
+
+.receipt-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 3px dashed #000;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #666;
+    text-align: center;
+}
+
+.receipt-barcode {
+    margin-top: 15px;
+    height: 30px;
+    background: repeating-linear-gradient(90deg,
+            #000,
+            #000 2px,
+            transparent 2px,
+            transparent 4px,
+            #000 5px);
 }
 
 /* 动画 */
@@ -714,11 +905,17 @@ body.has-active-card .card.main.focused {
     transform: translateZ(0) rotate(-1deg) translateY(-8px);
 }
 
-body.has-active-card .card.left.focused,
-body.has-active-card .card.right.focused {
+body.has-active-card .card.left.focused {
     --focus-offset-y: -10px;
     filter: none;
     box-shadow: 16px 20px 0px rgba(0, 0, 0, 0.8);
     z-index: 50;
     transform: translateZ(0) rotateZ(calc(-2deg * var(--dir))) translateY(var(--focus-offset-y));
+}
+
+body.has-active-card .card.right.focused {
+    /* 右侧卡片（打印机）聚焦时不移动，不加容器阴影，仅去色滤镜和层级 */
+    filter: none;
+    z-index: 50;
+    transform: translateZ(0) rotateZ(calc(-2deg * var(--dir))) translateY(0);
 }
