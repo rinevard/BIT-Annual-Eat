@@ -74,26 +74,97 @@ function reassignClasses() {
 // 2. 徽章逻辑
 // 徽章的渲染和交互逻辑
 
-const badges = [
-    { src: "images/2.png", name: "早八人" },
-    { src: "images/1.png", name: "加个鸡腿" },
-    { src: "images/3.png", name: "百日烟火" },
-    { src: "images/4.png", name: "西西弗斯" }
+// 文件名（不含扩展名） -> 展示名称的映射表
+// 未出现在此表中的 key 直接使用文件名本身作为展示名称
+const BADGE_NAME_MAP = {
+    badge_01: "西西弗斯",
+    badge_02: "守夜人",
+    badge_03: "不知道",
+    badge_04: "干饭人",
+    badge_05: "百日烟火",
+    badge_06: "早八人",
+    badge_07: "加个鸡腿",
+    badge_08: "极限生存",
+    badge_09: "消失的早餐",
+    badge_10: "一日三餐",
+    badge_11: "凑单领域大神",
+    badge_12: "我全都要",
+    badge_13: "404",
+    badge_14: "PI",
+    badge_15: "加密通话",
+    badge_16: "完美一周",
+    badge_17: "我的回合",
+    badge_18: "全勤奖",
+    badge_19: "迷途之羊",
+    badge_20: "故事的开始",
+    badge_21: "又一年",
+    badge_22: "注意到",
+    badge_23: "边缘行者",
+};
+
+// 当前已存在的 PNG 文件名（仅文件名，包含扩展名）
+// 受限于纯前端环境，无法直接遍历文件夹，因此这里作为“可编辑清单”存在：
+// 把 images 目录中的 png 文件名补充到此数组即可被自动加载。
+const BADGE_FILES = [
+    "badge_01.png",
+    "badge_02.png",
+    "badge_03.png",
+    "badge_04.png",
+    "badge_05.png",
+    "badge_06.png",
+    "badge_07.png",
+    "badge_08.png",
+    "badge_09.png",
+    "badge_10.png",
+    "badge_11.png",
+    "badge_12.png",
+    "badge_13.png",
+    "badge_14.png",
+    "badge_15.png",
+    "badge_16.png",
+    "badge_17.png",
+    "badge_18.png",
+    "badge_19.png",
+    "badge_20.png",
+    "badge_21.png",
+    "badge_22.png",
+    "badge_23.png",
 ];
 
+// 将文件名转换成展示名称
+function resolveBadgeName(fileName) {
+    const base = fileName.replace(/\.png$/i, "");
+    return BADGE_NAME_MAP[base] || base;
+}
+
+// 由文件名生成徽章数据
+const badges = BADGE_FILES.map((file) => ({
+    src: `images/${file}`,
+    name: resolveBadgeName(file),
+}));
+
+// 随机打乱顺序（后续主卡片与成就墙都基于这一顺序）
+badges.sort(() => Math.random() - 0.5);
+
+// 主卡片左侧 rack：只展示至多 6 个成就
+const MAX_MAIN_BADGES = 6;
+const mainBadges = badges.slice(0, MAX_MAIN_BADGES);
+
 const badgeRack = document.getElementById('badges-rack');
-badges.forEach(b => {
+mainBadges.forEach(b => {
     const el = document.createElement('div');
     el.className = 'badge-item';
     const img = document.createElement('img');
     img.src = b.src;
     img.alt = b.name;
+
     el.title = b.name;
     el.appendChild(img);
     badgeRack.appendChild(el);
 });
 
 const badgeItems = badgeRack.querySelectorAll('.badge-item');
+
 badgeItems.forEach(el => {
     el.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -291,17 +362,15 @@ const cardLeft = document.getElementById('cardLeft');
 const cardRight = document.getElementById('cardRight');
 const mainCard = document.getElementById('mainCard');
 
-// 为右侧成就卡片填充更多徽章
-// 复制徽章以填满成就网格
+// 填充成就墙
 
 const fullBadgesGrid = document.getElementById('badges-grid-full');
-const allBadges = [...badges, ...badges, ...badges, ...badges];
-allBadges.forEach(b => {
+badges.forEach(b => {
     const el = document.createElement('div');
     el.className = 'badge-item';
-    el.style.transform = 'scale(0.8)';
     const img = document.createElement('img');
     img.src = b.src;
+
     el.appendChild(img);
     fullBadgesGrid.appendChild(el);
 });
