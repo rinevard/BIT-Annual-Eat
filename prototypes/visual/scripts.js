@@ -74,105 +74,42 @@ function reassignClasses() {
 // 2. 徽章逻辑
 // 徽章的渲染和交互逻辑
 
-// 文件名（不含扩展名） -> 展示名称的映射表
-// 未出现在此表中的 key 直接使用文件名本身作为展示名称
-const BADGE_NAME_MAP = {
-    badge_01: "西西弗斯",
-    badge_02: "守夜人",
-    badge_03: "不知道",
-    badge_04: "干饭人",
-    badge_05: "百日烟火",
-    badge_06: "早八人",
-    badge_07: "加个鸡腿",
-    badge_08: "极限生存",
-    badge_09: "消失的早餐",
-    badge_10: "一日三餐",
-    badge_11: "凑单领域大神",
-    badge_12: "我全都要",
-    badge_13: "404",
-    badge_14: "PI",
-    badge_15: "加密通话",
-    badge_16: "完美一周",
-    badge_17: "我的回合",
-    badge_18: "全勤奖",
-    badge_19: "迷途之羊",
-    badge_20: "故事的开始",
-    badge_21: "又一年",
-    badge_22: "注意到",
-    badge_23: "边缘行者",
-};
-
-// 完整成就数据（用于打印机显示）
+// 完整成就数据（用于打印机显示及徽章生成）
+// ID 对应 images/ 下的文件名
 const ACHIEVEMENTS_DATA = [
-    { id: 1, name: "迷途之子", rarity: 4, condition: "全年就餐天数 < 50 天", desc: "你迷路了吗", time: "2025-03-15" },
-    { id: 2, name: "注意到", rarity: 4, condition: "消费总金额恰为学号后四位的倍数", desc: "注意力惊人", time: "2025-04-22" },
-    { id: 3, name: "边缘行者", rarity: 4, condition: "在任意小时的第59分59秒完成交易", desc: "百丽宫有活着的传奇", time: "2025-05-08" },
-    { id: 4, name: "早八人", rarity: 3, condition: "06:00-08:00间消费过5次", desc: "你见过早上八点的百丽宫吗", time: "2025-02-28" },
-    { id: 5, name: "我的回合", rarity: 3, condition: "2分钟内连续刷卡 2 次", desc: "我的回合之后——还是我的回合！", time: "2025-03-10" },
-    { id: 6, name: "PI", rarity: 3, condition: "单笔消费金额恰为 3.14 元", desc: "圆食，启动！", time: "2025-03-14" },
-    { id: 7, name: "宇宙饭", rarity: 3, condition: "连续五天每天在不一样的商家吃饭", desc: "如果你的商家里没有相同的商家，获得本成就", time: "2025-04-01" },
-    { id: 8, name: "全勤奖", rarity: 3, condition: "全年就餐天数 >= 200 天", desc: "一瞬一瞬累积起来就会变成一辈子", time: "2025-11-20" },
-    { id: 9, name: "西西弗斯", rarity: 2, condition: "在同一个商家消费次数大于20次", desc: "我们必须想象你是幸福的", time: "2025-04-15" },
-    { id: 10, name: "Hello World", rarity: 1, condition: "本年有消费过", desc: "你好，食堂！", time: "2025-01-02" },
-    { id: 11, name: "故事的开始", rarity: 4, condition: "在本年第一天吃饭", desc: "其实味道和去年没区别", time: "2025-01-01" },
-    { id: 12, name: "又一年", rarity: 4, condition: "在本年最后一天吃饭", desc: "明年见", time: "2025-12-31" },
-    { id: 13, name: "守夜人", rarity: 3, condition: "21:00以后消费过5次", desc: "据说只要不计算晚上的卡路里，它们就不存在", time: "2025-03-20" },
-    { id: 14, name: "加个鸡腿", rarity: 3, condition: "单笔消费金额 > 25元", desc: "吃点好的！", time: "2025-02-14" },
-    { id: 15, name: "极限生存", rarity: 3, condition: "单笔消费金额 < 1元", desc: "极简主义饮食践行者", time: "2025-05-01" },
-    { id: 16, name: "消失的早餐", rarity: 3, condition: "全年9点前消费次数 < 10 次", desc: "那些从来不吃早饭的人，现在都怎么样了？", time: "2025-06-15" },
-    { id: 17, name: "好好吃饭", rarity: 3, condition: "单日内同时有早、中、晚三餐记录", desc: "你拥有令人羡慕的健康作息", time: "2025-03-05" },
-    { id: 18, name: "凑单领域大神", rarity: 3, condition: "单日消费总金额>=20且为10的倍数", desc: "学校也有满减吗", time: "2025-04-10" },
-    { id: 19, name: "Error 404", rarity: 3, condition: "单笔消费金额恰为 4.04 元", desc: "404 Not Found", time: "2025-04-04" },
-    { id: 20, name: "加密通话", rarity: 3, condition: "密码不是默认值 123456", desc: "你的账户安全系数击败了99％的同学", time: "2025-01-15" },
-    { id: 21, name: "完美一周", rarity: 3, condition: "连续七天一日三餐", desc: "医生看了都说好", time: "2025-05-20" },
-    { id: 22, name: "百日烟火", rarity: 2, condition: "全年就餐天数 >= 100 天", desc: "食堂阿姨可能都认识你了", time: "2025-07-10" },
-    { id: 23, name: "干饭人", rarity: 1, condition: "全年就餐天数 >= 1 天", desc: "至少你找到了食堂", time: "2025-01-02" },
+    { id: "lost_kid", name: "迷途之子", rarity: 4, condition: "全年就餐天数 < 50 天", desc: "你迷路了吗", time: "2025-03-15" },
+    { id: "noticed", name: "注意到", rarity: 4, condition: "消费总金额恰为学号后四位的倍数", desc: "注意力惊人", time: "2025-04-22" },
+    { id: "edge_runner", name: "边缘行者", rarity: 4, condition: "在任意小时的第59分59秒完成交易", desc: "百丽宫有活着的传奇", time: "2025-05-08" },
+    { id: "early_bird", name: "早八人", rarity: 3, condition: "06:00-08:00间消费过5次", desc: "你见过早上八点的百丽宫吗", time: "2025-02-28" },
+    { id: "my_turn", name: "我的回合", rarity: 3, condition: "2分钟内连续刷卡 2 次", desc: "我的回合之后——还是我的回合！", time: "2025-03-10" },
+    { id: "pi", name: "PI", rarity: 3, condition: "单笔消费金额恰为 3.14 元", desc: "圆食，启动！", time: "2025-03-14" },
+    { id: "cosmic_meal", name: "宇宙饭", rarity: 3, condition: "连续五天每天在不一样的商家吃饭", desc: "如果你的商家里没有相同的商家，获得本成就", time: "2025-04-01" },
+    { id: "full_timer", name: "全勤奖", rarity: 3, condition: "全年就餐天数 >= 200 天", desc: "一瞬一瞬累积起来就会变成一辈子", time: "2025-11-20" },
+    { id: "default_setting", name: "西西弗斯", rarity: 2, condition: "在同一个商家消费次数大于20次", desc: "我们必须想象你是幸福的", time: "2025-04-15" },
+    { id: "hello_world", name: "Hello World", rarity: 1, condition: "本年有消费过", desc: "你好，食堂！", time: "2025-01-02" },
+    { id: "story_start", name: "故事的开始", rarity: 4, condition: "在本年第一天吃饭", desc: "其实味道和去年没区别", time: "2025-01-01" },
+    { id: "another_year", name: "又一年", rarity: 4, condition: "在本年最后一天吃饭", desc: "明年见", time: "2025-12-31" },
+    { id: "night_owl", name: "守夜人", rarity: 3, condition: "21:00以后消费过5次", desc: "据说只要不计算晚上的卡路里，它们就不存在", time: "2025-03-20" },
+    { id: "big_meal", name: "加个鸡腿", rarity: 3, condition: "单笔消费金额 > 25元", desc: "吃点好的！", time: "2025-02-14" },
+    { id: "minimalist", name: "极限生存", rarity: 3, condition: "单笔消费金额 < 1元", desc: "极简主义饮食践行者", time: "2025-05-01" },
+    { id: "missing_breakfast", name: "消失的早餐", rarity: 3, condition: "全年9点前消费次数 < 10 次", desc: "那些从来不吃早饭的人，现在都怎么样了？", time: "2025-06-15" },
+    { id: "good_meals", name: "好好吃饭", rarity: 3, condition: "单日内同时有早、中、晚三餐记录", desc: "你拥有令人羡慕的健康作息", time: "2025-03-05" },
+    { id: "make_it_round", name: "凑单领域大神", rarity: 3, condition: "单日消费总金额>=20且为10的倍数", desc: "学校也有满减吗", time: "2025-04-10" },
+    { id: "error_404", name: "Error 404", rarity: 3, condition: "单笔消费金额恰为 4.04 元", desc: "404 Not Found", time: "2025-04-04" },
+    { id: "secure_call", name: "加密通话", rarity: 3, condition: "密码不是默认值 123456", desc: "你的账户安全系数击败了99％的同学", time: "2025-01-15" },
+    { id: "perfect_week", name: "完美一周", rarity: 3, condition: "连续七天一日三餐", desc: "医生看了都说好", time: "2025-05-20" },
+    { id: "hundred_days", name: "百日烟火", rarity: 2, condition: "全年就餐天数 >= 100 天", desc: "食堂阿姨可能都认识你了", time: "2025-07-10" },
+    { id: "eater", name: "干饭人", rarity: 1, condition: "全年就餐天数 >= 1 天", desc: "至少你找到了食堂", time: "2025-01-02" },
 ];
-
-// 当前已存在的 PNG 文件名（仅文件名，包含扩展名）
-// 受限于纯前端环境，无法直接遍历文件夹，因此这里作为“可编辑清单”存在：
-// 把 images 目录中的 png 文件名补充到此数组即可被自动加载。
-const BADGE_FILES = [
-    "badge_01.png",
-    "badge_02.png",
-    "badge_03.png",
-    "badge_04.png",
-    "badge_05.png",
-    "badge_06.png",
-    "badge_07.png",
-    "badge_08.png",
-    "badge_09.png",
-    "badge_10.png",
-    "badge_11.png",
-    "badge_12.png",
-    "badge_13.png",
-    "badge_14.png",
-    "badge_15.png",
-    "badge_16.png",
-    "badge_17.png",
-    "badge_18.png",
-    "badge_19.png",
-    "badge_20.png",
-    "badge_21.png",
-    "badge_22.png",
-    "badge_23.png",
-];
-
-// 将文件名转换成展示名称
-function resolveBadgeName(fileName) {
-    const base = fileName.replace(/\.png$/i, "");
-    return BADGE_NAME_MAP[base] || base;
-}
 
 // 由文件名生成徽章数据
-const badges = BADGE_FILES.map((file) => ({
-    src: `images/${file}`,
-    name: resolveBadgeName(file),
+const badges = ACHIEVEMENTS_DATA.map((item) => ({
+    src: `images/${item.id}.png`,
+    name: item.name,
 }));
 
 // 随机打乱顺序（后续主卡片与成就墙都基于这一顺序）
 badges.sort(() => Math.random() - 0.5);
-
 // 主卡片左侧 rack：只展示至多 6 个成就
 const MAX_MAIN_BADGES = 6;
 const mainBadges = badges.slice(0, MAX_MAIN_BADGES);
@@ -419,27 +356,21 @@ function createAchievementReceipt(pageIndex, state) {
     let rowsHTML = '';
     pageData.forEach(ach => {
         // 查找对应图片
-        let imgSrc = 'images/badge_01.png'; // Default
-        for (const [key, val] of Object.entries(BADGE_NAME_MAP)) {
-            if (val === ach.name) {
-                imgSrc = `images/${key}.png`;
-                break;
-            }
-        }
+        const imgSrc = `images/${ach.id}.png`;
 
         rowsHTML += `
-            <div class="achievement-row">
-                <img class="ach-icon" src="${imgSrc}">
-                <div class="ach-content">
-                    <div class="ach-header">
-                        <span class="ach-name">${ach.name}</span>
-                        <span class="ach-time">${ach.time}</span>
+                <div class="achievement-row">
+                    <img class="ach-icon" src="${imgSrc}">
+                    <div class="ach-content">
+                        <div class="ach-header">
+                            <span class="ach-name">${ach.name}</span>
+                            <span class="ach-time">${ach.time}</span>
+                        </div>
+                        <div class="ach-condition">${ach.condition}</div>
+                        <div class="ach-desc">${ach.desc}</div>
                     </div>
-                    <div class="ach-condition">${ach.condition}</div>
-                    <div class="ach-desc">${ach.desc}</div>
                 </div>
-            </div>
-        `;
+            `;
     });
 
     el.innerHTML = `

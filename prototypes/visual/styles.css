@@ -667,7 +667,7 @@ body:not(.has-active-card) .card.main:hover {
     left: 0;
     width: 100%;
     height: 2px;
-    border-top: 3px dashed rgba(0, 0, 0, 0.3);
+    border-top: 3px solid rgba(0, 0, 0, 0.3);
 }
 
 /* 悬停交互 (Strict Copy from printer.html) */
@@ -719,7 +719,7 @@ body:not(.has-active-card) .card.main:hover {
     margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
-    border-bottom: 3px dashed #000;
+    border-bottom: 3px solid #000;
     /* 加粗 */
     padding-bottom: 10px;
 }
@@ -730,7 +730,7 @@ body:not(.has-active-card) .card.main:hover {
     /* 水平布局：左图右文 */
     gap: 15px;
     padding: 15px 0;
-    border-bottom: 2px dashed rgba(0, 0, 0, 0.1);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
     font-family: 'Noto Sans SC', sans-serif;
     align-items: flex-start;
 }
@@ -794,7 +794,7 @@ body:not(.has-active-card) .card.main:hover {
 .receipt-footer {
     margin-top: auto;
     padding-top: 20px;
-    border-top: 3px dashed #000;
+    border-top: 3px solid #000;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     color: #666;
