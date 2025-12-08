@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
 
 :root {
     --bg-color: #0a0a0a;
@@ -362,7 +362,8 @@ body:not(.has-active-card) .poster-frame:hover {
     height: 100%;
     display: flex;
     align-items: flex-end;
-    gap: 3px;
+    /* gap: 3px; -> Removed to prevent flickering */
+    gap: 0;
     z-index: 1;
 }
 
@@ -371,16 +372,23 @@ body:not(.has-active-card) .poster-frame:hover {
     background: #333;
     min-height: 4px;
     border-top: none;
-    transition: height 0.3s ease;
+    /* 模拟柱子间的间隙，避免鼠标经过时闪烁 */
+    border-right: 3px solid #000;
+    /* 增加平滑过渡 */
+    transition: height 0.3s ease, opacity 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease;
+}
+
+.rhythm-bar:last-child {
+    border-right: none;
 }
 
 /* 绿色系高亮 */
 .rhythm-bar.l1 {
-    background: #1a1a1a;
+    background: #0d351d;
 }
 
 .rhythm-bar.l2 {
-    background: #14532d;
+    background: #1f8146;
 }
 
 /* 暗绿 */
@@ -399,7 +407,25 @@ body:not(.has-active-card) .poster-frame:hover {
     box-shadow: 0 0 10px rgba(204, 255, 0, 0.5);
 }
 
-/* 酸性绿+微光 */
+/* 聚光灯效果： */
+/* 1. 场景A：鼠标悬停在某个柱子上 (hover) -> 其他变暗 */
+/* 2. 场景B：右侧卡片显示了某周数据 (active) -> 其他变暗 */
+
+/* 只要容器被激活（state-active） 或者 鼠标正在悬停（has:hover），未选中的柱子就变暗 */
+.bar-container.state-active .rhythm-bar,
+.bar-container:has(.rhythm-bar:hover) .rhythm-bar {
+    opacity: 0.4;
+}
+
+/* 悬停某个具体柱子时，自己变亮 */
+/* 或者，该柱子处于激活状态 (.active) 时，自己变亮 */
+.bar-container .rhythm-bar:hover,
+.bar-container .rhythm-bar.active {
+    opacity: 1 !important;
+    filter: brightness(2) !important;
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+}
 
 /* --- 贴纸装饰 --- */
 .sticker {
@@ -765,24 +791,27 @@ body:not(.has-active-card) .card.main:hover {
 }
 
 .ach-name {
-    font-weight: 900;
-    font-size: 16px;
+    font-weight: 800;
+    font-size: 18px;
     color: #000;
     line-height: 1.2;
 }
 
 .ach-time {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     color: #999;
 }
 
 .ach-condition {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--hot-pink);
     margin: 2px 0;
+    /* 玄学闪烁 */
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 .ach-desc {

@@ -132,83 +132,101 @@ const badgeItems = badgeRack.querySelectorAll('.badge-item');
 badgeItems.forEach(el => {
     el.addEventListener('click', (e) => {
         e.stopPropagation();
-        handleRight();
+        // 统一行为：点击徽章也切换到成就模式
+        updatePrinterMode('achievement');
     });
 });
 
 // 3. Rhythm 区域（真实数据驱动）
 // Rhythm 区域的渲染和交互逻辑
 
+let RHYTHM_CHUNKS = []; // 全局存储节奏块数据
+
 function renderRhythm() {
     const rhythmContainer = document.getElementById('rhythm-container');
     rhythmContainer.innerHTML = ''; // 清空已有内容
+    RHYTHM_CHUNKS = []; // 重置全局数据
 
     // 处理数据
-    let dailyCounts = [];
+    let dailyRecords = [];
 
-    // 1. 将 EAT_DATA 展平成按日期排序的每日就餐次数数组
-    // 假设 EAT_DATA 的第一层键是年份
+    // 1. 将 EAT_DATA 展平成按日期排序的对象数组
     const years = Object.keys(EAT_DATA).sort();
     if (years.length === 0) {
         console.warn("没有找到 EAT_DATA，使用随机值进行预览。");
-        dailyCounts = Array(365).fill(0).map(() => Math.random() * 4);
+        // 构造假日期
+        let startDate = new Date("2025-01-01");
+        for (let i = 0; i < 365; i++) {
+            let d = new Date(startDate);
+            d.setDate(d.getDate() + i);
+            dailyRecords.push({
+                date: d.toISOString().split('T')[0],
+                count: Math.floor(Math.random() * 4),
+                amount: (Math.random() * 30).toFixed(1)
+            });
+        }
     } else {
-        // 使用最新的年份
         const year = years[years.length - 1];
         const yearData = EAT_DATA[year];
-
-        // 构造完整的一年数据（处理缺失日期）
         const start = new Date(`${year}-01-01`);
         const end = new Date(`${year}-12-31`);
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
             const dateStr = d.toISOString().split('T')[0];
             const dayData = yearData[dateStr];
-            dailyCounts.push(dayData ? dayData.count : 0);
+            dailyRecords.push({
+                date: dateStr,
+                count: dayData ? dayData.count : 0,
+                amount: dayData ? dayData.amount : 0,
+                merchants: dayData ? dayData.merchants : []
+            });
         }
     }
 
-    // 2. 每 6 天聚合一次（取平均值）
+    // 2. 每 6 天聚合一次
     const CHUNK_SIZE = 6;
-    const aggregatedData = [];
 
-    for (let i = 0; i < dailyCounts.length; i += CHUNK_SIZE) {
-        const chunk = dailyCounts.slice(i, i + CHUNK_SIZE);
+    for (let i = 0; i < dailyRecords.length; i += CHUNK_SIZE) {
+        const chunkRecords = dailyRecords.slice(i, i + CHUNK_SIZE);
         // 计算该时间段内的日均用餐次数
-        const avg = chunk.reduce((a, b) => a + b, 0) / chunk.length;
+        const totalCount = chunkRecords.reduce((a, b) => a + b.count, 0);
+        const avg = totalCount / chunkRecords.length;
 
-        aggregatedData.push(avg);
+        // 存入全局结构
+        RHYTHM_CHUNKS.push({
+            index: i / CHUNK_SIZE,
+            avg: avg,
+            records: chunkRecords,
+            startDate: chunkRecords[0].date,
+            endDate: chunkRecords[chunkRecords.length - 1].date
+        });
     }
 
-    // 3. 归一化到高度百分比和颜色等级
-    // 合理的日均用餐次数大约在 3~4 之间，这里以 4 次作为 100% 高度上限。
+    // 3. 归一化并渲染
     const MAX_VAL = 4;
 
-    aggregatedData.forEach(val => {
+    RHYTHM_CHUNKS.forEach((chunk, index) => {
+        const val = chunk.avg;
         const bar = document.createElement('div');
         bar.className = 'rhythm-bar';
 
-        // 计算高度百分比
-        // 也可以用非线性缩放让低值更明显，但这里保持线性更直观，
-        // 再通过最小高度避免 0 完全不可见。
         let hPercent = (val / MAX_VAL) * 100;
-        hPercent = Math.min(100, Math.max(0, hPercent)); // Clamp 0-100
+        hPercent = Math.min(100, Math.max(0, hPercent));
 
-        // 根据强度分配颜色等级
-        // 0       -> l1（几乎没吃）
-        // > 0.5  -> l2
-        // > 1.5  -> l3（正常）
-        // > 2.5  -> l4（偏多）
-        // > 3.5  -> l5（爆吃）
         if (val > 3.0) bar.classList.add('l5');
         else if (val > 2.2) bar.classList.add('l4');
         else if (val > 1.5) bar.classList.add('l3');
         else if (val > 0.5) bar.classList.add('l2');
-        else bar.classList.add('l1'); // Mostly empty
+        else bar.classList.add('l1');
 
-        bar.style.height = Math.max(5, hPercent) + '%'; // Min 5% for visual
+        bar.style.height = Math.max(5, hPercent) + '%';
+        bar.title = `${chunk.startDate} ~ ${chunk.endDate}\nAvg: ${val.toFixed(1)} meals`;
 
-        // 添加 tooltip 以便查看具体数值
-        bar.title = `Avg: ${val.toFixed(1)} meals`;
+        // === 交互绑定 ===
+        bar.onclick = (e) => {
+            e.stopPropagation();
+            // 切换到节奏态
+            updatePrinterMode('rhythm', index);
+        };
 
         rhythmContainer.appendChild(bar);
     });
@@ -313,6 +331,11 @@ function renderBarcode() {
 }
 
 // 初始化入口
+// 替换原来的初始化调用，改到底部，或者保留在底部（这里不需要删，只需确保 renderRhythm 能够被调用）
+// 这里其实没改动逻辑，只是因为上面覆盖了 renderRhythm，避免 duplicate definition 报错，
+// 我选择只替换 renderRhythm 函数体，不移动这些初始化调用。
+// 所以这个 Chunk 可以省略，只要 Ensure 之前的 chunk 结束位置正确即可。
+// 由于上面 chunk endLine 是 215，这里逻辑不变。
 renderStack();
 reassignClasses();
 renderRhythm();
@@ -330,7 +353,11 @@ const mainCard = document.getElementById('mainCard');
 
 const ITEMS_PER_PAGE = 6; // 每页显示的成就数量
 const achievementSlot = document.getElementById('achievement-slot');
+
+// 全局状态
+let printerMode = 'achievement'; // 'achievement' | 'rhythm'
 let currentAchievementPage = 0;
+let currentRhythmIndex = 0;
 
 // 分页数据
 function getAchievementPages() {
@@ -378,10 +405,193 @@ function createAchievementReceipt(pageIndex, state) {
             <span>PAGE ${pageNum}/${totalPages}</span>
         </div>
         ${rowsHTML}
-
     `;
 
     return el;
+}
+
+// 创建节奏纸张
+function createRhythmReceipt(index, state) {
+    const el = document.createElement('div');
+    el.className = `receipt ${state}`;
+
+    const chunk = RHYTHM_CHUNKS[index];
+    if (!chunk) {
+        el.innerHTML = `<div class="receipt-title">DATA ERROR</div>`;
+        return el;
+    }
+
+    const { records } = chunk;
+
+    // 构建每日记录行
+    let rowsHTML = '';
+
+    // 使用简单的日期格式化器
+    const getDayStr = (isoDate) => {
+        const d = new Date(isoDate);
+        return `${d.getMonth() + 1}/${d.getDate()}`;
+    };
+
+    records.forEach(day => {
+        if (day.count === 0) {
+            // 空记录
+            rowsHTML += `
+            <div class="achievement-row" style="opacity: 0.3; gap: 10px; padding: 10px 0;">
+                <div style="font-family: 'JetBrains Mono'; font-weight: 700;">${getDayStr(day.date)}</div>
+                <div style="font-size: 12px; color: #000;">NO RECORD</div>
+                <div style="margin-left: auto; font-family: 'JetBrains Mono'">---</div>
+            </div>
+           `;
+            return;
+        }
+
+        // 提取商家名称及价格
+        const details = day.merchants.map(m => `${m.name} (¥${Number(m.amount).toFixed(1)})`).join(', ');
+        const amtStr = `¥${Number(day.amount).toFixed(1)}`;
+
+        rowsHTML += `
+            <div class="achievement-row" style="display: flex; flex-direction: column; align-items: stretch; gap: 5px; padding: 12px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <div style="font-family: 'JetBrains Mono'; font-weight: 800; font-size: 16px;">${getDayStr(day.date)}</div>
+                    <div style="font-family: 'JetBrains Mono'; font-weight: 600; font-size: 16px; color: #999;">${amtStr}</div>
+                </div>
+                <div style="font-size: 14px; font-weight: 500; color: #333; line-height: 1.5;">
+                    ${details || 'Unknown Merchant'}
+                </div>
+            </div>
+        `;
+    });
+
+    el.innerHTML = `
+        <div class="receipt-title">
+            <span>WEEK ${String(index + 1).padStart(2, '0')}</span>
+        </div>
+        ${rowsHTML}
+    `;
+    return el;
+}
+
+window.updatePrinterMode = function (targetMode, targetIndex) {
+    updateFocus(cardRight);
+
+    if (currentState !== 'right') {
+        handleRight();
+    }
+
+    const slot = document.getElementById('achievement-slot');
+    const currentPaper = slot.querySelector('.receipt.current');
+
+    let needsReprint = false;
+
+    if (targetMode !== printerMode) {
+        needsReprint = true;
+    } else {
+        if (targetMode === 'achievement') {
+            if (currentAchievementPage === 0) needsReprint = false;
+            else {
+                currentAchievementPage = 0; // 重置到第一页
+                needsReprint = true;
+            }
+        } else {
+            // 节奏模式
+            if (targetIndex !== currentRhythmIndex) {
+                currentRhythmIndex = targetIndex;
+                needsReprint = true;
+            } else {
+                needsReprint = false;
+            }
+        }
+    }
+
+    if (needsReprint) {
+        // 更新模式状态
+        printerMode = targetMode;
+        if (targetMode === 'rhythm' && typeof targetIndex === 'number') {
+            currentRhythmIndex = targetIndex;
+        }
+        if (targetMode === 'achievement') {
+            currentAchievementPage = 0;
+        }
+
+        // 同步视觉状态（标题、高亮）
+        syncPrinterVisuals();
+
+        tearAndPrint(currentPaper);
+    } else {
+        // 抖动当前页
+        triggerShake(currentPaper);
+    }
+};
+
+// 新增：同步打印机外部视觉状态（Header + Rhythm Bar高亮）
+function syncPrinterVisuals() {
+    // 修复：HTML中没有 printer-title ID，而是 class="printer-header"
+    const headerTitle = document.querySelector('.printer-header');
+    const container = document.getElementById('rhythm-container');
+
+    if (printerMode === 'achievement') {
+        // Update Header
+        const total = totalPages;
+        if (headerTitle) headerTitle.textContent = `ACHIEVEMENTS`;
+
+        // Clear Rhythm Highlights
+        if (container) {
+            container.classList.remove('state-active');
+            const bars = container.querySelectorAll('.rhythm-bar');
+            bars.forEach(b => b.classList.remove('active'));
+        }
+    } else {
+        // Update Header
+        if (headerTitle) headerTitle.textContent = `ANNUAL-EAT`;
+
+        // Set Rhythm Highlights
+        if (container) {
+            container.classList.add('state-active');
+            const bars = container.querySelectorAll('.rhythm-bar');
+            bars.forEach((b, idx) => {
+                if (idx === currentRhythmIndex) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+        }
+    }
+}
+
+function updateHeader(text) {
+    const header = document.querySelector('.printer-header');
+    if (header) header.innerText = text;
+}
+
+// 核心翻页/打印逻辑
+function tearAndPrint(oldPaper) {
+    if (oldPaper && !oldPaper.classList.contains('ripped')) {
+        oldPaper.classList.remove('current');
+        oldPaper.classList.add('ripped');
+
+        // 垃圾回收
+        setTimeout(() => oldPaper.remove(), 800);
+    }
+
+    achievementSlot.classList.add('printing-active');
+
+    // 生成新页
+    let next;
+    if (printerMode === 'achievement') {
+        next = createAchievementReceipt(currentAchievementPage, 'printing');
+    } else {
+        next = createRhythmReceipt(currentRhythmIndex, 'printing');
+    }
+
+    achievementSlot.appendChild(next);
+
+    setTimeout(() => {
+        next.classList.remove('printing');
+        next.classList.add('current');
+        achievementSlot.classList.remove('printing-active');
+        bindReceiptClick(next); // 绑定点击翻页
+    }, 400);
 }
 
 // 绑定翻页点击事件
@@ -390,30 +600,18 @@ function bindReceiptClick(el) {
         e.stopPropagation();
         if (el.classList.contains('ripped')) return;
 
-        // 1. 旧纸撕掉
-        el.classList.remove('current');
-        el.classList.add('ripped');
+        // 计算下一页索引
+        if (printerMode === 'achievement') {
+            currentAchievementPage = (currentAchievementPage + 1) % totalPages;
+        } else {
+            // 节奏模式下翻到下一个 chunk
+            currentRhythmIndex = (currentRhythmIndex + 1) % RHYTHM_CHUNKS.length;
+        }
 
-        // 2. 容器进入打印保护模式
-        achievementSlot.classList.add('printing-active');
+        // 立即同步视觉状态（高亮跟着翻页变）
+        syncPrinterVisuals();
 
-        // 3. 切换到下一页（循环）
-        currentAchievementPage = (currentAchievementPage + 1) % totalPages;
-        const next = createAchievementReceipt(currentAchievementPage, 'printing');
-        achievementSlot.appendChild(next);
-
-        // 4. 打印动画结束后切换状态
-        setTimeout(() => {
-            next.classList.remove('printing');
-            next.classList.add('current');
-            achievementSlot.classList.remove('printing-active');
-            bindReceiptClick(next);
-        }, 400);
-
-        // 5. 垃圾回收
-        setTimeout(() => {
-            el.remove();
-        }, 800);
+        tearAndPrint(el);
     });
 }
 
@@ -568,7 +766,8 @@ setTimeout(() => {
         viewAllBtn.style.cursor = 'pointer';
         viewAllBtn.onclick = (e) => {
             e.stopPropagation();
-            handleRight();
+            // 切换回成就模式
+            updatePrinterMode('achievement');
         };
     }
 }, 100);
