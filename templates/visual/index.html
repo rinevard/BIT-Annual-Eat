@@ -1,0 +1,115 @@
+<head>
+    <meta charset="utf-8" />
+    <title>BIT 吃饭年度报告 - ACID MODE</title>
+    <style>
+        /*__INLINE_STYLE__*/
+    </style>
+</head>
+
+<body>
+
+    <div class="camera-rig" id="cameraRig">
+        <!-- 左侧卡片 (砸入) -->
+        <div class="card left" id="cardLeft">
+            <div class="close-btn" onclick="handleCloseLeft(event)">
+                ×
+            </div>
+            <div class="left-content">
+                <div class="huge-vertical-text">UPLOAD</div>
+                <div class="upload-area" onclick="document.getElementById('file-upload').click()">
+                    <div class="upload-icon">+</div>
+                    <div class="upload-hint">CLICK TO UPLOAD<br>NEW AVATAR</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="poster-frame card main" id="mainCard" onclick="handleMainClick()">
+            <!-- 顶部标题 -->
+            <div class="top-bar">
+                <div class="huge-title">
+                    BIT<br>
+                    EAT<span>2025</span>
+                </div>
+                <div class="meta-info">
+                    EATBIT.TOP
+                </div>
+            </div>
+
+            <!-- 中间两栏 -->
+            <div class="content-grid">
+
+                <!-- 左侧：个人档案 -->
+                <div class="profile-section">
+                    <div class="profile-header">
+                        <div class="avatar-frame" onclick="event.stopPropagation(); handleLeft()">
+                            <img src="https://ui-avatars.com/api/?name=R&background=CCFF00&color=000&size=200"
+                                id="avatar-img">
+                            <input type="file" id="file-upload" accept="image/*">
+                        </div>
+                        <div class="name-block">
+                            <div class="name-label">个人档案</div><br>
+                            <div class="user-name" contenteditable="true">LYRAINE</div>
+                            <div style="font-weight: 700; color: #666;">#BIT EATER</div>
+                        </div>
+                    </div>
+
+                    <div class="badges-rack" id="badges-rack">
+                        <!-- 由 JS 生成 -->
+                    </div>
+
+                    <!-- 装饰性贴纸 -->
+                    <div
+                        style="position: absolute; bottom: 100px; right: 19px; transform: rotate(15deg) translateZ(0); will-change: transform; background: #000; color: #fff; padding: 5px 10px; font-weight: 600; font-size: 14px;">
+                        查看全部
+                    </div>
+                </div>
+
+                <!-- 右侧：卡片堆叠 -->
+                <div class="card-stack-wrapper" id="card-stack">
+                    <!-- 由 JS 注入的统计卡片 -->
+                </div>
+            </div>
+
+            <!-- 底部：Rhythm -->
+            <div class="rhythm-zone">
+                <div class="rhythm-tag">/// FREQ_VISUALIZER</div>
+                <div class="bar-container" id="rhythm-container">
+                    <!-- 由 JS 注入的节奏条形图 -->
+                </div>
+            </div>
+
+            <!-- 装饰条形码 -->
+            <div class="sticker sticker-scan">
+                <div class="barcode" id="barcode-container"></div>
+                <!-- transform: translateZ(0) + will-change: transform 是为了避免 Chrome/Edge 上 CPU/GPU 渲染切换导致的闪烁 -->
+                <div style="font-size: 10px; font-weight: 600; text-align: center; font-family: JetBrains Mono; transform: translateZ(0); will-change: transform;"
+                    id="barcode-text"></div>
+            </div>
+
+        </div>
+
+        <!-- 右侧卡片 (打印机风格) -->
+        <div class="card right" id="cardRight">
+            <div class="close-btn" onclick="handleCloseRight(event)">
+                ×
+            </div>
+            <div class="printer-unit">
+                <div class="printer-header">ACHIEVEMENTS</div>
+                <div class="slot" id="achievement-slot">
+                    <!-- 由 JS 动态生成成就纸张 -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const EAT_DATA = __EAT_DATA__;
+        const ACH_STATE = __ACH_STATE__;
+    </script>
+    <script>
+        //__INLINE_SCRIPT__
+    </script>
+</body>
+
+</html>
