@@ -94,13 +94,13 @@ function reassignClasses() {
 // ID 对应 images/ 下的文件名
 // 完整成就配置
 const ACH_CONFIG = [
-    { id: "lost_kid", name: "迷途之子", rarity: 4, condition: "全年就餐天数 < 50 天", desc: "你迷路了吗", time: "2025-03-15" },
+    { id: "lost_kid", name: "迷途之羊", rarity: 4, condition: "全年就餐天数 < 50 天", desc: "你迷路了吗", time: "2025-03-15" },
     { id: "noticed", name: "注意到", rarity: 4, condition: "消费总金额恰为学号后四位的倍数", desc: "注意力惊人", time: "2025-04-22" },
     { id: "edge_runner", name: "边缘行者", rarity: 4, condition: "在任意小时的第59分59秒完成交易", desc: "百丽宫有活着的传奇", time: "2025-05-08" },
     { id: "early_bird", name: "早八人", rarity: 3, condition: "06:00-08:00间消费过5次", desc: "你见过早上八点的百丽宫吗", time: "2025-02-28" },
     { id: "my_turn", name: "我的回合", rarity: 3, condition: "2分钟内连续刷卡 2 次", desc: "我的回合之后——还是我的回合！", time: "2025-03-10" },
     { id: "pi", name: "PI", rarity: 3, condition: "单笔消费金额恰为 3.14 元", desc: "圆食，启动！", time: "2025-03-14" },
-    { id: "cosmic_meal", name: "宇宙饭", rarity: 3, condition: "连续五天每天在不一样的商家吃饭", desc: "如果你的商家里没有相同的商家，获得本成就", time: "2025-04-01" },
+    { id: "cosmic_meal", name: "我全都要", rarity: 3, condition: "连续五天每天在不一样的商家吃饭", desc: "如果你的商家里没有相同的商家，获得本成就", time: "2025-04-01" },
     { id: "full_timer", name: "全勤奖", rarity: 3, condition: "全年就餐天数 >= 200 天", desc: "一瞬一瞬累积起来就会变成一辈子", time: "2025-11-20" },
     { id: "default_setting", name: "西西弗斯", rarity: 2, condition: "在同一个商家消费次数大于20次", desc: "我们必须想象你是幸福的", time: "2025-04-15" },
     { id: "hello_world", name: "Hello World", rarity: 1, condition: "本年有消费过", desc: "你好，食堂！", time: "2025-01-02" },
@@ -125,31 +125,54 @@ if (typeof ACH_STATE !== 'undefined') {
     ACH_CONFIG.forEach(item => {
         const s = ACH_STATE[item.id];
         if (s && s.unlocked) {
-            // Unlocked: add to list, update time
+            // Unlocked: add to list
             const newItem = Object.assign({}, item);
             if (s.unlocked_at) {
-                // Split date from datetime string if needed
-                // Backend: "YYYY-MM-DD HH:MM", Frontend expects "YYYY-MM-DD" mostly for display
                 newItem.time = s.unlocked_at.split(' ')[0];
             }
             ACHIEVEMENTS_DATA.push(newItem);
+        } else {
+            // Locked
+            // 如果稀有度 < 3 (即 1, 2)，则显示但锁定
+            // 3, 4 为隐藏成就，不显示
+            if (item.rarity < 4) {
+                const newItem = Object.assign({}, item);
+                newItem.locked = true;
+                newItem.time = "未解锁";
+                // 也可以把 desc 隐藏或者是变成 ???
+                ACHIEVEMENTS_DATA.push(newItem);
+            }
         }
     });
 } else {
-    // Fallback for independent viewing (keep all or random?)
-    // Keep all for debugging if ACH_STATE is missing
     ACHIEVEMENTS_DATA = ACH_CONFIG;
 }
 
-// 由文件名生成徽章数据
-const badges = ACHIEVEMENTS_DATA.map((item) => ({
+// 排序：先按是否解锁（以解锁优先），再按稀有度（高到低）
+ACHIEVEMENTS_DATA.sort((a, b) => {
+    const aLocked = !!a.locked;
+    const bLocked = !!b.locked;
+
+    // 1. 解锁状态：已解锁(-1) < 未解锁(1)
+    if (aLocked !== bLocked) {
+        return aLocked ? 1 : -1;
+    }
+
+    // 2. 稀有度：高 -> 低
+    return b.rarity - a.rarity;
+});
+
+// 由文件名生成徽章数据 (仅展示已解锁的徽章在主页?) 
+// 逻辑：首页 Badges Rack 是否显示锁定的？
+// 原设计是随机展示。如果展示锁定的，可能是个黑影？
+// 这里为了美观，Badges Rack 只展示已解锁的。
+const badges = ACHIEVEMENTS_DATA.filter(i => !i.locked).map((item) => ({
     src: `images/${item.id}.png`,
     name: item.name,
 }));
 
-// 随机打乱顺序（后续主卡片与成就墙都基于这一顺序）
+// 随机打乱顺序
 badges.sort(() => Math.random() - 0.5);
-// 主卡片左侧 rack：只展示至多 6 个成就
 const MAX_MAIN_BADGES = 6;
 const mainBadges = badges.slice(0, MAX_MAIN_BADGES);
 
@@ -161,7 +184,7 @@ mainBadges.forEach(b => {
     img.src = b.src;
     img.alt = b.name;
 
-    el.title = b.name;
+    // el.title = b.name; // 移除原生 Tooltip
     el.appendChild(img);
     badgeRack.appendChild(el);
 });
@@ -171,10 +194,28 @@ const badgeItems = badgeRack.querySelectorAll('.badge-item');
 badgeItems.forEach(el => {
     el.addEventListener('click', (e) => {
         e.stopPropagation();
-        // 统一行为：点击徽章也切换到成就模式
         updatePrinterMode('achievement');
     });
 });
+
+// Tooltip Logic
+const tooltipEl = document.getElementById('custom-tooltip');
+
+function showTooltip(e, text) {
+    tooltipEl.textContent = text;
+    tooltipEl.style.display = 'block';
+    moveTooltip(e);
+}
+
+function moveTooltip(e) {
+    // Offset slightly from cursor (move to top right)
+    tooltipEl.style.left = (e.clientX + 5) + 'px';
+    tooltipEl.style.top = (e.clientY - 25) + 'px';
+}
+
+function hideTooltip() {
+    tooltipEl.style.display = 'none';
+}
 
 // 3. Rhythm 区域（真实数据驱动）
 // Rhythm 区域的渲染和交互逻辑
@@ -258,7 +299,18 @@ function renderRhythm() {
         else bar.classList.add('l1');
 
         bar.style.height = Math.max(5, hPercent) + '%';
-        bar.title = `${chunk.startDate} ~ ${chunk.endDate}\nAvg: ${val.toFixed(1)} meals`;
+        // bar.title = `${chunk.startDate} ~ ${chunk.endDate}\nAvg: ${val.toFixed(1)} meals`; // Removed
+
+        // 格式化日期：2025-05-31 -> 5.31
+        const fmtDate = (s) => {
+            const parts = s.split('-');
+            return `${parseInt(parts[1])}.${parseInt(parts[2])}`;
+        };
+        const rangeText = `${fmtDate(chunk.startDate)}~${fmtDate(chunk.endDate)}`;
+
+        bar.addEventListener('mouseenter', (e) => showTooltip(e, rangeText));
+        bar.addEventListener('mousemove', moveTooltip);
+        bar.addEventListener('mouseleave', hideTooltip);
 
         // === 交互绑定 ===
         bar.onclick = (e) => {
@@ -423,9 +475,10 @@ function createAchievementReceipt(pageIndex, state) {
     pageData.forEach(ach => {
         // 查找对应图片
         const imgSrc = `images/${ach.id}.png`;
+        const lockedClass = ach.locked ? 'locked' : '';
 
         rowsHTML += `
-                <div class="achievement-row">
+                <div class="achievement-row ${lockedClass}">
                     <img class="ach-icon" src="${imgSrc}">
                     <div class="ach-content">
                         <div class="ach-header">

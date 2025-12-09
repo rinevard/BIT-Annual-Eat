@@ -921,6 +921,34 @@ body.has-active-card {
     background-color: #668000;
 }
 
+/* --- 自定义悬浮窗 --- */
+.custom-tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.9);
+    color: #ccff00;
+    border: 1px solid #ccff00;
+    padding: 4px 8px;
+    font-family: 'JetBrains Mono', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+
+/* --- 锁定成就样式 --- */
+.achievement-row.locked {
+    opacity: 0.6;
+    filter: grayscale(100%);
+}
+
+.achievement-row.locked .ach-time {
+    color: #aaa;
+    font-style: italic;
+}
+
 body.has-active-card .card.main.unfocused,
 body.has-active-card .card.left.unfocused,
 body.has-active-card .card.right.unfocused {
