@@ -791,7 +791,7 @@ body:not(.has-active-card) .card.main:hover {
 }
 
 .ach-name {
-    font-weight: 800;
+    font-weight: 600;
     font-size: 18px;
     color: #000;
     line-height: 1.2;
@@ -805,9 +805,9 @@ body:not(.has-active-card) .card.main:hover {
 }
 
 .ach-condition {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--hot-pink);
+    font-size: 14px;
+    font-weight: 600;
+    color: #000000;
     margin: 2px 0;
     /* 玄学闪烁 */
     transform: translateZ(0);
