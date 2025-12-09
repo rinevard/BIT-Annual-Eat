@@ -257,7 +257,8 @@ function renderRhythm() {
                 date: dateStr,
                 count: dayData ? dayData.count : 0,
                 amount: dayData ? dayData.amount : 0,
-                merchants: dayData ? dayData.merchants : []
+                merchants: dayData ? dayData.merchants : [],
+                txs: dayData ? dayData.txs : []
             });
         }
     }
@@ -494,9 +495,11 @@ function createAchievementReceipt(pageIndex, state) {
 
     el.innerHTML = `
         <div class="receipt-title">
-            <span>PAGE ${pageNum}/${totalPages}</span>
+            <span>PAGE ${String(pageNum).padStart(2, '0')}/${String(totalPages).padStart(2, '0')}</span>
         </div>
-        ${rowsHTML}
+        <div class="receipt-body">
+            ${rowsHTML}
+        </div>
     `;
 
     return el;
@@ -538,8 +541,27 @@ function createRhythmReceipt(index, state) {
         }
 
         // 提取商家名称及价格
-        const details = day.merchants.map(m => `${m.name} (¥${Number(m.amount).toFixed(1)})`).join(', ');
         const amtStr = `¥${Number(day.amount).toFixed(1)}`;
+
+        // 构建详细的消费列表
+        let txRows = '';
+        if (day.txs && day.txs.length > 0) {
+            txRows = day.txs.map(tx => {
+                // Time: 07:08:03 -> 07:08
+                let timeStr = tx.time ? tx.time.substring(0, 5) : '--:--';
+                let txAmt = `¥${Number(tx.amount).toFixed(1)}`;
+                return `
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #444; margin-top: 2px;">
+                        <span><span style="color:#999; margin-right:6px; font-family:'JetBrains Mono'; font-size: 12px;">${timeStr}</span>${tx.mername}</span>
+                        <span style="font-family:'JetBrains Mono'; font-size: 12px;">${txAmt}</span>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            // Fallback if no txs
+            const details = day.merchants.map(m => `${m.name} (¥${Number(m.amount).toFixed(1)})`).join(', ');
+            txRows = `<div style="font-size: 13px; color: #444; margin-top: 2px;">${details}</div>`;
+        }
 
         rowsHTML += `
             <div class="achievement-row" style="display: flex; flex-direction: column; align-items: stretch; gap: 5px; padding: 12px 0;">
@@ -547,8 +569,9 @@ function createRhythmReceipt(index, state) {
                     <div style="font-family: 'JetBrains Mono'; font-weight: 800; font-size: 16px;">${getDayStr(day.date)}</div>
                     <div style="font-family: 'JetBrains Mono'; font-weight: 600; font-size: 16px; color: #999;">${amtStr}</div>
                 </div>
-                <div style="font-size: 14px; font-weight: 500; color: #333; line-height: 1.5;">
-                    ${details || 'Unknown Merchant'}
+                <!-- Transaction List -->
+                <div style="display: flex; flex-direction: column;">
+                    ${txRows}
                 </div>
             </div>
         `;
@@ -556,16 +579,16 @@ function createRhythmReceipt(index, state) {
 
     el.innerHTML = `
         <div class="receipt-title">
-            <span>WEEK ${String(index + 1).padStart(2, '0')}</span>
+            <span>PAGE ${String(index + 1).padStart(2, '0')}</span>
         </div>
-        ${rowsHTML}
+        <div class="receipt-body">
+            ${rowsHTML}
+        </div>
     `;
     return el;
 }
 
 window.updatePrinterMode = function (targetMode, targetIndex) {
-    updateFocus(cardRight);
-
     if (currentState !== 'right') {
         handleRight();
     }
@@ -617,13 +640,11 @@ window.updatePrinterMode = function (targetMode, targetIndex) {
 
 // 新增：同步打印机外部视觉状态（Header + Rhythm Bar高亮）
 function syncPrinterVisuals() {
-    // 修复：HTML中没有 printer-title ID，而是 class="printer-header"
     const headerTitle = document.querySelector('.printer-header');
     const container = document.getElementById('rhythm-container');
 
     if (printerMode === 'achievement') {
         // Update Header
-        const total = totalPages;
         if (headerTitle) headerTitle.textContent = `ACHIEVEMENTS`;
 
         // Clear Rhythm Highlights

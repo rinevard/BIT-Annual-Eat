@@ -686,6 +686,19 @@ body:not(.has-active-card) .card.main:hover {
     box-sizing: border-box;
 }
 
+.receipt-body {
+    flex: 1;
+    overflow-y: auto;
+
+    /* Hide Scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.receipt-body::-webkit-scrollbar {
+    display: none;
+}
+
 .receipt::before {
     content: '';
     position: absolute;
