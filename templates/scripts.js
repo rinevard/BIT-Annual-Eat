@@ -859,6 +859,17 @@ window.handleCloseLeft = function (e) {
 window.handleCloseRight = function (e) {
     if (e) e.stopPropagation();
     if (currentState === 'right') {
+
+        // 如果在节奏态关闭，恢复到默认成就态（包括重置高亮和纸张内容）
+        if (printerMode === 'rhythm') {
+            printerMode = 'achievement';
+            syncPrinterVisuals();
+
+            const slot = document.getElementById('achievement-slot');
+            const currentPaper = slot.querySelector('.receipt.current');
+            tearAndPrint(currentPaper);
+        }
+
         triggerExit(cardRight);
         rig.classList.remove('pan-right');
         currentState = 'none';
