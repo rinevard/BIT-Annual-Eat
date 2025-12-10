@@ -495,7 +495,7 @@
             emoji: "👨‍⚕",
         },
         cosmic_meal: {
-            title: "宇宙饭",
+            title: "我全都要",
             desc: "如果你的商家里没有相同的商家，获得本成就",
             rarity: 3,
             condition: "连续五天每天在不一样的商家吃饭",

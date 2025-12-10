@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import shutil
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -436,9 +437,9 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
         used_default_password=used_default_password,
     )
 
-    base_tpl_path = os.path.join("templates", "report_base.html")
-    style_path = os.path.join("templates", "report_style.css")
-    script_path = os.path.join("templates", "report_script.js")
+    base_tpl_path = os.path.join("templates", "visual", "index.html")
+    style_path = os.path.join("templates", "visual", "styles.css")
+    script_path = os.path.join("templates", "visual", "scripts.js")
 
     with open(base_tpl_path, "r", encoding="utf-8") as f:
         base_tpl = f.read()
@@ -463,6 +464,20 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write(html)
+
+    # Copy images folder to output directory
+    src_images = os.path.join("templates", "visual", "images")
+    dst_images = os.path.join(os.path.dirname(path), "images")
+    if os.path.exists(src_images):
+        if os.path.exists(dst_images):
+            try:
+                shutil.rmtree(dst_images)
+            except OSError:
+                pass
+        try:
+            shutil.copytree(src_images, dst_images)
+        except OSError as e:
+            print(f"Warning: Failed to copy images: {e}")
 
     return edit_pw
 

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Thermal Printer V3.1 - Extrusion</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ccff00;
+            --ink: #000;
+            --paper: #fff;
+            --border: 3px solid var(--ink);
+            --shadow: 8px 8px 0px var(--ink);
+
+            --ticket-w: 320px;
+            --ticket-h: 460px;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--ink) 1px, transparent 1px);
+            background-size: 20px 20px;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .printer-unit {
+            position: relative;
+            width: var(--ticket-w);
+            transform: rotate(-1deg);
+        }
+
+        .printer-header {
+            position: relative;
+            z-index: 50;
+            background: var(--ink);
+            color: var(--bg-color);
+            height: 50px;
+            width: calc(100% + 10px);
+            left: -5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: var(--border);
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+            font-weight: 800;
+            letter-spacing: 2px;
+            font-size: 14px;
+        }
+
+        .slot {
+            position: relative;
+            width: 100%;
+            height: var(--ticket-h);
+            /* 
+               默认不加 clip-path，以免影响正常的悬停交互和撕纸动画 
+            */
+            transition: clip-path 0s;
+        }
+
+        /* 
+           === 核心修改：打印状态下的视口裁剪 ===
+           当打印机正在吐纸时，给容器加一个遮罩。
+           inset(上 右 下 左)
+           上=0: 顶部切齐，隐藏所有还在上面的纸（即未打印出来的部分）。
+           下=-150vh: 底部几乎无限延伸，保证那张正在飞出去的旧纸不被截断。
+        */
+        .slot.printing-active {
+            /* 
+            上: 0 (保持不动，切齐顶部)
+            右: -20px (向右扩宽20px，容纳右侧阴影)
+            下: -150vh (保持不动)
+            左: -20px (向左扩宽20px，容纳可能的左侧溢出)
+            */
+            clip-path: inset(0 -20px -150vh -20px);
+        }
+
+        .receipt {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--paper);
+            border: var(--border);
+            border-top: none;
+            padding: 30px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+            transform-origin: top center;
+            transition: transform 0.15s ease-out;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .receipt::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            border-top: 3px dashed rgba(0, 0, 0, 0.3);
+        }
+
+        .r-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .r-title {
+            font-size: 42px;
+            line-height: 0.85;
+            font-weight: 900;
+            margin: 10px 0 20px 0;
+            word-break: break-all;
+            text-transform: uppercase;
+        }
+
+        .divider {
+            border-bottom: 3px dashed var(--ink);
+            margin: 20px 0;
+            opacity: 0.5;
+        }
+
+        .r-barcode {
+            margin-top: auto;
+            height: 30px;
+            background: repeating-linear-gradient(90deg,
+                    var(--ink),
+                    var(--ink) 2px,
+                    transparent 2px,
+                    transparent 4px,
+                    var(--ink) 5px);
+        }
+
+        /* 交互动画保持不变 */
+        .printer-unit:hover .receipt.current {
+            transform: translateY(12px) rotate(0.5deg);
+        }
+
+        .receipt.ripped {
+            pointer-events: none;
+            z-index: 40;
+            animation: tear-off 0.6s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes tear-off {
+            0% {
+                transform: translateY(12px) rotate(0.5deg);
+            }
+
+            15% {
+                transform: translateY(20px) rotate(2deg);
+            }
+
+            100% {
+                transform: translateY(120vh) translateX(-50px) rotate(-15deg);
+            }
+        }
+
+        .receipt.printing {
+            z-index: 5;
+            animation: print-feed 0.4s linear forwards;
+        }
+
+        @keyframes print-feed {
+            0% {
+                transform: translateY(-100%);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="printer-unit">
+        <div class="printer-header">
+            OUTPUT_STREAM
+        </div>
+
+        <div class="slot" id="slot">
+            <!-- Paper area -->
+        </div>
+    </div>
+
+    <script>
+        const slot = document.getElementById('slot');
+
+        const database = [
+            { title: "ACCESS DENIED", code: "403" },
+            { title: "KERNEL PANIC", code: "500" },
+            { title: "HELLO WORLD", code: "200" },
+            { title: "STACK OVERFLOW", code: "ERR" },
+            { title: "FORCE QUIT", code: "KILL" }
+        ];
+
+        let index = 0;
+
+        function createReceipt(data, state) {
+            const el = document.createElement('div');
+            el.className = `receipt ${state}`;
+
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+
+            el.innerHTML = `
+                <div class="r-row">
+                    <span>${time}</span>
+                    <span>ID: ${data.code}</span>
+                </div>
+                <div class="r-title">${data.title}</div>
+                <div class="divider"></div>
+                <div class="r-row">
+                    <span>MEM_USAGE</span>
+                    <span>${Math.floor(Math.random() * 30 + 60)}%</span>
+                </div>
+                <div class="r-row">
+                    <span>CPU_TEMP</span>
+                    <span>${Math.floor(Math.random() * 20 + 70)}°C</span>
+                </div>
+                <div class="r-row" style="color:#666">
+                    <span>PRIORITY</span>
+                    <span>CRITICAL</span>
+                </div>
+                <div style="font-size:10px; margin-top:20px;">
+                    >> EXECUTE TEAR_OFF_FUNCTION()<br>
+                    >> WAITING FOR INPUT...
+                </div>
+                <div class="r-barcode"></div>
+            `;
+            return el;
+        }
+
+        const first = createReceipt(database[0], 'current');
+        slot.appendChild(first);
+        bindClick(first);
+
+        function bindClick(el) {
+            el.addEventListener('click', () => {
+                if (el.classList.contains('ripped')) return;
+
+                // 1. 旧纸：撕掉状态
+                el.classList.remove('current');
+                el.classList.add('ripped');
+
+                // 2. 容器：进入“打印保护模式”（开启裁剪）
+                // 这确保新纸看起来是从内部出来的
+                slot.classList.add('printing-active');
+
+                // 3. 新纸：生成并开始动画
+                index = (index + 1) % database.length;
+                const next = createReceipt(database[index], 'printing');
+                slot.appendChild(next);
+
+                // 4. 状态切换：等待打印动画结束 (400ms)
+                setTimeout(() => {
+                    next.classList.remove('printing');
+                    next.classList.add('current');
+
+                    // 打印完成，解除容器裁剪，允许纸张自由交互
+                    slot.classList.remove('printing-active');
+
+                    bindClick(next);
+                }, 400);
+
+                // 5. 垃圾回收
+                setTimeout(() => {
+                    el.remove();
+                }, 800);
+            });
+        }
+    </script>
+</body>
+
+</html>

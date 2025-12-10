@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <title>BIT 吃饭年度报告</title>
+    <style>
+        :root {
+            --bg-page: #F7F2C4;
+            --color-header: #34C759;
+            --color-avatar-wrapper: #FF69B4;
+            --color-avatar: #FFDB58;
+            --color-achievements: #A388EE;
+            --color-button: #FFDB58;
+            --color-icon: #FFA07A;
+            --color-card1: #FFA07A;
+            --color-card2: #7DF9FF;
+            --color-card3: #90EE90;
+            --color-card4: #FF6B6B;
+            --color-day-detail: #FDFD96;
+            --color-modal-header: #34C759;
+            --color-time-badge: #FFDB58;
+            --heatmap-0: #f5f5f5;
+            --heatmap-1: #FFA07A;
+            --heatmap-2: #FF7A5C;
+            --heatmap-3: #FF6B6B;
+            --heatmap-4: #FF4911;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-page);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 16px 24px;
+            background-color: var(--color-header);
+            border: 4px solid #000;
+        }
+
+        .header-title {
+            font-size: 32px;
+            font-weight: 900;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        #save-to-link {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            border: 3px solid #000;
+            background-color: var(--color-button);
+            color: #000;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 #000;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+        }
+
+        #save-to-link:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        #save-to-link:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0 0 0 #000;
+        }
+
+        .layout {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+        }
+
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .avatar-wrapper {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: var(--color-avatar-wrapper);
+            border: 4px solid #000;
+        }
+
+        .avatar {
+            width: 180px;
+            height: 180px;
+            border: 4px solid #000;
+            overflow: hidden;
+            background: var(--color-avatar);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            color: #000;
+            cursor: pointer;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-hint {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .avatar-upload-button {
+            margin-top: 8px;
+            font-size: 12px;
+            padding: 6px 12px;
+            border: 2px solid #000;
+            background-color: #fff;
+            color: #000;
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .avatar-upload-button:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 #000;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0 0 16px 0;
+            text-align: center;
+            padding: 12px;
+            background-color: #fff;
+            border: 3px solid #000;
+        }
+
+        .profile-subtitle {
+            font-size: 13px;
+            color: #000;
+            text-align: center;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        #year-switcher {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .year-button {
+            display: inline-block;
+            padding: 8px 16px;
+            border: 3px solid #000;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            background-color: #fff;
+            box-shadow: 3px 3px 0 #000;
+            transition: all 0.1s ease;
+        }
+
+        .year-button:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .year-button.active {
+            background-color: #000;
+            color: #fff;
+            transform: translate(3px, 3px);
+            box-shadow: 0 0 0 #000;
+        }
+
+        /* 一眼总览 */
+        #summary-section {
+            margin-top: 0;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .summary-card {
+            background-color: #fff;
+            border: 3px solid #000;
+            padding: 12px 14px;
+        }
+
+        .summary-card:nth-child(1) {
+            background-color: var(--color-card1);
+        }
+
+        .summary-card:nth-child(2) {
+            background-color: var(--color-card2);
+        }
+
+        .summary-card:nth-child(3) {
+            background-color: var(--color-card3);
+        }
+
+        .summary-card:nth-child(4) {
+            background-color: var(--color-card4);
+        }
+
+        .summary-card-label {
+            font-size: 12px;
+            color: #000;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-card-value {
+            margin-top: 6px;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .summary-highlight {
+            margin-top: 16px;
+            font-size: 13px;
+            color: #000;
+            font-weight: 600;
+            padding: 12px;
+            background-color: #fff;
+            border: 3px solid #000;
+        }
+
+        /* 成就区域 */
+        #achievements-section {
+            margin-bottom: 24px;
+            padding: 20px;
+            background-color: var(--color-achievements);
+            border: 4px solid #000;
+        }
+
+        #achievements-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        #achievements-header h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        #view-all-achievements {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 3px solid #000;
+            background-color: var(--color-button);
+            color: #000;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 #000;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+        }
+
+        #view-all-achievements:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .achievement-card {
+            display: flex;
+            padding: 12px;
+            border: 3px solid #000;
+            background-color: #fff;
+            box-shadow: 4px 4px 0 #000;
+        }
+
+        .achievement-time {
+            margin-left: auto;
+            font-size: 10px;
+            color: #000;
+            font-weight: 600;
+            align-self: flex-start;
+            background-color: var(--color-time-badge);
+            padding: 2px 6px;
+            border: 2px solid #000;
+        }
+
+        .achievement-card.locked {
+            opacity: 0.5;
+            background-color: #e5e5e5;
+        }
+
+        .achievement-icon {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #000;
+            background-color: var(--color-icon);
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .achievement-title {
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .achievement-desc {
+            font-size: 11px;
+            color: #000;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* 成就弹窗 */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: #fff;
+            border: 4px solid #000;
+            width: 520px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 4px solid #000;
+            background-color: var(--color-modal-header);
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        #close-achievements-modal {
+            background: #000;
+            border: none;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 10px;
+            color: #fff;
+            font-weight: 900;
+        }
+
+        #close-achievements-modal:hover {
+            background: #333;
+        }
+
+        .modal-footer {
+            padding: 12px 20px;
+            border-top: 4px solid #000;
+            background-color: #f5f5f5;
+            font-weight: 700;
+        }
+
+        .hidden-achievements-hint {
+            color: #dc2626;
+            margin-left: 4px;
+            font-weight: 800;
+        }
+
+        .modal-body {
+            padding: 16px 20px;
+            overflow-y: auto;
+        }
+
+        .all-achievement-row {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            border: 3px solid #000;
+            margin-bottom: 8px;
+            background-color: #fff;
+        }
+
+        .all-achievement-row:hover {
+            background-color: #f5f5f5;
+        }
+
+        .all-achievement-row.locked {
+            cursor: default;
+            opacity: 0.5;
+            background-color: #e5e5e5;
+        }
+
+        .all-achievement-row .achievement-icon {
+            flex-shrink: 0;
+        }
+
+        .all-achievement-info {
+            flex: 1;
+            margin-left: 8px;
+        }
+
+        .all-achievement-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .all-achievement-unlock-time {
+            font-size: 11px;
+            color: #000;
+            text-align: right;
+            width: 120px;
+            font-weight: 700;
+            background-color: #FFDB58;
+            padding: 4px 8px;
+            border: 2px solid #000;
+        }
+
+        .pin-checkbox {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            accent-color: #000;
+            cursor: pointer;
+        }
+
+        .pin-checkbox:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* 饭力图区域 */
+        #heatmap-container {
+            margin-top: 0;
+            overflow-x: auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 4px solid #000;
+        }
+
+        #heatmap {
+            position: relative;
+        }
+
+        .heatmap-scroll {
+            display: inline-block;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: 14px;
+            grid-template-rows: repeat(7, 14px);
+            gap: 3px;
+        }
+
+        .day-cell {
+            width: 14px;
+            height: 14px;
+            background-color: var(--heatmap-0);
+            cursor: pointer;
+            border: 2px solid #000;
+        }
+
+        .day-cell.level-0 {
+            background-color: var(--heatmap-0);
+        }
+
+        .day-cell.level-1 {
+            background-color: var(--heatmap-1);
+        }
+
+        .day-cell.level-2 {
+            background-color: var(--heatmap-2);
+        }
+
+        .day-cell.level-3 {
+            background-color: var(--heatmap-3);
+        }
+
+        .day-cell.level-4 {
+            background-color: var(--heatmap-4);
+        }
+
+        .day-cell:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            position: relative;
+        }
+
+        .weekday-labels {
+            display: grid;
+            grid-template-rows: repeat(7, 14px);
+            row-gap: 3px;
+            font-size: 11px;
+            color: #000;
+            margin-right: 6px;
+            padding-top: 28px;
+            font-weight: 700;
+        }
+
+        .weekday-labels div {
+            line-height: 14px;
+        }
+
+        .month-labels {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: 14px;
+            column-gap: 3px;
+            font-size: 11px;
+            color: #000;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .month-labels div {
+            text-align: center;
+        }
+
+        #day-detail {
+            margin-top: 20px;
+            font-size: 13px;
+            padding: 16px;
+            background-color: var(--color-day-detail);
+            border: 3px solid #000;
+        }
+
+        #day-detail:empty {
+            display: none;
+        }
+
+        #day-detail h2 {
+            margin: 0 0 12px 0;
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        #day-detail p {
+            margin: 0 0 12px 0;
+            font-weight: 600;
+        }
+
+        #day-detail ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        #day-detail li {
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .avatar {
+                width: 140px;
+                height: 140px;
+            }
+
+            .achievements-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .header-title {
+                font-size: 24px;
+            }
+        }
+
+        /* 配色面板 */
+        #color-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100vh;
+            background: #1a1a1a;
+            color: #fff;
+            overflow-y: auto;
+            padding: 16px;
+            border-left: 4px solid #000;
+            z-index: 9999;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        #color-panel.open {
+            transform: translateX(0);
+        }
+        
+        #color-panel-toggle {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            background: #000;
+            color: #fff;
+            border: 3px solid #000;
+            padding: 12px 8px;
+            cursor: pointer;
+            font-weight: 900;
+            font-size: 14px;
+            writing-mode: vertical-rl;
+            z-index: 9998;
+            transition: right 0.3s ease;
+        }
+        
+        #color-panel-toggle.shifted {
+            right: 280px;
+        }
+        
+        #color-panel h3 {
+            font-size: 16px;
+            margin: 0 0 16px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .color-group {
+            margin-bottom: 16px;
+        }
+        
+        .color-group-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .color-item {
+            margin-bottom: 12px;
+            opacity: 0.5;
+            transition: opacity 0.15s ease;
+        }
+        
+        .color-item:hover {
+            opacity: 1;
+        }
+        
+        .color-item-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            gap: 8px;
+        }
+        
+        .color-item label {
+            flex: 1;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .color-preview {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #000;
+        }
+        
+        .color-item .hex {
+            font-family: monospace;
+            font-size: 10px;
+            color: #888;
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 2px 4px;
+            width: 65px;
+            cursor: text;
+        }
+        
+        .color-item .hex:hover,
+        .color-item .hex:focus {
+            border-color: #444;
+            background: #222;
+            outline: none;
+            color: #fff;
+        }
+        
+        .hsl-sliders {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .slider-row span {
+            font-size: 10px;
+            color: #666;
+            width: 14px;
+        }
+        
+        .slider-row input[type="range"] {
+            flex: 1;
+            height: 12px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #333;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #000;
+        }
+        
+        .slider-row input.h-slider {
+            background: linear-gradient(to right, 
+                hsl(0,100%,50%), hsl(60,100%,50%), hsl(120,100%,50%), 
+                hsl(180,100%,50%), hsl(240,100%,50%), hsl(300,100%,50%), hsl(360,100%,50%));
+        }
+        
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .slider-row .slider-value {
+            font-family: monospace;
+            font-size: 10px;
+            color: #888;
+            width: 36px;
+            text-align: right;
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 2px;
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        
+        .slider-row .slider-value::-webkit-outer-spin-button,
+        .slider-row .slider-value::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .slider-row .slider-value:hover,
+        .slider-row .slider-value:focus {
+            border-color: #444;
+            background: #222;
+            outline: none;
+            color: #fff;
+        }
+        
+        #export-colors, #reset-colors, #import-colors {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 3px solid #000;
+            cursor: pointer;
+        }
+        
+        #export-colors {
+            background: #90EE90;
+            color: #000;
+        }
+        
+        #import-colors {
+            background: #FFD966;
+            color: #000;
+        }
+        
+        #reset-colors {
+            background: #FF6B6B;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <div class="page-header">
+            <h1 class="header-title">BIT 吃饭年度报告</h1>
+        </div>
+
+        <div class="layout">
+            <!-- 左侧：头像 + 总览 -->
+            <aside class="sidebar">
+                <div class="avatar-wrapper">
+                    <div class="avatar">🍚</div>
+                    <input id="avatar-input" type="file" accept="image/*" style="display: none;" />
+                </div>
+
+                <div class="profile-name">
+                    <span id="user-title" contenteditable="true">[点击编辑]的BIT吃饭总结</span>
+                </div>
+
+                <div id="summary-section">
+                    <div id="summary-cards" class="summary-grid"></div>
+                    <div id="summary-highlight" class="summary-highlight"></div>
+                </div>
+            </aside>
+
+            <!-- 右侧：成就 + 饭力图 -->
+            <main class="main">
+                <div id="achievements-section">
+                    <div id="achievements-header">
+                        <h2>成就墙</h2>
+                        <button id="view-all-achievements">查看全部成就</button>
+                    </div>
+                    <div id="pinned-achievements" class="achievements-grid"></div>
+                </div>
+
+                <div id="year-switcher"></div>
+                <div id="heatmap-container">
+                    <div id="heatmap"></div>
+                </div>
+                <div id="day-detail"></div>
+            </main>
+        </div>
+
+        <div id="achievements-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>所有成就</h2>
+                    <button id="close-achievements-modal">×</button>
+                </div>
+                <div class="modal-body" id="all-achievements-list"></div>
+                <div class="modal-footer">
+                    <span id="achievements-summary">已解锁 0/0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 配色面板 -->
+    <button id="color-panel-toggle">🎨 配色</button>
+    <div id="color-panel">
+        <h3>🎨 配色调节器 (HSL)</h3>
+        <div id="color-items-container"></div>
+        <button id="export-colors">导出配色方案</button>
+        <button id="import-colors">从配色方案恢复</button>
+        <button id="reset-colors">重置为默认</button>
+    </div>
+
+    <script>
+        const EAT_DATA = {"2025": {"2025-01-25": {"count": 1, "amount": 3.1, "merchants": [{"name": "良乡二食堂1212", "amount": 3.1}], "txs": [{"time": "06:06:47", "mername": "良乡二食堂1212", "amount": 3.1}]}, "2025-01-24": {"count": 2, "amount": 4.82, "merchants": [{"name": "良乡二食堂1212", "amount": 4.82}], "txs": [{"time": "07:29:47", "mername": "良乡二食堂1212", "amount": 3.82}, {"time": "07:31:34", "mername": "良乡二食堂1212", "amount": 1.0}]}, "2025-01-23": {"count": 9, "amount": 34.88, "merchants": [{"name": "良乡二食堂1212", "amount": 27.38}, {"name": "良乡第二食堂一层", "amount": 5.0}, {"name": "良二水吧", "amount": 2.5}], "txs": [{"time": "11:07:33", "mername": "良乡二食堂1212", "amount": 6.0}, {"time": "11:07:52", "mername": "良乡二食堂1212", "amount": 0.44}, {"time": "11:08:20", "mername": "良乡二食堂1212", "amount": 1.0}, {"time": "11:09:49", "mername": "良乡二食堂1212", "amount": 6.0}, {"time": "11:22:39", "mername": "良二水吧", "amount": 2.5}, {"time": "16:40:41", "mername": "良乡二食堂1212", "amount": 0.44}, {"time": "16:41:13", "mername": "良乡二食堂1212", "amount": 1.5}, {"time": "16:42:23", "mername": "良乡第二食堂一层", "amount": 5.0}, {"time": "16:42:35", "mername": "良乡二食堂1212", "amount": 12.0}]}, "2025-01-22": {"count": 6, "amount": 19.48, "merchants": [{"name": "良乡二食堂1212", "amount": 19.48}], "txs": [{"time": "07:07:46", "mername": "良乡二食堂1212", "amount": 2.32}, {"time": "07:09:28", "mername": "良乡二食堂1212", "amount": 1.0}, {"time": "18:52:22", "mername": "良乡二食堂1212", "amount": 14.0}, {"time": "18:57:20", "mername": "良乡二食堂1212", "amount": 0.66}, {"time": "18:58:38", "mername": "良乡二食堂1212", "amount": 0.5}, {"time": "19:10:21", "mername": "良乡二食堂1212", "amount": 1.0}]}, "2025-01-21": {"count": 2, "amount": 14.66, "merchants": [{"name": "良乡二食堂1212", "amount": 14.66}], "txs": [{"time": "11:31:27", "mername": "良乡二食堂1212", "amount": 7.66}, {"time": "11:32:39", "mername": "良乡二食堂1212", "amount": 7.0}]}}};
+        const ACH_STATE = {"early_bird": {"unlocked": true, "unlocked_at": "2025-01-19 06:07", "extra": {"count": 5}}, "night_owl": {"unlocked": false, "unlocked_at": null, "extra": {"count": 2}}, "make_it_round": {"unlocked": false, "unlocked_at": null, "extra": {}}, "big_meal": {"unlocked": true, "unlocked_at": "2025-07-03 11:00", "extra": {"amount": 33.18}}, "minimalist": {"unlocked": true, "unlocked_at": "2025-01-04 12:00", "extra": {"amount": 0.38}}, "lost_kid": {"unlocked": false, "unlocked_at": null, "extra": {"days": 166}}, "eater": {"unlocked": true, "unlocked_at": "2025-01-02 06:57", "extra": {"days": 166}}, "hundred_days": {"unlocked": true, "unlocked_at": "2025-06-01 07:43", "extra": {"days": 166}}, "full_timer": {"unlocked": false, "unlocked_at": null, "extra": {"days": 166}}, "default_setting": {"unlocked": true, "unlocked_at": "2025-01-16 18:08", "extra": {"merchant": "良四食堂1212", "count": 21}}, "story_start": {"unlocked": false, "unlocked_at": null, "extra": {}}, "another_year": {"unlocked": false, "unlocked_at": null, "extra": {}}, "missing_breakfast": {"unlocked": false, "unlocked_at": null, "extra": {"count": 228}}, "good_meals": {"unlocked": true, "unlocked_at": "2025-02-24 17:39", "extra": {"date": "2025-02-24"}}, "perfect_week": {"unlocked": false, "unlocked_at": null, "extra": {}}, "cosmic_meal": {"unlocked": false, "unlocked_at": null, "extra": {}}, "my_turn": {"unlocked": true, "unlocked_at": "2025-01-04 12:01", "extra": {"interval_seconds": 36.0}}, "edge_runner": {"unlocked": false, "unlocked_at": null, "extra": {}}, "error_404": {"unlocked": false, "unlocked_at": null, "extra": {}}, "hello_world": {"unlocked": true, "unlocked_at": "2025-01-02 06:57", "extra": {"first_date": "2025-01-02"}}, "pi": {"unlocked": false, "unlocked_at": null, "extra": {}}, "secure_call": {"unlocked": false, "unlocked_at": null, "extra": {}}, "noticed": {"unlocked": false, "unlocked_at": null, "extra": {"total_amount": 3189.6400000000012, "id_suffix": 1458}}};
+    </script>
+    <script>
+        (function () {
+    const yearSwitcher = document.getElementById("year-switcher");
+    const heatmap = document.getElementById("heatmap");
+    const detail = document.getElementById("day-detail");
+
+    const IS_CLOUD = window.location.hostname === "eatbit.top";
+    const HAS_PW_HASH = (window.location.hash || "").toLowerCase().includes("#pw=");
+
+    const IS_EDIT_MODE = !IS_CLOUD || HAS_PW_HASH;
+    const IS_SAVABLE = IS_CLOUD && HAS_PW_HASH;
+
+    const years = Object.keys(EAT_DATA).sort();
+    if (years.length === 0) {
+        heatmap.textContent = "没有可用数据";
+        return;
+    }
+
+    let currentYear = years[years.length - 1];
+
+    function buildYearButtons() {
+        yearSwitcher.innerHTML = "";
+        years.forEach((year) => {
+            const btn = document.createElement("button");
+            btn.textContent = year;
+            btn.className = "year-button" + (year === currentYear ? " active" : "");
+            btn.onclick = () => {
+                currentYear = year;
+                buildYearButtons();
+                renderYear(year);
+            };
+            yearSwitcher.appendChild(btn);
+        });
+    }
+
+    function getDateRangeForYear(year) {
+        const start = new Date(Number(year), 0, 1);
+        const end = new Date(Number(year), 11, 31);
+        return { start, end };
+    }
+
+    function buildDailyArrayForYear(year) {
+        const stats = EAT_DATA[year] || {};
+        const { start, end } = getDateRangeForYear(year);
+        const days = [];
+        const firstDayOfWeek = (start.getDay() + 6) % 7;
+        let index = 0;
+
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1), index++) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            const key = `${yyyy}-${mm}-${dd}`;
+            const dayStats = stats[key] || { count: 0, amount: 0, merchants: [] };
+
+            const weekday = (d.getDay() + 6) % 7;
+            const weekIndex = Math.floor((index + firstDayOfWeek) / 7);
+
+            days.push({ date: key, weekday, weekIndex, ...dayStats });
+        }
+        return days;
+    }
+
+    function renderSummaryFromDays(year, days) {
+        const cards = document.getElementById("summary-cards");
+        const highlight = document.getElementById("summary-highlight");
+        if (!cards || !highlight) return;
+
+        let eatDays = 0;
+        let totalCount = 0;
+        let totalAmount = 0;
+        let maxDay = null;
+        let maxStreak = 0;
+        let currentStreak = 0;
+
+        days.forEach((d) => {
+            const count = d.count || 0;
+            const amount = typeof d.amount === "number" ? d.amount : Number(d.amount || 0);
+
+            if (count > 0) {
+                eatDays += 1;
+                currentStreak += 1;
+                if (currentStreak > maxStreak) {
+                    maxStreak = currentStreak;
+                }
+            } else {
+                currentStreak = 0;
+            }
+
+            totalCount += count;
+            totalAmount += amount;
+
+            if (count > 0) {
+                if (!maxDay || count > maxDay.count || (count === maxDay.count && amount > maxDay.amount)) {
+                    maxDay = { date: d.date, count, amount };
+                }
+            }
+        });
+
+        const avgPerMeal = totalCount > 0 ? totalAmount / totalCount : 0;
+
+        cards.innerHTML = "";
+
+        function addCard(label, value) {
+            const card = document.createElement("div");
+            card.className = "summary-card";
+
+            const labelEl = document.createElement("div");
+            labelEl.className = "summary-card-label";
+            labelEl.textContent = label;
+
+            const valueEl = document.createElement("div");
+            valueEl.className = "summary-card-value";
+            valueEl.textContent = value;
+
+            card.appendChild(labelEl);
+            card.appendChild(valueEl);
+            cards.appendChild(card);
+        }
+
+        addCard("全年就餐天数", `${eatDays} 天`);
+        addCard("总用餐次数", `${totalCount} 次`);
+        addCard("总消费金额", `${totalAmount.toFixed(2)} 元`);
+        addCard("平均每餐消费", totalCount > 0 ? `${avgPerMeal.toFixed(2)} 元` : "—");
+
+        if (!maxDay) {
+            highlight.textContent = `${year} 年在食堂没有消费记录。`;
+        } else {
+            highlight.textContent = `吃得最多的一天是 ${maxDay.date}：共 ${maxDay.count} 次，消费 ${maxDay.amount.toFixed(2)} 元；最长连续吃饭天数为 ${maxStreak} 天。`;
+        }
+    }
+
+    function countWeeks(days) {
+        if (days.length === 0) return 0;
+        return days[days.length - 1].weekIndex + 1;
+    }
+
+    function computeMaxCount(days) {
+        let max = 0;
+        days.forEach((d) => {
+            if (d.count > max) max = d.count;
+        });
+        return max;
+    }
+
+    function levelForCount(count, max) {
+        if (count === 0) return 0;
+        if (max <= 1) return 2;
+        const ratio = count / max;
+        if (ratio <= 0.25) return 1;
+        if (ratio <= 0.5) return 2;
+        if (ratio <= 0.75) return 3;
+        return 4;
+    }
+
+    function renderYear(year) {
+        const days = buildDailyArrayForYear(year);
+        renderSummaryFromDays(year, days);
+        const weekCount = countWeeks(days);
+        const maxCount = computeMaxCount(days);
+
+        heatmap.innerHTML = "";
+
+        const scroll = document.createElement("div");
+        scroll.className = "heatmap-scroll";
+
+        const container = document.createElement("div");
+        container.style.display = "flex";
+
+        const weekdayLabels = document.createElement("div");
+        weekdayLabels.className = "weekday-labels";
+        const weekdayTexts = ["一", "三", "五", "七"];
+        const weekdayRows = [1, 3, 5, 7];
+        weekdayTexts.forEach((label, idx) => {
+            const div = document.createElement("div");
+            div.textContent = label;
+            div.style.gridRowStart = weekdayRows[idx];
+            weekdayLabels.appendChild(div);
+        });
+
+        const main = document.createElement("div");
+
+        const monthLabels = document.createElement("div");
+        monthLabels.className = "month-labels";
+        let lastMonth = null;
+        for (let w = 0; w < weekCount; w++) {
+            const monthDiv = document.createElement("div");
+            const weekDay = days.find((d) => d.weekIndex === w);
+            if (weekDay) {
+                const dObj = new Date(weekDay.date);
+                const month = dObj.getMonth() + 1;
+                if (month !== lastMonth) {
+                    monthDiv.textContent = month + "月";
+                    lastMonth = month;
+                }
+            }
+            monthLabels.appendChild(monthDiv);
+        }
+
+        const grid = document.createElement("div");
+        grid.className = "heatmap-grid";
+
+        days.forEach((day) => {
+            const cell = document.createElement("div");
+            const weekday = day.weekday;
+            const weekIndex = day.weekIndex;
+
+            cell.className = "day-cell";
+            cell.dataset.date = day.date;
+            const level = levelForCount(day.count, maxCount);
+            cell.classList.add(`level-${level}`);
+
+            cell.style.gridRowStart = weekday + 1;
+            cell.style.gridColumnStart = weekIndex + 1;
+
+            cell.title = `${day.date}：${day.count} 次用餐`;
+            cell.onclick = () => showDayDetail(year, day);
+
+            grid.appendChild(cell);
+        });
+
+        main.appendChild(monthLabels);
+        main.appendChild(grid);
+
+        container.appendChild(weekdayLabels);
+        container.appendChild(main);
+
+        scroll.appendChild(container);
+        heatmap.appendChild(scroll);
+    }
+
+    function showDayDetail(year, day) {
+        detail.innerHTML = "";
+        if (!day || !day.count) {
+            return;
+        }
+        const h2 = document.createElement("h2");
+        h2.textContent = day.date;
+        detail.appendChild(h2);
+
+        const p1 = document.createElement("p");
+        p1.textContent = `当天在食堂吃了 ${day.count} 次，共消费 ${day.amount.toFixed(2)} 元。`;
+        detail.appendChild(p1);
+
+        if (day.txs && day.txs.length > 0) {
+            const ul = document.createElement("ul");
+            day.txs.forEach((tx) => {
+                const li = document.createElement("li");
+                const time = tx.time || "";
+                const mer = tx.mername || tx.name || "";
+                const amtNum = typeof tx.amount === "number" ? tx.amount : Number(tx.amount || 0);
+                li.textContent = `${time} ${mer}：${amtNum.toFixed(2)} 元`;
+                ul.appendChild(li);
+            });
+            detail.appendChild(ul);
+        } else if (day.merchants && day.merchants.length > 0) {
+            const ul = document.createElement("ul");
+            day.merchants.slice(0, 5).forEach((m) => {
+                const li = document.createElement("li");
+                li.textContent = `${m.name}：${m.amount.toFixed(2)} 元`;
+                ul.appendChild(li);
+            });
+            detail.appendChild(ul);
+        }
+    }
+
+    function setupAvatarUpload() {
+        const avatar = document.querySelector(".avatar");
+        const fileInput = document.getElementById("avatar-input");
+        if (!avatar || !fileInput) {
+            return;
+        }
+
+        if (!IS_EDIT_MODE) {
+            avatar.style.cursor = "default";
+            return;
+        }
+
+        avatar.style.cursor = "pointer";
+
+        avatar.addEventListener("click", () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener("change", () => {
+            const files = fileInput.files;
+            if (!files || files.length === 0) {
+                return;
+            }
+            const file = files[0];
+            if (!file.type || !file.type.startsWith("image/")) {
+                alert("请选择图片文件作为头像");
+                fileInput.value = "";
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const result = e.target && e.target.result;
+                if (!result) return;
+                avatar.style.backgroundImage = `url(${result})`;
+                avatar.style.backgroundSize = "cover";
+                avatar.style.backgroundPosition = "center";
+                avatar.textContent = "";
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    const ACH_META = {
+        early_bird: { title: "早八人", desc: "你见过早上八点的百丽宫吗", rarity: 3, condition: "06:00-08:00间消费过5次", emoji: "⏰" },
+        night_owl: { title: "守夜人", desc: "据说只要不计算晚上的卡路里，它们就不存在", rarity: 3, condition: "21:00以后消费过5次", emoji: "🌙" },
+        make_it_round: { title: "凑单领域大神", desc: "学校也有满减吗", rarity: 3, condition: "单日消费总金额不小于20且为10的倍数", emoji: "⚖️" },
+        big_meal: { title: "加个鸡腿", desc: "吃点好的！", rarity: 2, condition: "单笔消费金额大于25元", emoji: "🍗" },
+        minimalist: { title: "极限生存", desc: "极简主义饮食践行者", rarity: 3, condition: "单笔消费金额小于1元", emoji: "🥛" },
+        lost_kid: { title: "迷途之子", desc: "你迷路了吗", rarity: 4, condition: "全年就餐天数小于50天", emoji: "❔" },
+        eater: { title: "干饭人", desc: "至少你找到了食堂", rarity: 1, condition: "全年就餐天数大于等于1天", emoji: "🍽️" },
+        hundred_days: { title: "百日烟火", desc: "食堂阿姨可能都认识你了", rarity: 2, condition: "全年就餐天数大于等于100天", emoji: "🍲" },
+        full_timer: { title: "全勤奖", desc: "一瞬一瞬累积起来就会变成一辈子", rarity: 3, condition: "全年就餐天数大于等于200天", emoji: "🏅" },
+        default_setting: { title: "西西弗斯", desc: "我们必须想象你是幸福的", rarity: 2, condition: "在同一个商家消费次数大于20次", emoji: "🔁" },
+        story_start: { title: "故事的开始", desc: "其实味道和去年没区别", rarity: 4, condition: "在本年第一天吃饭", emoji: "📅" },
+        another_year: { title: "又一年", desc: "明年见", rarity: 4, condition: "在本年最后一天吃饭", emoji: "👋" },
+        missing_breakfast: { title: "消失的早餐", desc: "那些从来不吃早饭的人，现在都怎么样了？", rarity: 3, condition: "9点前消费次数小于10次", emoji: "👻" },
+        good_meals: { title: "好好吃饭", desc: "你拥有令人羡慕的健康作息", rarity: 3, condition: "单日内同时有早、中、晚三餐记录", emoji: "🥗" },
+        my_turn: { title: "我的回合", desc: "我的回合之后——还是我的回合！", rarity: 3, condition: "2分钟内连续刷卡2次", emoji: "🃏" },
+        error_404: { title: "Error 404", desc: "404 Not Found", rarity: 3, condition: "单笔消费金额恰为4.04/40.4/404元", emoji: "❌" },
+        hello_world: { title: "Hello World", desc: "你好，食堂！", rarity: 1, condition: "在今年进行过消费", emoji: "👋" },
+        pi: { title: "PI", desc: "圆食，启动！", rarity: 3, condition: "单笔消费金额恰为3.14/31.4/314元", emoji: "🥧" },
+        secure_call: { title: "加密通话", desc: "你的账户安全系数击败了99％的同学", rarity: 3, condition: "密码不是默认值 123456", emoji: "🔐" },
+        noticed: { title: "注意到", desc: "注意力惊人", rarity: 4, condition: "全年消费总金额恰为学号后四位的倍数", emoji: "🧐" },
+        perfect_week: { title: "完美一周", desc: "医生看了都说好", rarity: 3, condition: "连续七天一日三餐", emoji: "👨‍⚕" },
+        cosmic_meal: { title: "宇宙饭", desc: "如果你的商家里没有相同的商家，获得本成就", rarity: 3, condition: "连续五天每天在不一样的商家吃饭", emoji: "🌌" },
+        edge_runner: { title: "边缘行者", desc: "百丽宫有活着的传奇", rarity: 4, condition: "在任意小时的第59分59秒完成交易", emoji: "⚡" },
+    };
+
+    const MAX_PINS = 6;
+
+    function loadInitialPinnedIds() {
+        const body = document.body;
+        if (!body || !body.dataset) return [];
+        const raw = body.dataset.pinnedIds;
+        if (!raw) return [];
+        return raw.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
+    }
+
+    let pinnedIdsState = loadInitialPinnedIds();
+
+    function isHiddenAchievement(a) {
+        return a && a.rarity === 4;
+    }
+
+    function buildMergedAchievements() {
+        const merged = [];
+        const state = typeof ACH_STATE === "object" ? ACH_STATE : {};
+        for (const [id, meta] of Object.entries(ACH_META)) {
+            const st = state[id] || { unlocked: false, unlocked_at: null, extra: {} };
+            merged.push({ id, ...meta, ...st });
+        }
+        return merged;
+    }
+
+    function updateAchievementsSummary(allAchievements) {
+        const el = document.getElementById("achievements-summary");
+        if (!el) return;
+        const base = allAchievements.filter((a) => !isHiddenAchievement(a));
+        const total = base.length;
+        const unlocked = allAchievements.filter((a) => a.unlocked).length;
+        const hiddenUnlocked = allAchievements.filter((a) => isHiddenAchievement(a) && a.unlocked).length;
+
+        el.innerHTML = "";
+        const baseText = document.createTextNode(`已解锁 ${unlocked}/${total}`);
+        el.appendChild(baseText);
+
+        if (hiddenUnlocked > 0) {
+            const hint = document.createElement("span");
+            hint.className = "hidden-achievements-hint";
+            hint.textContent = `（包含 ${hiddenUnlocked} 个隐藏成就！）`;
+            el.appendChild(hint);
+        }
+    }
+
+    function loadPinnedIds(allAchievements) {
+        const validIds = new Set(allAchievements.map((a) => a.id));
+        return pinnedIdsState.filter((id) => validIds.has(id));
+    }
+
+    function savePinnedIds(ids) {
+        pinnedIdsState = [...ids];
+        const body = document.body;
+        if (body && body.dataset) {
+            body.dataset.pinnedIds = ids.join(",");
+        }
+    }
+
+    function renderPinnedAchievements(allAchievements) {
+        const container = document.getElementById("pinned-achievements");
+        if (!container) return;
+        container.innerHTML = "";
+
+        const pinnedIds = loadPinnedIds(allAchievements);
+        let pinned;
+        if (pinnedIds.length === 0) {
+            pinned = allAchievements.filter((a) => a.unlocked).sort((a, b) => b.rarity - a.rarity).slice(0, MAX_PINS);
+            savePinnedIds(pinned.map((a) => a.id));
+        } else {
+            const map = new Map(allAchievements.map((a) => [a.id, a]));
+            pinned = pinnedIds.map((id) => map.get(id)).filter((a) => a && a.unlocked);
+        }
+
+        pinned = pinned.filter((a) => a && a.unlocked);
+
+        if (pinned.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "achievement-desc";
+            empty.textContent = "当前还没有已解锁的成就";
+            container.appendChild(empty);
+            return;
+        }
+
+        pinned.forEach((a) => {
+            const card = document.createElement("div");
+            card.className = "achievement-card";
+
+            const icon = document.createElement("div");
+            icon.className = "achievement-icon";
+            if (a.emoji) {
+                icon.textContent = a.emoji;
+            }
+
+            const text = document.createElement("div");
+            text.className = "achievement-text";
+
+            const titleEl = document.createElement("div");
+            titleEl.className = "achievement-title";
+            titleEl.textContent = a.title;
+
+            const descEl = document.createElement("div");
+            descEl.className = "achievement-desc";
+            descEl.textContent = a.condition || a.desc || "";
+
+            text.appendChild(titleEl);
+            text.appendChild(descEl);
+
+            card.appendChild(icon);
+            card.appendChild(text);
+
+            const timeEl = document.createElement("div");
+            timeEl.className = "achievement-time";
+            timeEl.textContent = a.unlocked_at || "";
+
+            card.appendChild(timeEl);
+
+            container.appendChild(card);
+        });
+    }
+
+    function renderAllAchievementsModal(allAchievements) {
+        const listEl = document.getElementById("all-achievements-list");
+        if (!listEl) return;
+        listEl.innerHTML = "";
+
+        const pinnedIds = new Set(loadPinnedIds(allAchievements));
+
+        const visible = allAchievements.filter((a) => !(isHiddenAchievement(a) && !a.unlocked));
+
+        const sorted = visible.map((a, index) => ({
+            data: a,
+            index,
+            isPinned: pinnedIds.has(a.id),
+            isUnlocked: !!a.unlocked,
+        })).sort((x, y) => {
+            if (x.isPinned !== y.isPinned) {
+                return x.isPinned ? -1 : 1;
+            }
+            if (x.isUnlocked !== y.isUnlocked) {
+                return x.isUnlocked ? -1 : 1;
+            }
+            return x.index - y.index;
+        });
+
+        sorted.forEach((wrapper) => {
+            const a = wrapper.data;
+
+            const row = document.createElement("div");
+            row.className = "all-achievement-row";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.className = "pin-checkbox";
+            checkbox.checked = pinnedIds.has(a.id);
+
+            const icon = document.createElement("div");
+            icon.className = "achievement-icon";
+            if (a.emoji) {
+                icon.textContent = a.emoji;
+            }
+
+            const info = document.createElement("div");
+            info.className = "all-achievement-info";
+
+            const meta = document.createElement("div");
+            meta.className = "all-achievement-meta";
+
+            const titleEl = document.createElement("div");
+            titleEl.className = "achievement-title";
+            titleEl.textContent = a.title;
+
+            const descEl = document.createElement("div");
+            descEl.className = "achievement-desc";
+            descEl.textContent = a.desc;
+
+            meta.appendChild(titleEl);
+
+            if (a.condition) {
+                const condEl = document.createElement("div");
+                condEl.className = "achievement-desc";
+                condEl.textContent = a.condition;
+                meta.appendChild(condEl);
+            }
+
+            meta.appendChild(descEl);
+
+            info.appendChild(meta);
+
+            const timeEl = document.createElement("div");
+            timeEl.className = "all-achievement-unlock-time";
+            timeEl.textContent = a.unlocked_at ? a.unlocked_at : "未解锁";
+
+            row.appendChild(checkbox);
+            row.appendChild(icon);
+            row.appendChild(info);
+            row.appendChild(timeEl);
+
+            if (!a.unlocked) {
+                checkbox.disabled = true;
+                row.classList.add("locked");
+            } else if (!IS_EDIT_MODE) {
+                checkbox.disabled = true;
+            } else {
+                const applyPinState = (nextChecked) => {
+                    const current = new Set(loadPinnedIds(allAchievements));
+                    if (nextChecked) {
+                        if (current.size >= MAX_PINS && !current.has(a.id)) {
+                            alert(`最多只能固定 ${MAX_PINS} 个成就`);
+                            checkbox.checked = false;
+                            return;
+                        }
+                        current.add(a.id);
+                    } else {
+                        current.delete(a.id);
+                    }
+                    const arr = Array.from(current);
+                    savePinnedIds(arr);
+                    renderPinnedAchievements(allAchievements);
+                };
+
+                checkbox.onchange = () => {
+                    applyPinState(checkbox.checked);
+                };
+
+                row.onclick = (e) => {
+                    if (e.target === checkbox) return;
+                    const nextChecked = !checkbox.checked;
+                    checkbox.checked = nextChecked;
+                    applyPinState(nextChecked);
+                };
+            }
+
+            listEl.appendChild(row);
+        });
+    }
+
+    function setupSaveButton() {
+        const existing = document.getElementById("save-to-link");
+
+        if (!IS_SAVABLE) {
+            if (existing && existing.parentNode) {
+                existing.parentNode.removeChild(existing);
+            }
+            return;
+        }
+
+        const header = document.querySelector(".page-header");
+        if (!header) return;
+
+        const btn = existing || document.createElement("button");
+        if (!existing) {
+            btn.id = "save-to-link";
+            btn.textContent = "保存";
+            header.appendChild(btn);
+        }
+
+        btn.onclick = async () => {
+            const originalText = btn.textContent || "保存";
+            btn.disabled = true;
+            btn.textContent = "保存中...";
+
+            const path = window.location.pathname || "";
+            const parts = path.split("/").filter(Boolean);
+            if (parts.length < 2 || parts[0] !== "r") {
+                alert("无法解析报告 ID，保存失败。");
+                btn.disabled = false;
+                btn.textContent = originalText;
+                return;
+            }
+            const currentId = parts[1];
+            const html = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+
+            try {
+                const resp = await fetch(`/api/reports/${encodeURIComponent(currentId)}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "text/html" },
+                    body: html,
+                });
+                if (resp.ok) {
+                    btn.textContent = "已保存";
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.textContent = originalText;
+                    }, 1500);
+                } else {
+                    alert(`保存失败：HTTP ${resp.status}`);
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            } catch (e) {
+                alert("保存失败，请检查网络连接。");
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        };
+    }
+
+    function setupAchievementsUI() {
+        const allAchievements = buildMergedAchievements();
+
+        const userTitle = document.getElementById("user-title");
+        if (userTitle) {
+            userTitle.contentEditable = IS_EDIT_MODE ? "true" : "false";
+        }
+        renderPinnedAchievements(allAchievements);
+        updateAchievementsSummary(allAchievements);
+
+        setupSaveButton();
+
+        const modal = document.getElementById("achievements-modal");
+        const openBtn = document.getElementById("view-all-achievements");
+        const closeBtn = document.getElementById("close-achievements-modal");
+
+        if (openBtn && modal) {
+            openBtn.onclick = () => {
+                renderAllAchievementsModal(allAchievements);
+                modal.classList.remove("hidden");
+            };
+        }
+
+        if (closeBtn && modal) {
+            closeBtn.onclick = () => {
+                modal.classList.add("hidden");
+            };
+        }
+
+        if (modal) {
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) {
+                    modal.classList.add("hidden");
+                }
+            });
+        }
+    }
+
+    function setupAvatarUpload() {
+        // Add your avatar upload logic here
+    }
+
+    buildYearButtons();
+    renderYear(currentYear);
+    setupAchievementsUI();
+    setupAvatarUpload();
+})();
+    </script>
+    
+    <!-- 配色面板脚本 (HSL滑块) -->
+    <script>
+    (function() {
+        const colorConfig = [
+            { group: '页面', items: [
+                { var: '--bg-page', label: '背景色', default: '#F7F2C4' }
+            ]},
+            { group: '主要模块', items: [
+                { var: '--color-header', label: '页头', default: '#34C759' },
+                { var: '--color-avatar-wrapper', label: '头像区', default: '#FF69B4' },
+                { var: '--color-avatar', label: '头像', default: '#FFDB58' },
+                { var: '--color-achievements', label: '成就区', default: '#A388EE' },
+                { var: '--color-button', label: '按钮', default: '#FFDB58' },
+                { var: '--color-icon', label: '成就图标', default: '#FFA07A' },
+                { var: '--color-day-detail', label: '日期详情', default: '#FDFD96' }
+            ]},
+            { group: '统计卡片', items: [
+                { var: '--color-card1', label: '卡片1', default: '#FFA07A' },
+                { var: '--color-card2', label: '卡片2', default: '#7DF9FF' },
+                { var: '--color-card3', label: '卡片3', default: '#90EE90' },
+                { var: '--color-card4', label: '卡片4', default: '#FF6B6B' }
+            ]},
+            { group: '热力图色阶', items: [
+                { var: '--heatmap-0', label: 'Level 0', default: '#f5f5f5' },
+                { var: '--heatmap-1', label: 'Level 1', default: '#FFA07A' },
+                { var: '--heatmap-2', label: 'Level 2', default: '#FF7A5C' },
+                { var: '--heatmap-3', label: 'Level 3', default: '#FF6B6B' },
+                { var: '--heatmap-4', label: 'Level 4', default: '#FF4911' }
+            ]}
+        ];
+
+        const CACHE_KEY = 'neo_brutalism_colors';
+
+        // 缓存读写
+        function loadCache() {
+            try {
+                return JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
+            } catch { return {}; }
+        }
+
+        function saveCache(colors) {
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(colors));
+            } catch {}
+        }
+
+        function clearCache() {
+            try {
+                localStorage.removeItem(CACHE_KEY);
+            } catch {}
+        }
+
+        const cachedColors = loadCache();
+
+        // HEX <-> HSL 转换
+        function hexToHsl(hex) {
+            let r = parseInt(hex.slice(1,3), 16) / 255;
+            let g = parseInt(hex.slice(3,5), 16) / 255;
+            let b = parseInt(hex.slice(5,7), 16) / 255;
+            let max = Math.max(r,g,b), min = Math.min(r,g,b);
+            let h, s, l = (max + min) / 2;
+            if (max === min) { h = s = 0; }
+            else {
+                let d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch(max) {
+                    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                    case g: h = ((b - r) / d + 2) / 6; break;
+                    case b: h = ((r - g) / d + 4) / 6; break;
+                }
+            }
+            return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+        }
+
+        function hslToHex(h, s, l) {
+            s /= 100; l /= 100;
+            const a = s * Math.min(l, 1 - l);
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+        }
+
+        const container = document.getElementById('color-items-container');
+        const colorItems = [];
+
+        // 生成 UI
+        colorConfig.forEach(group => {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'color-group';
+            groupDiv.innerHTML = `<div class="color-group-title">${group.group}</div>`;
+
+            group.items.forEach(item => {
+                // 优先使用缓存颜色
+                const hex = cachedColors[item.var] || getComputedStyle(document.documentElement).getPropertyValue(item.var).trim() || item.default;
+                document.documentElement.style.setProperty(item.var, hex);
+                const hsl = hexToHsl(hex);
+
+                const div = document.createElement('div');
+                div.className = 'color-item';
+                div.innerHTML = `
+                    <div class="color-item-header">
+                        <label>${item.label}</label>
+                        <div class="color-preview" style="background:${hex}"></div>
+                        <input type="text" class="hex" value="${hex}" maxlength="7">
+                    </div>
+                    <div class="hsl-sliders">
+                        <div class="slider-row">
+                            <span>H</span>
+                            <input type="range" class="h-slider" min="0" max="360" value="${hsl.h}">
+                            <input type="number" class="slider-value" value="${hsl.h}" min="0" max="360">
+                        </div>
+                        <div class="slider-row">
+                            <span>S</span>
+                            <input type="range" class="s-slider" min="0" max="100" value="${hsl.s}">
+                            <input type="number" class="slider-value" value="${hsl.s}" min="0" max="100">
+                        </div>
+                        <div class="slider-row">
+                            <span>L</span>
+                            <input type="range" class="l-slider" min="0" max="100" value="${hsl.l}">
+                            <input type="number" class="slider-value" value="${hsl.l}" min="0" max="100">
+                        </div>
+                    </div>
+                `;
+
+                const hSlider = div.querySelector('.h-slider');
+                const sSlider = div.querySelector('.s-slider');
+                const lSlider = div.querySelector('.l-slider');
+                const preview = div.querySelector('.color-preview');
+                const hexInput = div.querySelector('.hex');
+                const values = div.querySelectorAll('.slider-value');
+
+                // 更新滑块渐变背景
+                const updateSliderGradients = (h, s, l) => {
+                    sSlider.style.background = `linear-gradient(to right, hsl(${h},0%,${l}%), hsl(${h},100%,${l}%))`;
+                    lSlider.style.background = `linear-gradient(to right, hsl(${h},${s}%,0%), hsl(${h},${s}%,50%), hsl(${h},${s}%,100%))`;
+                };
+
+                // 保存到缓存
+                const persistToCache = (hexVal) => {
+                    cachedColors[item.var] = hexVal;
+                    saveCache(cachedColors);
+                };
+
+                // 从滑块更新颜色
+                const updateFromSliders = () => {
+                    const h = +hSlider.value, s = +sSlider.value, l = +lSlider.value;
+                    const newHex = hslToHex(h, s, l);
+                    document.documentElement.style.setProperty(item.var, newHex);
+                    preview.style.background = newHex;
+                    hexInput.value = newHex;
+                    values[0].value = h;
+                    values[1].value = s;
+                    values[2].value = l;
+                    updateSliderGradients(h, s, l);
+                    persistToCache(newHex);
+                };
+
+                // 从HEX输入更新
+                const updateFromHex = () => {
+                    let val = hexInput.value.trim();
+                    if (!val.startsWith('#')) val = '#' + val;
+                    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                        const hsl = hexToHsl(val);
+                        hSlider.value = hsl.h;
+                        sSlider.value = hsl.s;
+                        lSlider.value = hsl.l;
+                        values[0].value = hsl.h;
+                        values[1].value = hsl.s;
+                        values[2].value = hsl.l;
+                        document.documentElement.style.setProperty(item.var, val.toUpperCase());
+                        preview.style.background = val;
+                        hexInput.value = val.toUpperCase();
+                        updateSliderGradients(hsl.h, hsl.s, hsl.l);
+                        persistToCache(val.toUpperCase());
+                    }
+                };
+
+                // 从HSL数值输入更新
+                const updateFromValues = () => {
+                    hSlider.value = Math.max(0, Math.min(360, +values[0].value || 0));
+                    sSlider.value = Math.max(0, Math.min(100, +values[1].value || 0));
+                    lSlider.value = Math.max(0, Math.min(100, +values[2].value || 0));
+                    updateFromSliders();
+                };
+
+                // 初始化渐变
+                updateSliderGradients(hsl.h, hsl.s, hsl.l);
+
+                hSlider.addEventListener('input', updateFromSliders);
+                sSlider.addEventListener('input', updateFromSliders);
+                lSlider.addEventListener('input', updateFromSliders);
+                hexInput.addEventListener('change', updateFromHex);
+                values.forEach(v => v.addEventListener('change', updateFromValues));
+
+                colorItems.push({ var: item.var, default: item.default, label: item.label, hSlider, sSlider, lSlider, preview, hexInput, values, updateSliderGradients });
+                groupDiv.appendChild(div);
+            });
+
+            container.appendChild(groupDiv);
+        });
+
+        // 开关面板
+        const panel = document.getElementById('color-panel');
+        const toggle = document.getElementById('color-panel-toggle');
+        toggle.addEventListener('click', () => {
+            panel.classList.toggle('open');
+            toggle.classList.toggle('shifted');
+        });
+
+        // 导出
+        document.getElementById('export-colors').addEventListener('click', () => {
+            const colors = {};
+            colorItems.forEach(ci => {
+                colors[ci.label] = ci.hexInput.value;
+            });
+            const json = JSON.stringify(colors, null, 2);
+            navigator.clipboard.writeText(json).then(() => {
+                alert('配色方案已复制到剪贴板！\n\n' + json);
+            });
+        });
+
+        // 从 JSON 导入
+        document.getElementById('import-colors').addEventListener('click', () => {
+            const input = prompt('请粘贴之前导出的配色 JSON：', '');
+            if (!input) return;
+
+            let data;
+            try {
+                data = JSON.parse(input);
+            } catch (e) {
+                alert('JSON 解析失败，请确认内容是否完整。');
+                return;
+            }
+
+            if (!data || typeof data !== 'object' || Array.isArray(data)) {
+                alert('格式不正确，应为 { "标签": "#RRGGBB" } 结构。');
+                return;
+            }
+
+            let applied = 0;
+            colorItems.forEach(ci => {
+                const raw = data[ci.label];
+                if (!raw || typeof raw !== 'string') return;
+
+                let val = raw.trim();
+                if (!val.startsWith('#')) val = '#' + val;
+                if (!/^#[0-9A-Fa-f]{6}$/.test(val)) return;
+                val = val.toUpperCase();
+
+                const hsl = hexToHsl(val);
+                ci.hSlider.value = hsl.h;
+                ci.sSlider.value = hsl.s;
+                ci.lSlider.value = hsl.l;
+                ci.preview.style.background = val;
+                ci.hexInput.value = val;
+                ci.values[0].value = hsl.h;
+                ci.values[1].value = hsl.s;
+                ci.values[2].value = hsl.l;
+                ci.updateSliderGradients(hsl.h, hsl.s, hsl.l);
+                document.documentElement.style.setProperty(ci.var, val);
+                cachedColors[ci.var] = val;
+                applied++;
+            });
+
+            if (applied > 0) {
+                saveCache(cachedColors);
+                alert('已从 JSON 恢复配色（更新了 ' + applied + ' 项）。');
+            } else {
+                alert('未找到可应用的配色条目，请检查标签是否匹配。');
+            }
+        });
+
+        // 重置
+        document.getElementById('reset-colors').addEventListener('click', () => {
+            clearCache();
+            colorItems.forEach(ci => {
+                const hsl = hexToHsl(ci.default);
+                ci.hSlider.value = hsl.h;
+                ci.sSlider.value = hsl.s;
+                ci.lSlider.value = hsl.l;
+                ci.preview.style.background = ci.default;
+                ci.hexInput.value = ci.default.toUpperCase();
+                ci.values[0].value = hsl.h;
+                ci.values[1].value = hsl.s;
+                ci.values[2].value = hsl.l;
+                ci.updateSliderGradients(hsl.h, hsl.s, hsl.l);
+                document.documentElement.style.setProperty(ci.var, ci.default);
+            });
+        });
+    })();
+    </script>
+</body>
+
+</html>
