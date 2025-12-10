@@ -688,12 +688,17 @@ body:not(.has-active-card) .card.main:hover {
 
 .receipt-body {
     flex: 1;
-    /* Allow overflow for hover effects */
-    overflow-y: visible;
+    /* Default: scrollable (for Rhythm mode) */
+    overflow-y: auto;
 
     /* Hide Scrollbar */
     scrollbar-width: none;
     -ms-overflow-style: none;
+}
+
+/* For achievement mode: allow overflow so icons don't get clipped */
+.receipt.achievement-mode .receipt-body {
+    overflow-y: visible;
 }
 
 .receipt-body::-webkit-scrollbar {

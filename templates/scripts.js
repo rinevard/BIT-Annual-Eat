@@ -466,7 +466,7 @@ const totalPages = achievementPages.length;
 // 创建成就纸张
 function createAchievementReceipt(pageIndex, state) {
     const el = document.createElement('div');
-    el.className = `receipt ${state}`;
+    el.className = `receipt ${state} achievement-mode`;
 
     const pageData = achievementPages[pageIndex];
     const pageNum = pageIndex + 1;
