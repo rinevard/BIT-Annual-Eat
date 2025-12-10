@@ -28,7 +28,7 @@ DINGTALK_UA = (
     "Architecture/x86_64 webDt/PC"
 )
 
-FILTERS = ["浴室", "医院"] # 如果名称包含这些字符串，将被过滤掉
+FILTERS = ["浴室", "医院", "开水"] # 如果名称包含这些字符串，将被过滤掉
 
 
 def make_student_key(student_id: str) -> str:

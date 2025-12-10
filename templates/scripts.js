@@ -543,12 +543,12 @@ function createRhythmReceipt(index, state) {
         // 提取商家名称及价格
         const amtStr = `¥${Number(day.amount).toFixed(1)}`;
 
-        // 构建详细的消费列表
+        // 构建消费列表
         let txRows = '';
         if (day.txs && day.txs.length > 0) {
             txRows = day.txs.map(tx => {
-                // Time: 07:08:03 -> 07:08
-                let timeStr = tx.time ? tx.time.substring(0, 5) : '--:--';
+                // 时间形如 07:08:03
+                let timeStr = tx.time ? tx.time : '--:--:--';
                 let txAmt = `¥${Number(tx.amount).toFixed(1)}`;
                 return `
                     <div style="display: flex; justify-content: space-between; font-size: 13px; color: #444; margin-top: 2px;">
@@ -602,11 +602,8 @@ window.updatePrinterMode = function (targetMode, targetIndex) {
         needsReprint = true;
     } else {
         if (targetMode === 'achievement') {
-            if (currentAchievementPage === 0) needsReprint = false;
-            else {
-                currentAchievementPage = 0; // 重置到第一页
-                needsReprint = true;
-            }
+            // 已经在成就模式，再次点击只抖动
+            needsReprint = false;
         } else {
             // 节奏模式
             if (targetIndex !== currentRhythmIndex) {
@@ -624,9 +621,7 @@ window.updatePrinterMode = function (targetMode, targetIndex) {
         if (targetMode === 'rhythm' && typeof targetIndex === 'number') {
             currentRhythmIndex = targetIndex;
         }
-        if (targetMode === 'achievement') {
-            currentAchievementPage = 0;
-        }
+        // 切换回成就模式时，不改变 currentAchievementPage，保留上次的页码
 
         // 同步视觉状态（标题、高亮）
         syncPrinterVisuals();
