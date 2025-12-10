@@ -688,7 +688,8 @@ body:not(.has-active-card) .card.main:hover {
 
 .receipt-body {
     flex: 1;
-    overflow-y: auto;
+    /* Allow overflow for hover effects */
+    overflow-y: visible;
 
     /* Hide Scrollbar */
     scrollbar-width: none;
@@ -788,6 +789,13 @@ body:not(.has-active-card) .card.main:hover {
     object-fit: contain;
     background: #fff;
     display: block;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.achievement-row:not(.locked) .ach-icon:hover {
+    transform: rotate(-4deg) scale(1.1);
+    box-shadow: 3px 3px 0 #000;
+    cursor: help;
 }
 
 .ach-content {
