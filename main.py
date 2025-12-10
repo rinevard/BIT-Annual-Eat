@@ -437,9 +437,9 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
         used_default_password=used_default_password,
     )
 
-    base_tpl_path = os.path.join("templates", "visual", "index.html")
-    style_path = os.path.join("templates", "visual", "styles.css")
-    script_path = os.path.join("templates", "visual", "scripts.js")
+    base_tpl_path = os.path.join("templates", "index.html")
+    style_path = os.path.join("templates", "styles.css")
+    script_path = os.path.join("templates", "scripts.js")
 
     with open(base_tpl_path, "r", encoding="utf-8") as f:
         base_tpl = f.read()
@@ -466,7 +466,7 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
         f.write(html)
 
     # Copy images folder to output directory
-    src_images = os.path.join("templates", "visual", "images")
+    src_images = os.path.join("templates", "images")
     dst_images = os.path.join(os.path.dirname(path), "images")
     if os.path.exists(src_images):
         if os.path.exists(dst_images):
