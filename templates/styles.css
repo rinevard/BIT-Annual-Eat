@@ -960,7 +960,6 @@ body.has-active-card {
     pointer-events: none;
     z-index: 9999;
     display: none;
-    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
     white-space: nowrap;
 }
 
@@ -1001,4 +1000,21 @@ body.has-active-card .card.right.focused {
     filter: none;
     z-index: 50;
     transform: translateZ(0) rotateZ(calc(-2deg * var(--dir))) translateY(0);
+}
+
+/* --- Receipt Theme for Tooltip --- */
+.custom-tooltip.receipt-theme {
+    background: #fff;
+    color: #000;
+    border: 3px solid #000;
+    padding: 0;
+    font-family: 'Noto Sans SC', sans-serif;
+    pointer-events: none;
+    z-index: 10000;
+}
+
+.custom-tooltip.receipt-theme .achievement-row {
+    border-bottom: none;
+    /* Rows inside might have borders, we can keep or remove */
+    padding: 10px;
 }
