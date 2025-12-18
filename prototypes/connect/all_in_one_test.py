@@ -24,6 +24,11 @@ import requests
 
 BASE = "https://dkykt.info.bit.edu.cn"
 
+PROXIES = {
+    "http": None,
+    "https": None,
+}
+
 DINGTALK_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -189,6 +194,7 @@ def get_openid(session: requests.Session, idserial: str) -> str:
         headers=headers,
         timeout=15,
         allow_redirects=False,
+        proxies=PROXIES,
     )
     loc = resp.headers.get("location", "")
     if not loc:
@@ -226,7 +232,14 @@ def query_trades(
         "chooseZH": "1",
     }
 
-    resp = session.post(url, params={"openid": openid}, json=payload, headers=headers, timeout=20)
+    resp = session.post(
+        url,
+        params={"openid": openid},
+        json=payload,
+        headers=headers,
+        timeout=20,
+        proxies=PROXIES,
+    )
     resp.raise_for_status()
     data = resp.json()
     result = data.get("resultData")

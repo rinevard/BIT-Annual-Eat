@@ -5,6 +5,10 @@ from urllib.parse import parse_qs, urlparse
 BASE = "https://dkykt.info.bit.edu.cn"
 JSESSIONID = "在这里填写有效的JSESSIONID"
 IDSERIAL = "在这里填写学号"
+PROXIES = {
+    "http": None,
+    "https": None,
+}
 
 DINGTALK_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -33,6 +37,7 @@ def main() -> None:
         headers=headers,
         timeout=15,
         allow_redirects=False,
+        proxies=PROXIES,
     )
 
     print(f"status={resp.status_code}")
