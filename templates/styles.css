@@ -686,6 +686,25 @@ body:not(.has-active-card) .card.main:hover {
     box-sizing: border-box;
 }
 
+.receipt-body {
+    flex: 1;
+    /* Default: scrollable (for Rhythm mode) */
+    overflow-y: auto;
+
+    /* Hide Scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* For achievement mode: allow overflow so icons don't get clipped */
+.receipt.achievement-mode .receipt-body {
+    overflow-y: visible;
+}
+
+.receipt-body::-webkit-scrollbar {
+    display: none;
+}
+
 .receipt::before {
     content: '';
     position: absolute;
@@ -775,6 +794,13 @@ body:not(.has-active-card) .card.main:hover {
     object-fit: contain;
     background: #fff;
     display: block;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.achievement-row:not(.locked) .ach-icon:hover {
+    transform: rotate(-4deg) scale(1.1);
+    box-shadow: 3px 3px 0 #000;
+    cursor: help;
 }
 
 .ach-content {
@@ -921,6 +947,33 @@ body.has-active-card {
     background-color: #668000;
 }
 
+/* --- 自定义悬浮窗 --- */
+.custom-tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.9);
+    color: #ccff00;
+    border: 1px solid #ccff00;
+    padding: 4px 8px;
+    font-family: 'JetBrains Mono', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+    white-space: nowrap;
+}
+
+/* --- 锁定成就样式 --- */
+.achievement-row.locked {
+    opacity: 0.6;
+    filter: grayscale(100%);
+}
+
+.achievement-row.locked .ach-time {
+    color: #aaa;
+    font-style: italic;
+}
+
 body.has-active-card .card.main.unfocused,
 body.has-active-card .card.left.unfocused,
 body.has-active-card .card.right.unfocused {
@@ -947,4 +1000,21 @@ body.has-active-card .card.right.focused {
     filter: none;
     z-index: 50;
     transform: translateZ(0) rotateZ(calc(-2deg * var(--dir))) translateY(0);
+}
+
+/* --- Receipt Theme for Tooltip --- */
+.custom-tooltip.receipt-theme {
+    background: #fff;
+    color: #000;
+    border: 3px solid #000;
+    padding: 0;
+    font-family: 'Noto Sans SC', sans-serif;
+    pointer-events: none;
+    z-index: 10000;
+}
+
+.custom-tooltip.receipt-theme .achievement-row {
+    border-bottom: none;
+    /* Rows inside might have borders, we can keep or remove */
+    padding: 10px;
 }

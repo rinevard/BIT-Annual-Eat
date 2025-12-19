@@ -199,22 +199,117 @@ badgeItems.forEach(el => {
 });
 
 // Tooltip Logic
+// Helper to find data for a specific date
+function getDayData(dateStr) {
+    if (typeof EAT_DATA === 'undefined') return null;
+    const year = dateStr.split('-')[0];
+    if (!EAT_DATA[year]) return null;
+    return EAT_DATA[year][dateStr]; // Returns day object { count, amount, txs... } or undefined
+}
+
+// Helper to render detailed HTML for a single day (used in Rhythm receipt and Tooltip)
+function renderDayDetailsHtml(dateStr, dayData, isTooltip = false) {
+    // Basic formatting helpers
+    const getDayStr = (isoDate) => {
+        const d = new Date(isoDate);
+        return `${d.getMonth() + 1}/${d.getDate()}`;
+    };
+
+    if (!dayData || !dayData.count) { // count can be 0 or undefined
+        if (isTooltip) return `<div style="padding:10px; font-family:'JetBrains Mono'">NO RECORD</div>`;
+        return `
+            <div class="achievement-row" style="opacity: 0.3; gap: 10px; padding: 10px 0;">
+                <div style="font-family: 'JetBrains Mono'; font-weight: 700;">${getDayStr(dateStr)}</div>
+                <div style="font-size: 12px; color: #000;">NO RECORD</div>
+                <div style="margin-left: auto; font-family: 'JetBrains Mono'">---</div>
+            </div>
+        `;
+    }
+
+    const amtStr = `¥${Number(dayData.amount).toFixed(1)}`;
+
+    // Build transactions list
+    let txRows = '';
+    if (dayData.txs && dayData.txs.length > 0) {
+        txRows = dayData.txs.map(tx => {
+            let timeStr = tx.time ? tx.time : '--:--:--';
+            let txAmt = `¥${Number(tx.amount).toFixed(1)}`;
+            return `
+                <div style="display: flex; justify-content: space-between; font-size: 13px; color: #444; margin-top: 2px;">
+                    <span><span style="color:#999; margin-right:6px; font-family:'JetBrains Mono'; font-size: 12px;">${timeStr}</span>${tx.mername}</span>
+                    <span style="font-family:'JetBrains Mono'; font-size: 12px;">${txAmt}</span>
+                </div>
+            `;
+        }).join('');
+    } else if (dayData.merchants && dayData.merchants.length > 0) {
+        // Fallback to merchants array if txs is missing
+        const details = dayData.merchants.map(m => `${m.name} (¥${Number(m.amount).toFixed(1)})`).join(', ');
+        txRows = `<div style="font-size: 13px; color: #444; margin-top: 2px;">${details}</div>`;
+    }
+
+    // Styles
+    const wrapperStyle = isTooltip
+        ? "display: flex; flex-direction: column; align-items: stretch; gap: 5px; min-width: 250px;"
+        : "display: flex; flex-direction: column; align-items: stretch; gap: 5px; padding: 12px 0;";
+
+    return `
+        <div class="achievement-row" style="${wrapperStyle}">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <div style="font-family: 'JetBrains Mono'; font-weight: 800; font-size: 16px;">${getDayStr(dateStr)}</div>
+                <div style="font-family: 'JetBrains Mono'; font-weight: 600; font-size: 16px; color: #999;">${amtStr}</div>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+                ${txRows}
+            </div>
+        </div>
+    `;
+}
+
+// Tooltip Logic Extended
 const tooltipEl = document.getElementById('custom-tooltip');
 
+// Generic simple text tooltip
 function showTooltip(e, text) {
     tooltipEl.textContent = text;
+    tooltipEl.className = 'custom-tooltip';
     tooltipEl.style.display = 'block';
     moveTooltip(e);
 }
 
+// Rich HTML tooltip for Achievement Time hover
+window.showDayTooltip = function (e, dateStr) {
+    const dayData = getDayData(dateStr);
+
+    // Add specific class for theming (white bg, black text, etc.)
+    tooltipEl.className = 'custom-tooltip receipt-theme';
+    tooltipEl.innerHTML = renderDayDetailsHtml(dateStr, dayData, true);
+    tooltipEl.style.display = 'block';
+
+    moveDayTooltip(e);
+}
+
+// Standard tooltip follows mouse
 function moveTooltip(e) {
-    // Offset slightly from cursor (move to top right)
     tooltipEl.style.left = (e.clientX + 5) + 'px';
     tooltipEl.style.top = (e.clientY - 25) + 'px';
 }
 
-function hideTooltip() {
+// Day tooltip follows mouse LEFT
+window.moveDayTooltip = function (e) {
+    const rect = tooltipEl.getBoundingClientRect();
+    const OFFSET_X = 15;
+    const OFFSET_Y = 10;
+
+    let left = e.clientX - rect.width - OFFSET_X;
+    let top = e.clientY - OFFSET_Y;
+
+    tooltipEl.style.left = left + 'px';
+    tooltipEl.style.top = top + 'px';
+}
+
+window.hideTooltip = function () {
     tooltipEl.style.display = 'none';
+    tooltipEl.className = 'custom-tooltip';
 }
 
 // 3. Rhythm 区域（真实数据驱动）
@@ -460,13 +555,22 @@ function getAchievementPages() {
     return pages;
 }
 
+
+
+
+
+// Tooltip Logic Extended
+
+
+
+
 const achievementPages = getAchievementPages();
 const totalPages = achievementPages.length;
 
 // 创建成就纸张
 function createAchievementReceipt(pageIndex, state) {
     const el = document.createElement('div');
-    el.className = `receipt ${state}`;
+    el.className = `receipt ${state} achievement-mode`;
 
     const pageData = achievementPages[pageIndex];
     const pageNum = pageIndex + 1;
@@ -478,13 +582,20 @@ function createAchievementReceipt(pageIndex, state) {
         const imgSrc = `images/${ach.id}.png`;
         const lockedClass = ach.locked ? 'locked' : '';
 
+        // Add hover triggers to time
+        // NOTE: ach.time is "YYYY-MM-DD" per my check.
+        const timeHtml = `<span class="ach-time" 
+            onmouseenter="showDayTooltip(event, '${ach.time}')" 
+            onmousemove="moveDayTooltip(event)" 
+            onmouseleave="hideTooltip()">${ach.time}</span>`;
+
         rowsHTML += `
                 <div class="achievement-row ${lockedClass}">
                     <img class="ach-icon" src="${imgSrc}">
                     <div class="ach-content">
                         <div class="ach-header">
                             <span class="ach-name">${ach.name}</span>
-                            <span class="ach-time">${ach.time}</span>
+                            ${timeHtml}
                         </div>
                         <div class="ach-condition">${ach.condition}</div>
                         <div class="ach-desc">${ach.desc}</div>
@@ -521,60 +632,14 @@ function createRhythmReceipt(index, state) {
     // 构建每日记录行
     let rowsHTML = '';
 
-    // 使用简单的日期格式化器
-    const getDayStr = (isoDate) => {
-        const d = new Date(isoDate);
-        return `${d.getMonth() + 1}/${d.getDate()}`;
-    };
-
     records.forEach(day => {
-        if (day.count === 0) {
-            // 空记录
-            rowsHTML += `
-            <div class="achievement-row" style="opacity: 0.3; gap: 10px; padding: 10px 0;">
-                <div style="font-family: 'JetBrains Mono'; font-weight: 700;">${getDayStr(day.date)}</div>
-                <div style="font-size: 12px; color: #000;">NO RECORD</div>
-                <div style="margin-left: auto; font-family: 'JetBrains Mono'">---</div>
-            </div>
-           `;
-            return;
-        }
+        // Use the shared helper!
+        // Note: day object here comes from RHYTHM_CHUNKS which was built from EAT_DATA.
+        // It has {date, count, amount, merchants, txs} matches renderDayDetailsHtml expectation.
 
-        // 提取商家名称及价格
-        const amtStr = `¥${Number(day.amount).toFixed(1)}`;
-
-        // 构建详细的消费列表
-        let txRows = '';
-        if (day.txs && day.txs.length > 0) {
-            txRows = day.txs.map(tx => {
-                // Time: 07:08:03 -> 07:08
-                let timeStr = tx.time ? tx.time.substring(0, 5) : '--:--';
-                let txAmt = `¥${Number(tx.amount).toFixed(1)}`;
-                return `
-                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #444; margin-top: 2px;">
-                        <span><span style="color:#999; margin-right:6px; font-family:'JetBrains Mono'; font-size: 12px;">${timeStr}</span>${tx.mername}</span>
-                        <span style="font-family:'JetBrains Mono'; font-size: 12px;">${txAmt}</span>
-                    </div>
-                `;
-            }).join('');
-        } else {
-            // Fallback if no txs
-            const details = day.merchants.map(m => `${m.name} (¥${Number(m.amount).toFixed(1)})`).join(', ');
-            txRows = `<div style="font-size: 13px; color: #444; margin-top: 2px;">${details}</div>`;
-        }
-
-        rowsHTML += `
-            <div class="achievement-row" style="display: flex; flex-direction: column; align-items: stretch; gap: 5px; padding: 12px 0;">
-                <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                    <div style="font-family: 'JetBrains Mono'; font-weight: 800; font-size: 16px;">${getDayStr(day.date)}</div>
-                    <div style="font-family: 'JetBrains Mono'; font-weight: 600; font-size: 16px; color: #999;">${amtStr}</div>
-                </div>
-                <!-- Transaction List -->
-                <div style="display: flex; flex-direction: column;">
-                    ${txRows}
-                </div>
-            </div>
-        `;
+        // However, renderDayDetailsHtml expects (dateStr, dayData).
+        // day.date is the dateStr.
+        rowsHTML += renderDayDetailsHtml(day.date, day);
     });
 
     el.innerHTML = `
@@ -602,11 +667,8 @@ window.updatePrinterMode = function (targetMode, targetIndex) {
         needsReprint = true;
     } else {
         if (targetMode === 'achievement') {
-            if (currentAchievementPage === 0) needsReprint = false;
-            else {
-                currentAchievementPage = 0; // 重置到第一页
-                needsReprint = true;
-            }
+            // 已经在成就模式，再次点击只抖动
+            needsReprint = false;
         } else {
             // 节奏模式
             if (targetIndex !== currentRhythmIndex) {
@@ -624,9 +686,7 @@ window.updatePrinterMode = function (targetMode, targetIndex) {
         if (targetMode === 'rhythm' && typeof targetIndex === 'number') {
             currentRhythmIndex = targetIndex;
         }
-        if (targetMode === 'achievement') {
-            currentAchievementPage = 0;
-        }
+        // 切换回成就模式时，不改变 currentAchievementPage，保留上次的页码
 
         // 同步视觉状态（标题、高亮）
         syncPrinterVisuals();
@@ -864,6 +924,17 @@ window.handleCloseLeft = function (e) {
 window.handleCloseRight = function (e) {
     if (e) e.stopPropagation();
     if (currentState === 'right') {
+
+        // 如果在节奏态关闭，恢复到默认成就态（包括重置高亮和纸张内容）
+        if (printerMode === 'rhythm') {
+            printerMode = 'achievement';
+            syncPrinterVisuals();
+
+            const slot = document.getElementById('achievement-slot');
+            const currentPaper = slot.querySelector('.receipt.current');
+            tearAndPrint(currentPaper);
+        }
+
         triggerExit(cardRight);
         rig.classList.remove('pan-right');
         currentState = 'none';
