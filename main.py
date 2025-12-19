@@ -387,7 +387,7 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
     with open(path, "w", encoding="utf-8") as f:
         f.write(html)
 
-    # Copy images folder to output directory
+    # 把图片文件夹复制到 output 文件夹
     src_images = os.path.join("templates", "images")
     dst_images = os.path.join(os.path.dirname(path), "images")
     if os.path.exists(src_images):
@@ -564,8 +564,9 @@ def main() -> None:
         print("发生错误:", err.user_message)
         if err.hint:
             print("提示：", err.hint)
-        if err.evidence:
-            print("调试信息：", err.evidence)
+        # 可以加个 -debug 命令行参数?
+        # if err.evidence:
+        #     print("调试信息：", err.evidence)
         else:
             print(f"可以打开 {html_report_path} 以本地查看报告。")
     except Exception as exc:  # noqa: BLE001
