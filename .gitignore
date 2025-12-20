@@ -182,3 +182,4 @@ prototypes/refs/
 templates/visual/images
 tmp/
 templates/images
+cloudflare_worker/worker_used.js

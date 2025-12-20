@@ -1,0 +1,130 @@
+// 模板内容（由 build_worker.py 自动填充）
+const INDEX_HTML = `__INDEX_HTML__`;
+const STYLES_CSS = `__STYLES_CSS__`;
+const SCRIPTS_JS = `__SCRIPTS_JS__`;
+
+async function sha256Hex(str) {
+    const data = new TextEncoder().encode(str);
+    const hashBuf = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = [...new Uint8Array(hashBuf)];
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * 使用存储的数据动态填充模板，生成完整的 HTML 页面。
+ */
+function generateHtml(dailyStats, achState, editPw) {
+    return INDEX_HTML
+        .replace("/*__INLINE_STYLE__*/", STYLES_CSS)
+        .replace("//__INLINE_SCRIPT__", SCRIPTS_JS)
+        .replace("__EAT_DATA__", JSON.stringify(dailyStats))
+        .replace("__ACH_STATE__", JSON.stringify(achState))
+        .replace("__EDIT_PW__", JSON.stringify(editPw));
+}
+
+export default {
+    async fetch(request, env, ctx) {
+        const url = new URL(request.url);
+        const { pathname } = url;
+
+        // 上传报告：POST /api/reports
+        // 接收 JSON 格式：{ daily_stats, ach_state, edit_pw }
+        // 将 JSON 数据保存到 KV
+        if (request.method === "POST" && pathname === "/api/reports") {
+            // 检查请求体大小（限制 300KB）
+            const contentLength = request.headers.get("Content-Length");
+            if (contentLength && parseInt(contentLength) > 300_000) {
+                return new Response("Payload too large", { status: 413 });
+            }
+
+            let payload;
+            try {
+                const text = await request.text();
+                if (text.length > 300_000) {
+                    return new Response("Payload too large", { status: 413 });
+                }
+                payload = JSON.parse(text);
+            } catch (e) {
+                return new Response("Invalid JSON", { status: 400 });
+            }
+
+            const { daily_stats, ach_state, edit_pw } = payload;
+
+            if (!daily_stats || !ach_state) {
+                return new Response("Missing required fields: daily_stats, ach_state", { status: 400 });
+            }
+
+            // 基于 student_key + REPORT_SALT 生成 id
+            let id;
+            const studentKey = request.headers.get("X-Eatbit-Student-Key");
+            const salt = env.REPORT_SALT;
+
+            if (studentKey && salt) {
+                const base = `${salt}:${studentKey}`;
+                const fullHash = await sha256Hex(base);
+                id = fullHash.slice(0, 8);
+            } else {
+                id = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+            }
+
+            const key = `report:${id}`;
+
+            // 保存 JSON 数据到 KV
+            const dataToStore = {
+                daily_stats,
+                ach_state,
+                edit_pw: edit_pw || "0000",
+            };
+
+            await env.REPORTS_KV.put(key, JSON.stringify(dataToStore), {
+                expirationTtl: 60 * 60 * 24 * 365, // 1 年
+            });
+
+            return new Response(JSON.stringify({
+                id,
+                url: `https://eatbit.top/r/${id}`,
+            }), {
+                status: 200,
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+            });
+        }
+
+        // 查看报告：GET /r/<id>
+        // 从 KV 读取 JSON 数据，动态填充模板返回 HTML
+        if (request.method === "GET" && pathname.startsWith("/r/")) {
+            const id = pathname.slice("/r/".length);
+
+            if (!id) {
+                return new Response("Not found", { status: 404 });
+            }
+
+            const key = `report:${id}`;
+            const stored = await env.REPORTS_KV.get(key);
+
+            if (!stored) {
+                return new Response("Not found", { status: 404 });
+            }
+
+            let data;
+            try {
+                data = JSON.parse(stored);
+            } catch (e) {
+                return new Response("Corrupted data", { status: 500 });
+            }
+
+            const html = generateHtml(data.daily_stats, data.ach_state, data.edit_pw);
+
+            return new Response(html, {
+                status: 200,
+                headers: { "Content-Type": "text/html; charset=utf-8" },
+            });
+        }
+
+        // 首页
+        if (pathname === "/" || pathname === "/index.html") {
+            return new Response("Hello from eatbit.top worker", { status: 200 });
+        }
+
+        return new Response("Not found", { status: 404 });
+    },
+};

@@ -404,15 +404,33 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
     return edit_pw
 
 
-def upload_report(html_path: str, student_key: str | None = None) -> str | None:
-    try:
-        with open(html_path, "rb") as f:
-            data = f.read()
-    except OSError as exc:
-        print(f"读取文件失败: {exc}")
-        return None
+def upload_report(
+    daily_stats: dict,
+    ach_state: dict,
+    edit_pw: str,
+    student_key: str | None = None,
+) -> str | None:
+    """上传报告数据到云端，返回分享链接。
 
-    headers = {"Content-Type": "text/html"}
+    Args:
+        daily_stats: build_daily_stats() 的结果
+        ach_state: evaluate_achievements() 的结果
+        edit_pw: 编辑密码
+        student_key: 学号哈希，用于生成固定的报告 ID
+    """
+    payload = {
+        "daily_stats": daily_stats,
+        "ach_state": ach_state,
+        "edit_pw": edit_pw,
+    }
+
+    # payload_size = len(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
+    # print(f"[DEBUG] 上传数据大小: {payload_size / 1024:.2f} KB")
+
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": EDGE_UA,
+    }
     if student_key:
         headers["X-Eatbit-Student-Key"] = student_key
 
@@ -420,7 +438,7 @@ def upload_report(html_path: str, student_key: str | None = None) -> str | None:
         resp = requests.post(
             "https://eatbit.top/api/reports",
             headers=headers,
-            data=data,
+            json=payload,
             timeout=30,
         )
     except requests.RequestException as exc:
@@ -542,6 +560,12 @@ def main() -> None:
         print(f"总消费金额: {total_amount:.2f} 元")
 
         used_default_password = None
+        daily_stats = build_daily_stats(records)
+        ach_state = evaluate_achievements(
+            records,
+            student_id=idserial,
+            used_default_password=used_default_password,
+        )
         edit_pw = save_html_report(
             records,
             html_report_path,
@@ -552,9 +576,14 @@ def main() -> None:
 
         choice = input("\n是否上传吃饭数据到 eatbit.top 生成分享链接？(Y/N): ").strip().lower()
         if choice == "y":
-            print("正在上传报告到 eatbit.top，一般不超过半分钟...")
+            print("正在上传数据到 eatbit.top，一般不超过半分钟...")
             student_key = make_student_key(idserial)
-            url = upload_report(html_report_path, student_key=student_key)
+            url = upload_report(
+                daily_stats=daily_stats,
+                ach_state=ach_state,
+                edit_pw=edit_pw,
+                student_key=student_key,
+            )
             if url:
                 print(f"上传成功！分享链接: {url}")
                 print(f"编辑模式链接（请勿分享给他人）: {url}#pw={edit_pw}")
