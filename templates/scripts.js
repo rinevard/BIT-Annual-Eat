@@ -107,7 +107,7 @@ const ACH_CONFIG = [
     { id: "story_start", name: "故事的开始", rarity: 4, condition: "在本年第一天吃饭", desc: "其实味道和去年没区别", time: "2025-01-01" },
     { id: "another_year", name: "又一年", rarity: 4, condition: "在本年最后一天吃饭", desc: "明年见", time: "2025-12-31" },
     { id: "night_owl", name: "守夜人", rarity: 3, condition: "21:00以后消费过5次", desc: "据说只要不计算晚上的卡路里，它们就不存在", time: "2025-03-20" },
-    { id: "big_meal", name: "加个鸡腿", rarity: 3, condition: "单笔消费金额 > 25元", desc: "吃点好的！", time: "2025-02-14" },
+    { id: "big_meal", name: "加个鸡腿", rarity: 3, condition: "单笔消费金额 > 25元", desc: "吃点好的", time: "2025-02-14" },
     { id: "minimalist", name: "极限生存", rarity: 3, condition: "单笔消费金额 < 1元", desc: "极简主义饮食践行者", time: "2025-05-01" },
     { id: "missing_breakfast", name: "消失的早餐", rarity: 3, condition: "全年9点前消费次数 < 10 次", desc: "那些从来不吃早饭的人，现在都怎么样了？", time: "2025-06-15" },
     { id: "good_meals", name: "好好吃饭", rarity: 3, condition: "单日内同时有早、中、晚三餐记录", desc: "你拥有令人羡慕的健康作息", time: "2025-03-05" },
@@ -166,37 +166,99 @@ ACHIEVEMENTS_DATA.sort((a, b) => {
 // 逻辑：首页 Badges Rack 是否显示锁定的？
 // 原设计是随机展示。如果展示锁定的，可能是个黑影？
 // 这里为了美观，Badges Rack 只展示已解锁的。
-const badges = ACHIEVEMENTS_DATA.filter(i => !i.locked).map((item) => ({
-    src: `images/${item.id}.png`,
-    name: item.name,
-}));
+const unlockedBadges = ACHIEVEMENTS_DATA.filter(i => !i.locked);
 
-// 随机打乱顺序
-badges.sort(() => Math.random() - 0.5);
+// 随机打乱顺序，初始化选中的6个
+const shuffledBadges = [...unlockedBadges].sort(() => Math.random() - 0.5);
 const MAX_MAIN_BADGES = 6;
-const mainBadges = badges.slice(0, MAX_MAIN_BADGES);
+
+// 选中的成就ID集合（用于在main卡片上显示）
+let selectedBadgeIds = new Set(shuffledBadges.slice(0, MAX_MAIN_BADGES).map(b => b.id));
 
 const badgeRack = document.getElementById('badges-rack');
-mainBadges.forEach(b => {
-    const el = document.createElement('div');
-    el.className = 'badge-item';
-    const img = document.createElement('img');
-    img.src = b.src;
-    img.alt = b.name;
 
-    // el.title = b.name; // 移除原生 Tooltip
-    el.appendChild(img);
-    badgeRack.appendChild(el);
-});
+// 渲染主卡片成就展示
+function renderMainBadges() {
+    badgeRack.innerHTML = '';
 
-const badgeItems = badgeRack.querySelectorAll('.badge-item');
+    // 按selectedBadgeIds的顺序渲染
+    selectedBadgeIds.forEach(id => {
+        const badge = unlockedBadges.find(b => b.id === id);
+        if (!badge) return;
 
-badgeItems.forEach(el => {
-    el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        updatePrinterMode('achievement');
+        const el = document.createElement('div');
+        el.className = 'badge-item';
+        el.dataset.id = badge.id;
+
+        const img = document.createElement('img');
+        img.src = `images/${badge.id}.png`;
+        img.alt = badge.name;
+
+        el.appendChild(img);
+        badgeRack.appendChild(el);
+
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            updatePrinterMode('achievement');
+        });
     });
-});
+}
+
+// 初始渲染
+renderMainBadges();
+
+// 弹窗提示函数
+function showMaxBadgesAlert() {
+    // 创建弹窗元素
+    const overlay = document.createElement('div');
+    overlay.className = 'alert-overlay';
+    overlay.innerHTML = `
+        <div class="alert-box">
+            <div class="alert-icon">⚠</div>
+            <div class="alert-title">已达上限</div>
+            <div class="alert-message">最多只能选择 ${MAX_MAIN_BADGES} 个成就展示在主卡片上</div>
+            <div class="alert-hint">请先取消选择其他成就</div>
+            <button class="alert-btn">好的</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // 触发动画
+    requestAnimationFrame(() => {
+        overlay.classList.add('show');
+    });
+
+    // 关闭弹窗
+    const closeAlert = () => {
+        overlay.classList.remove('show');
+        setTimeout(() => overlay.remove(), 300);
+    };
+
+    overlay.querySelector('.alert-btn').onclick = closeAlert;
+    overlay.onclick = (e) => {
+        if (e.target === overlay) closeAlert();
+    };
+}
+
+// 切换成就选中状态
+function toggleBadgeSelection(achId) {
+    if (selectedBadgeIds.has(achId)) {
+        // 已选中，移除
+        selectedBadgeIds.delete(achId);
+        renderMainBadges();
+        return true;
+    } else {
+        // 未选中，检查是否已满
+        if (selectedBadgeIds.size >= MAX_MAIN_BADGES) {
+            showMaxBadgesAlert();
+            return false;
+        }
+        // 添加
+        selectedBadgeIds.add(achId);
+        renderMainBadges();
+        return true;
+    }
+}
 
 // Tooltip Logic
 // Helper to find data for a specific date
@@ -581,6 +643,8 @@ function createAchievementReceipt(pageIndex, state) {
         // 查找对应图片
         const imgSrc = `images/${ach.id}.png`;
         const lockedClass = ach.locked ? 'locked' : '';
+        // 检查是否被选中
+        const selectedClass = selectedBadgeIds.has(ach.id) ? 'selected' : '';
 
         // Add hover triggers to time
         // NOTE: ach.time is "YYYY-MM-DD" per my check.
@@ -590,8 +654,10 @@ function createAchievementReceipt(pageIndex, state) {
             onmouseleave="hideTooltip()">${ach.time}</span>`;
 
         rowsHTML += `
-                <div class="achievement-row ${lockedClass}">
-                    <img class="ach-icon" src="${imgSrc}">
+                <div class="achievement-row ${lockedClass}" data-ach-id="${ach.id}">
+                    <div class="ach-icon-wrapper ${selectedClass}">
+                        <img class="ach-icon" src="${imgSrc}" data-id="${ach.id}">
+                    </div>
                     <div class="ach-content">
                         <div class="ach-header">
                             <span class="ach-name">${ach.name}</span>
@@ -613,8 +679,25 @@ function createAchievementReceipt(pageIndex, state) {
         </div>
     `;
 
+    // 绑定图标点击事件（仅对未锁定的成就）
+    el.querySelectorAll('.achievement-row:not(.locked) .ach-icon-wrapper').forEach(wrapper => {
+        wrapper.style.cursor = 'pointer';
+        wrapper.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止冒泡到receipt的翻页事件
+
+            const achId = wrapper.querySelector('.ach-icon').dataset.id;
+            const wasToggled = toggleBadgeSelection(achId);
+
+            if (wasToggled) {
+                // 更新选中状态的视觉反馈
+                wrapper.classList.toggle('selected');
+            }
+        });
+    });
+
     return el;
 }
+
 
 // 创建节奏纸张
 function createRhythmReceipt(index, state) {
