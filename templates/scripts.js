@@ -199,7 +199,7 @@ function renderMainBadges() {
 
         el.addEventListener('click', (e) => {
             e.stopPropagation();
-            updatePrinterMode('achievement');
+            updatePrinterMode('achievement', null, badge.id);
         });
     });
 }
@@ -617,6 +617,16 @@ function getAchievementPages() {
     return pages;
 }
 
+// 查找成就所在页码（返回页索引，找不到返回-1）
+function getPageForAchievement(achId) {
+    for (let i = 0; i < ACHIEVEMENTS_DATA.length; i++) {
+        if (ACHIEVEMENTS_DATA[i].id === achId) {
+            return Math.floor(i / ITEMS_PER_PAGE);
+        }
+    }
+    return -1;
+}
+
 
 
 
@@ -736,7 +746,7 @@ function createRhythmReceipt(index, state) {
     return el;
 }
 
-window.updatePrinterMode = function (targetMode, targetIndex) {
+window.updatePrinterMode = function (targetMode, targetIndex, targetAchId) {
     if (currentState !== 'right') {
         handleRight();
     }
@@ -745,13 +755,35 @@ window.updatePrinterMode = function (targetMode, targetIndex) {
     const currentPaper = slot.querySelector('.receipt.current');
 
     let needsReprint = false;
+    let targetPage = null;
 
     if (targetMode !== printerMode) {
         needsReprint = true;
+        // 如果指定了成就ID，计算目标页码
+        if (targetMode === 'achievement' && targetAchId) {
+            targetPage = getPageForAchievement(targetAchId);
+            if (targetPage >= 0) {
+                currentAchievementPage = targetPage;
+            }
+        }
     } else {
         if (targetMode === 'achievement') {
-            // 已经在成就模式，再次点击只抖动
-            needsReprint = false;
+            // 已经在成就模式
+            if (targetAchId) {
+                // 指定了某个成就，检查是否在当前页
+                targetPage = getPageForAchievement(targetAchId);
+                if (targetPage >= 0 && targetPage !== currentAchievementPage) {
+                    // 不在当前页，跳转
+                    currentAchievementPage = targetPage;
+                    needsReprint = true;
+                } else {
+                    // 已经在当前页，抖动
+                    needsReprint = false;
+                }
+            } else {
+                // 没指定成就，只抖动
+                needsReprint = false;
+            }
         } else {
             // 节奏模式
             if (targetIndex !== currentRhythmIndex) {
@@ -776,10 +808,27 @@ window.updatePrinterMode = function (targetMode, targetIndex) {
 
         tearAndPrint(currentPaper);
     } else {
-        // 抖动当前页
-        triggerShake(currentPaper);
+        // 抖动
+        if (targetMode === 'achievement' && targetAchId) {
+            // 成就模式且指定了成就，只抖动对应图标
+            shakeAchievementIcon(targetAchId);
+        } else {
+            // 其他情况抖动整页
+            triggerShake(currentPaper);
+        }
     }
 };
+
+// 抖动指定成就图标
+function shakeAchievementIcon(achId) {
+    const slot = document.getElementById('achievement-slot');
+    const icon = slot.querySelector(`.ach-icon[data-id="${achId}"]`);
+    if (icon) {
+        icon.classList.remove('icon-shake');
+        void icon.offsetWidth; // 强制重排
+        icon.classList.add('icon-shake');
+    }
+}
 
 // 新增：同步打印机外部视觉状态（Header + Rhythm Bar高亮）
 function syncPrinterVisuals() {

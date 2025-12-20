@@ -946,6 +946,37 @@ body:not(.has-active-card) .card.main:hover {
     }
 }
 
+/* 成就图标抖动 */
+.ach-icon.icon-shake {
+    animation: icon-shake 0.2s;
+}
+
+@keyframes icon-shake {
+
+    0%,
+    99% {
+        transform: translate3d(0, 0, 0) rotate(-5deg);
+    }
+
+    15%,
+    85% {
+        transform: translate3d(-4px, 0, 0) rotate(-5deg);
+    }
+
+    35%,
+    65% {
+        transform: translate3d(6px, 0, 0) rotate(-5deg);
+    }
+
+    50% {
+        transform: translate3d(-7px, 0, 0) rotate(-5deg);
+    }
+}
+
+
+
+
+
 body.has-active-card {
     background-color: #668000;
 }
