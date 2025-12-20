@@ -183,3 +183,4 @@ templates/visual/images
 tmp/
 templates/images
 cloudflare_worker/worker_used.js
+cloudflare_worker/worker_template_with_protect.js

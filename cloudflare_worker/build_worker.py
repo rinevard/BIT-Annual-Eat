@@ -23,8 +23,8 @@ def build_worker() -> None:
     project_root = os.path.dirname(script_dir)
     templates_dir = os.path.join(project_root, "templates")
 
-    template_path = os.path.join(script_dir, "worker_template.js")
-    output_path = os.path.join(script_dir, "worker.js")
+    template_path = os.path.join(script_dir, "worker_template_with_protect.js")
+    output_path = os.path.join(script_dir, "worker_used.js")
 
     # 读取模板文件
     with open(os.path.join(templates_dir, "index.html"), "r", encoding="utf-8") as f:
@@ -53,9 +53,9 @@ def build_worker() -> None:
         f.write(worker_js)
 
     output_size_kb = len(worker_js.encode("utf-8")) / 1024
-    print(f"已生成 worker.js ({output_size_kb:.2f} KB)")
+    print(f"已生成 worker_used.js ({output_size_kb:.2f} KB)")
     print(f"路径: {output_path}")
-    print("\n请将 worker.js 的内容复制到 Cloudflare Dashboard 的 Worker 编辑器中。")
+    print("\n请将 worker_used.js 的内容复制到 Cloudflare Dashboard 的 Worker 编辑器中。")
 
 
 if __name__ == "__main__":

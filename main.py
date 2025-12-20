@@ -409,6 +409,8 @@ def upload_report(
     ach_state: dict,
     edit_pw: str,
     student_key: str | None = None,
+    year_from_id: str | None = None,
+    year_from_openid: str | None = None,
 ) -> str | None:
     """上传报告数据到云端，返回分享链接。
 
@@ -417,6 +419,8 @@ def upload_report(
         ach_state: evaluate_achievements() 的结果
         edit_pw: 编辑密码
         student_key: 学号哈希，用于生成固定的报告 ID
+        year_from_id: 学号[2:6]，用于验证
+        year_from_openid: openid[94:98]，用于验证
     """
     payload = {
         "daily_stats": daily_stats,
@@ -424,15 +428,16 @@ def upload_report(
         "edit_pw": edit_pw,
     }
 
-    # payload_size = len(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
-    # print(f"[DEBUG] 上传数据大小: {payload_size / 1024:.2f} KB")
-
     headers = {
         "Content-Type": "application/json",
         "User-Agent": EDGE_UA,
     }
     if student_key:
         headers["X-Eatbit-Student-Key"] = student_key
+    if year_from_id:
+        headers["X-Year-Id"] = year_from_id
+    if year_from_openid:
+        headers["X-Year-Oid"] = year_from_openid
 
     try:
         resp = requests.post(
@@ -583,6 +588,8 @@ def main() -> None:
                 ach_state=ach_state,
                 edit_pw=edit_pw,
                 student_key=student_key,
+                year_from_id=idserial[2:6],
+                year_from_openid=openid[94:98],
             )
             if url:
                 print(f"上传成功！分享链接: {url}")
