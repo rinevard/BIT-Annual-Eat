@@ -380,8 +380,8 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
         .replace("//__INLINE_SCRIPT__", script)
         .replace("__EAT_DATA__", data_json)
         .replace("__ACH_STATE__", ach_json)
-        .replace("__EDIT_PW__", edit_pw)
-        .replace("__BARCODE_ID__", "null") # 本地报告默认不显示条形码
+        .replace("__BARCODE_ID__", "null")  # 本地报告默认不显示条形码
+        .replace("__PROFILE__", "{}")  # 本地报告无保存的个人资料
     )
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -527,7 +527,7 @@ def main() -> None:
         return
 
     begin_date = f"{year:04d}-01-01"
-    end_date = f"{year:04d}-12-31"
+    end_date = f"{year:04d}-1-31"
 
     try:
         print("\n正在尝试获取 JSESSIONID...")

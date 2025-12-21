@@ -1,5 +1,141 @@
 // EAT_DATA and ACH_STATE are injected by the HTML template
 
+/* --- 编辑模式逻辑 --- */
+const IS_CLOUD = window.location.hostname === "eatbit.top";
+
+// 从 URL hash 中提取密码（例如 #pw=1234 -> "1234"）
+function getPasswordFromHash() {
+    const hash = window.location.hash || "";
+    const m = hash.match(/#pw=(\d{4})/i);
+    return m ? m[1] : null;
+}
+
+// 检测 URL 中是否有 #pw=xxxx 格式的密码
+const HAS_PW_HASH = /#pw=\d{4}/i.test(window.location.hash || "");
+
+// 标志 1：是否允许在页面上编辑（头像、标题、pin 等）
+// - 本地 HTML：始终可编辑但不可保存
+// - 云端无 #pw：只读
+// - 云端带 #pw：可编辑且可保存（密码正确性由服务端验证）
+const IS_EDIT_MODE = !IS_CLOUD || HAS_PW_HASH;
+
+// 标志 2：是否允许"保存到链接"（向服务器发送 PATCH 请求）
+// 仅当运行在 eatbit.top 且带有 #pw=... 时才允许
+const IS_SAVABLE = IS_CLOUD && HAS_PW_HASH;
+
+// 禁用编辑功能（云端无密码时）
+if (!IS_EDIT_MODE) {
+    document.addEventListener('DOMContentLoaded', () => {
+        const userName = document.querySelector('.user-name');
+        if (userName) userName.removeAttribute('contenteditable');
+        const avatarFrame = document.querySelector('.avatar-frame');
+        if (avatarFrame) avatarFrame.style.pointerEvents = 'none';
+    });
+}
+
+// 保存按钮逻辑
+let isSaving = false;
+
+// 向云端保存个人资料
+async function saveToCloud(payload) {
+    const pw = getPasswordFromHash();
+    if (!pw || typeof BARCODE_ID === 'undefined' || !BARCODE_ID) {
+        throw new Error('Missing password or report ID');
+    }
+
+    const resp = await fetch(`/api/reports/${BARCODE_ID}/profile`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Edit-Password': pw
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(text || `HTTP ${resp.status}`);
+    }
+
+    return await resp.json();
+}
+
+function initSaveButton() {
+    const saveBtn = document.getElementById('saveBtn');
+    const saveBtnText = document.getElementById('saveBtnText');
+
+    if (!saveBtn) return;
+
+    // 仅在编辑模式下显示保存按钮
+    if (IS_EDIT_MODE) {
+        saveBtn.style.display = 'block';
+    }
+
+    saveBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+
+        if (isSaving) return;
+
+        isSaving = true;
+        saveBtn.classList.add('saving');
+        saveBtnText.innerHTML = '<span class="saving-dots">SAVING</span>';
+
+        try {
+            // 收集要保存的数据
+            const userName = document.querySelector('.user-name')?.textContent?.trim();
+
+            // 验证数据
+            if (userName && userName.length > 20) {
+                throw new Error('名称最多 20 个字符');
+            }
+
+            if (IS_SAVABLE) {
+                // 真实保存到云端
+                await saveToCloud({ userName });
+
+                saveBtn.classList.add('success');
+                saveBtnText.textContent = 'SAVED';
+            } else {
+                // 本地模式：只显示提示，不发请求
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                saveBtn.classList.add('success');
+                saveBtnText.textContent = 'LOCAL';
+            }
+        } catch (err) {
+            saveBtn.classList.add('error');
+            saveBtnText.textContent = 'ERROR';
+            console.error('Save failed:', err);
+        }
+
+        // 重置状态
+        setTimeout(() => {
+            isSaving = false;
+            saveBtn.classList.remove('saving', 'success', 'error');
+            saveBtnText.textContent = 'SAVE';
+        }, 1000);
+    });
+}
+
+// 页面加载时应用保存的个人资料
+function applyProfile() {
+    if (typeof PROFILE === 'undefined' || !PROFILE) return;
+
+    // 应用用户名
+    if (PROFILE.userName) {
+        const userNameEl = document.querySelector('.user-name');
+        if (userNameEl) {
+            userNameEl.textContent = PROFILE.userName;
+        }
+    }
+}
+
+// 页面加载后初始化
+document.addEventListener('DOMContentLoaded', () => {
+    applyProfile();
+    initSaveButton();
+});
+
 /* --- Stat Logic --- */
 let totalAmount = 0;
 let totalMeals = 0;

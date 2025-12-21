@@ -30,8 +30,12 @@
                     BIT<br>
                     EAT<span>2025</span>
                 </div>
-                <div class="meta-info">
-                    EATBIT.TOP
+                <!-- 保存按钮（仅编辑模式显示） -->
+                <div class="save-btn-wrapper" id="saveBtn" style="display: none;">
+                    <div class="save-layer save-layer-bottom"></div>
+                    <div class="save-layer save-layer-top">
+                        <span id="saveBtnText">SAVE</span>
+                    </div>
                 </div>
             </div>
 
@@ -107,8 +111,8 @@
     <script>
         const EAT_DATA = __EAT_DATA__;
         const ACH_STATE = __ACH_STATE__;
-        const EDIT_PW = __EDIT_PW__;
         const BARCODE_ID = __BARCODE_ID__;
+        const PROFILE = __PROFILE__;
     </script>
     <script>
         //__INLINE_SCRIPT__

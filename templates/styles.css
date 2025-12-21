@@ -91,6 +91,110 @@ body:not(.has-active-card) .poster-frame:hover {
     padding: 4px 8px;
 }
 
+/* --- 保存按钮 --- */
+.save-btn-wrapper {
+    position: relative;
+    width: 110px;
+    height: 40px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.save-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    transition: all 0.15s ease;
+}
+
+.save-layer-bottom {
+    background: #878787;
+    border: 2px solid #000;
+    z-index: 1;
+}
+
+.save-layer-top {
+    background: #000;
+    color: var(--acid-green);
+    border: 2px solid #000;
+    z-index: 2;
+    transform-origin: left center;
+}
+
+/* 悬停：顶层逆时针旋转 */
+.save-btn-wrapper:not(.saving):hover .save-layer-top {
+    transform: rotate(-10deg);
+}
+
+/* 点击瞬间 */
+.save-btn-wrapper:active:not(.saving) .save-layer-top {
+    transform: rotate(0deg);
+    transition: 0.1s;
+}
+
+/* 保存中状态 */
+.save-btn-wrapper.saving {
+    pointer-events: none;
+}
+
+.save-btn-wrapper.saving .save-layer-top {
+    transform: rotate(0deg);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 保存成功：变为荧光绿背景 */
+.save-btn-wrapper.success .save-layer-top {
+    background: var(--acid-green);
+    color: #000;
+}
+
+/* 保存失败：变为粉色 */
+.save-btn-wrapper.error .save-layer-top {
+    background: var(--hot-pink);
+    color: #fff;
+}
+
+.save-layer-top span {
+    transition: opacity 0.2s;
+}
+
+/* 省略号动画 */
+.saving-dots::after {
+    content: '...';
+    animation: save-ellipsis 1.5s infinite;
+    display: inline-block;
+    width: 1.5em;
+    text-align: left;
+}
+
+@keyframes save-ellipsis {
+    0% {
+        content: '';
+    }
+
+    25% {
+        content: '.';
+    }
+
+    50% {
+        content: '..';
+    }
+
+    75% {
+        content: '...';
+    }
+}
+
 /* --- 主体布局 --- */
 .content-grid {
     display: grid;

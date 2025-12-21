@@ -13,14 +13,14 @@ async function sha256Hex(str) {
 /**
  * 使用存储的数据动态填充模板，生成完整的 HTML 页面。
  */
-function generateHtml(dailyStats, achState, editPw, barcodeId) {
+function generateHtml(dailyStats, achState, barcodeId, profile) {
     return INDEX_HTML
         .replace("/*__INLINE_STYLE__*/", STYLES_CSS)
         .replace("//__INLINE_SCRIPT__", SCRIPTS_JS)
         .replace("__EAT_DATA__", JSON.stringify(dailyStats))
         .replace("__ACH_STATE__", JSON.stringify(achState))
-        .replace("__EDIT_PW__", JSON.stringify(editPw))
-        .replace("__BARCODE_ID__", JSON.stringify(barcodeId));
+        .replace("__BARCODE_ID__", JSON.stringify(barcodeId))
+        .replace("__PROFILE__", JSON.stringify(profile || {}));
 }
 
 export default {
@@ -90,6 +90,66 @@ export default {
             });
         }
 
+        // 更新报告个人资料：PATCH /api/reports/<id>/profile
+        // 接收 JSON 格式：{ userName }
+        // 需要 X-Edit-Password 头验证
+        if (request.method === "PATCH" && pathname.match(/^\/api\/reports\/[^/]+\/profile$/)) {
+            const id = pathname.split("/")[3];
+            const key = `report:${id}`;
+
+            const stored = await env.REPORTS_KV.get(key);
+            if (!stored) {
+                return new Response("Not found", { status: 404 });
+            }
+
+            let data;
+            try {
+                data = JSON.parse(stored);
+            } catch (e) {
+                return new Response("Corrupted data", { status: 500 });
+            }
+
+            // 验证编辑密码
+            const providedPw = request.headers.get("X-Edit-Password");
+            if (!providedPw || providedPw !== data.edit_pw) {
+                return new Response("Forbidden", { status: 403 });
+            }
+
+            // 解析请求体
+            let updates;
+            try {
+                updates = await request.json();
+            } catch (e) {
+                return new Response("Invalid JSON", { status: 400 });
+            }
+
+            // 验证 userName
+            if (updates.userName !== undefined) {
+                if (typeof updates.userName !== "string") {
+                    return new Response("Invalid userName type", { status: 400 });
+                }
+                if (updates.userName.length > 20) {
+                    return new Response("userName too long (max 20)", { status: 400 });
+                }
+            }
+
+            // 更新 profile
+            data.profile = data.profile || {};
+            if (updates.userName !== undefined) {
+                data.profile.userName = updates.userName.trim();
+            }
+
+            // 保存回 KV
+            await env.REPORTS_KV.put(key, JSON.stringify(data), {
+                expirationTtl: 60 * 60 * 24 * 365,
+            });
+
+            return new Response(JSON.stringify({ success: true }), {
+                status: 200,
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+            });
+        }
+
         // 查看报告：GET /r/<id>
         // 从 KV 读取 JSON 数据，动态填充模板返回 HTML
         if (request.method === "GET" && pathname.startsWith("/r/")) {
@@ -113,7 +173,7 @@ export default {
                 return new Response("Corrupted data", { status: 500 });
             }
 
-            const html = generateHtml(data.daily_stats, data.ach_state, data.edit_pw, id);
+            const html = generateHtml(data.daily_stats, data.ach_state, id, data.profile);
 
             return new Response(html, {
                 status: 200,
