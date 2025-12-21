@@ -399,6 +399,13 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
                 pass
         try:
             shutil.copytree(src_images, dst_images)
+            # 设为隐藏文件夹（Windows）
+            try:
+                import ctypes
+                FILE_ATTRIBUTE_HIDDEN = 0x02
+                ctypes.windll.kernel32.SetFileAttributesW(dst_images, FILE_ATTRIBUTE_HIDDEN)
+            except Exception:
+                pass
         except OSError as e:
             print(f"Warning: Failed to copy images: {e}")
 
