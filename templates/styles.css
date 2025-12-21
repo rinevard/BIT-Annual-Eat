@@ -18,7 +18,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: var(--acid-green);
+    background-color: #668000;
     background-image:
         radial-gradient(#000 1px, transparent 1px);
     background-size: 20px 20px;
@@ -55,8 +55,8 @@ body:has(.poster-frame:hover) {
 }
 
 body:not(.has-active-card) .poster-frame:hover {
-    transform: rotate(-1deg) translateY(-8px);
-    box-shadow: 16px 20px 0px rgba(0, 0, 0, 0.8);
+    transform: rotate(-1deg) translateY(-10px);
+    box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.8);
 }
 
 .top-bar {
@@ -584,7 +584,7 @@ body:not(.has-active-card) .poster-frame:hover {
     position: absolute;
     top: 0;
     height: 100%;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); */
     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
