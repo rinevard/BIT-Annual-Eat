@@ -381,6 +381,7 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
         .replace("__EAT_DATA__", data_json)
         .replace("__ACH_STATE__", ach_json)
         .replace("__EDIT_PW__", edit_pw)
+        .replace("__BARCODE_ID__", "null") # 本地报告默认不显示条形码
     )
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -402,6 +403,20 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
             print(f"Warning: Failed to copy images: {e}")
 
     return edit_pw
+
+
+def update_html_barcode(path: str, barcode_id: str) -> None:
+    """上传成功后更新本地 HTML 报告中的条形码 ID。"""
+    with open(path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    html = html.replace(
+        "const BARCODE_ID = null;",
+        f"const BARCODE_ID = {json.dumps(barcode_id)};",
+    )
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
 
 
 def upload_report(
@@ -594,6 +609,9 @@ def main() -> None:
             if url:
                 print(f"上传成功！分享链接: {url}")
                 print(f"编辑模式链接（请勿分享给他人）: {url}#pw={edit_pw}")
+                # 从 URL 中提取报告 ID，更新本地条形码
+                report_id = url.rsplit("/", 1)[-1]
+                update_html_barcode(html_report_path, report_id)
             else:
                 print("上传失败，请稍后重试或检查网络连接。")
     except DkyktError as err:

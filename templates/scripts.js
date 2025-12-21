@@ -573,8 +573,15 @@ const CODE128 = {
 function renderBarcode() {
     const container = document.getElementById('barcode-container');
     const textEl = document.getElementById('barcode-text');
-    const code = 'F35EEE4E'; // 8位
+    const stickerEl = document.querySelector('.sticker-scan');
 
+    // BARCODE_ID 为空或占位符时隐藏条形码区域
+    if (typeof BARCODE_ID === 'undefined' || !BARCODE_ID || BARCODE_ID === '__BARCODE_ID__') {
+        if (stickerEl) stickerEl.style.display = 'none';
+        return;
+    }
+
+    const code = String(BARCODE_ID).toUpperCase();
     CODE128.render(container, code);
     textEl.textContent = code;
 }

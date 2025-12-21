@@ -13,13 +13,14 @@ async function sha256Hex(str) {
 /**
  * 使用存储的数据动态填充模板，生成完整的 HTML 页面。
  */
-function generateHtml(dailyStats, achState, editPw) {
+function generateHtml(dailyStats, achState, editPw, barcodeId) {
     return INDEX_HTML
         .replace("/*__INLINE_STYLE__*/", STYLES_CSS)
         .replace("//__INLINE_SCRIPT__", SCRIPTS_JS)
         .replace("__EAT_DATA__", JSON.stringify(dailyStats))
         .replace("__ACH_STATE__", JSON.stringify(achState))
-        .replace("__EDIT_PW__", JSON.stringify(editPw));
+        .replace("__EDIT_PW__", JSON.stringify(editPw))
+        .replace("__BARCODE_ID__", JSON.stringify(barcodeId));
 }
 
 export default {
@@ -112,7 +113,7 @@ export default {
                 return new Response("Corrupted data", { status: 500 });
             }
 
-            const html = generateHtml(data.daily_stats, data.ach_state, data.edit_pw);
+            const html = generateHtml(data.daily_stats, data.ach_state, data.edit_pw, id);
 
             return new Response(html, {
                 status: 200,
