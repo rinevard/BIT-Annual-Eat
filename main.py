@@ -468,7 +468,7 @@ def upload_report(
             "https://eatbit.top/api/reports",
             headers=headers,
             json=payload,
-            timeout=45,
+            timeout=60,
         )
     except requests.RequestException as exc:
         print(f"上传报告失败: {exc}")
@@ -529,7 +529,7 @@ def upload_with_progress(
             idx = (idx + 1) % len(spinner_chars)
             stop_spinner.wait(0.1)
         final_time = time.time() - start_time
-        sys.stdout.write(f"\r上传耗时 {final_time:.1f} 秒" + " " * 20 + "\n")
+        sys.stdout.write(f"\r上传耗时 {final_time:.1f} 秒" + " " * 30 + "\n")
         sys.stdout.flush()
 
     upload_thread = threading.Thread(target=do_upload, daemon=True)
