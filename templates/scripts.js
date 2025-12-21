@@ -84,6 +84,11 @@ function initSaveButton() {
             // 收集要保存的数据
             const userName = document.querySelector('.user-name')?.textContent?.trim();
 
+            // 收集选中的徽章ID
+            const selectedBadges = typeof selectedBadgeIds !== 'undefined'
+                ? Array.from(selectedBadgeIds)
+                : [];
+
             // 验证数据
             if (userName && userName.length > 20) {
                 throw new Error('名称最多 20 个字符');
@@ -91,7 +96,7 @@ function initSaveButton() {
 
             if (IS_SAVABLE) {
                 // 真实保存到云端
-                await saveToCloud({ userName });
+                await saveToCloud({ userName, selectedBadges });
 
                 saveBtn.classList.add('success');
                 saveBtnText.textContent = 'SAVED';
@@ -127,6 +132,26 @@ function applyProfile() {
         if (userNameEl) {
             userNameEl.textContent = PROFILE.userName;
         }
+    }
+
+    // 应用徽章选择（在徽章初始化后调用）
+    applyBadgeSelection();
+}
+
+// 应用保存的徽章选择（需要在 selectedBadgeIds 和 unlockedBadges 初始化后调用）
+function applyBadgeSelection() {
+    if (typeof PROFILE === 'undefined' || !PROFILE || !PROFILE.selectedBadges) return;
+    if (typeof selectedBadgeIds === 'undefined' || typeof unlockedBadges === 'undefined') return;
+
+    // 验证保存的徽章ID是否都是已解锁的
+    const validIds = PROFILE.selectedBadges.filter(id =>
+        unlockedBadges.some(b => b.id === id)
+    );
+
+    // 如果有有效的保存数据，使用它替换默认的随机选择
+    if (validIds.length > 0) {
+        selectedBadgeIds = new Set(validIds.slice(0, MAX_MAIN_BADGES));
+        renderMainBadges();
     }
 }
 
@@ -378,6 +403,11 @@ function showMaxBadgesAlert() {
 
 // 切换成就选中状态
 function toggleBadgeSelection(achId) {
+    // 非编辑模式下不允许修改
+    if (!IS_EDIT_MODE) {
+        return false;
+    }
+
     if (selectedBadgeIds.has(achId)) {
         // 已选中，移除
         selectedBadgeIds.delete(achId);

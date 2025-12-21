@@ -133,10 +133,27 @@ export default {
                 }
             }
 
+            // 验证 selectedBadges
+            if (updates.selectedBadges !== undefined) {
+                if (!Array.isArray(updates.selectedBadges)) {
+                    return new Response("Invalid selectedBadges type", { status: 400 });
+                }
+                if (updates.selectedBadges.length > 6) {
+                    return new Response("selectedBadges too many (max 6)", { status: 400 });
+                }
+                // 确保每个元素都是字符串
+                if (!updates.selectedBadges.every(id => typeof id === "string")) {
+                    return new Response("Invalid selectedBadges element type", { status: 400 });
+                }
+            }
+
             // 更新 profile
             data.profile = data.profile || {};
             if (updates.userName !== undefined) {
                 data.profile.userName = updates.userName.trim();
+            }
+            if (updates.selectedBadges !== undefined) {
+                data.profile.selectedBadges = updates.selectedBadges;
             }
 
             // 保存回 KV
