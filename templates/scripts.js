@@ -467,7 +467,7 @@ function showMaxBadgesAlert() {
         <div class="alert-box">
             <div class="alert-icon">⚠</div>
             <div class="alert-title">已达上限</div>
-            <div class="alert-message">最多只能选择 ${MAX_MAIN_BADGES} 个成就展示在主卡片上</div>
+            <div class="alert-message">最多展示 ${MAX_MAIN_BADGES} 个成就</div>
             <div class="alert-hint">请先取消选择其他成就</div>
             <button class="alert-btn">好的</button>
         </div>
