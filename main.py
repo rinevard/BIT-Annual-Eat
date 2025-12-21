@@ -443,6 +443,11 @@ def upload_report(
         "edit_pw": edit_pw,
     }
 
+    # 打印 KV 存储大小（用于评估图片限制）
+    payload_json = json.dumps(payload, ensure_ascii=False)
+    payload_size_kb = len(payload_json.encode("utf-8")) / 1024
+    print(f"KV 存储数据大小: {payload_size_kb:.2f} KB")
+
     headers = {
         "Content-Type": "application/json",
         "User-Agent": EDGE_UA,

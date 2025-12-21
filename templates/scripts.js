@@ -724,19 +724,58 @@ function renderRhythm() {
     });
 }
 
-// 4. 头像上传
-// 头像上传的逻辑
+// 4. 头像上传（带压缩）
+
+let pendingAvatar = null;  // 待保存的头像 Base64
 
 const fileInput = document.getElementById('file-upload');
 fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            document.getElementById('avatar-img').src = ev.target.result;
+    if (!file) return;
+
+    const originalSize = (file.size / 1024).toFixed(1);
+    console.log(`[头像] 原始大小: ${originalSize} KB`);
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const size = 256;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // 裁剪正方形中心区域
+            const srcSize = Math.min(img.width, img.height);
+            const srcX = (img.width - srcSize) / 2;
+            const srcY = (img.height - srcSize) / 2;
+            ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, size, size);
+
+            // 尝试 WebP，回退 JPEG
+            let compressed = canvas.toDataURL('image/webp', 0.92);
+            if (compressed.startsWith('data:image/webp')) {
+                console.log('[头像] 使用 WebP 格式');
+            } else {
+                compressed = canvas.toDataURL('image/jpeg', 0.9);
+                console.log('[头像] 回退到 JPEG 格式');
+            }
+
+            // 计算压缩后大小（Base64 部分）
+            const base64Data = compressed.split(',')[1] || '';
+            const compressedSize = (base64Data.length * 0.75 / 1024).toFixed(1);
+            console.log(`[头像] 压缩后大小: ${compressedSize} KB (${size}x${size})`);
+
+            // 显示压缩后的图片
+            document.getElementById('avatar-img').src = compressed;
+
+            // 存储待保存的头像
+            pendingAvatar = compressed;
+            console.log('[头像] 已暂存，点击 SAVE 按钮可保存到云端');
         };
-        reader.readAsDataURL(file);
-    }
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
 });
 
 // 6. 条形码生成器（零依赖手写版）
