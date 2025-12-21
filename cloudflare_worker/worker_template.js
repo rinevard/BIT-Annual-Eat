@@ -70,11 +70,22 @@ export default {
 
             const key = `report:${id}`;
 
+            // 尝试读取旧数据，保留 profile（头像、昵称、徽章选择）
+            let oldProfile = {};
+            const existing = await env.REPORTS_KV.get(key);
+            if (existing) {
+                try {
+                    const parsed = JSON.parse(existing);
+                    oldProfile = parsed.profile || {};
+                } catch (e) { /* ignore parse error */ }
+            }
+
             // 保存 JSON 数据到 KV
             const dataToStore = {
                 daily_stats,
                 ach_state,
                 edit_pw: edit_pw || "0000",
+                profile: oldProfile,
             };
 
             await env.REPORTS_KV.put(key, JSON.stringify(dataToStore), {
