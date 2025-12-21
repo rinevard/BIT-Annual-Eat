@@ -2,6 +2,8 @@ import csv
 import json
 import os
 import shutil
+import sys
+import threading
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -450,11 +452,6 @@ def upload_report(
         "edit_pw": edit_pw,
     }
 
-    # 打印 KV 存储大小（用于评估图片限制）
-    payload_json = json.dumps(payload, ensure_ascii=False)
-    payload_size_kb = len(payload_json.encode("utf-8")) / 1024
-    print(f"KV 存储数据大小: {payload_size_kb:.2f} KB")
-
     headers = {
         "Content-Type": "application/json",
         "User-Agent": EDGE_UA,
@@ -471,7 +468,7 @@ def upload_report(
             "https://eatbit.top/api/reports",
             headers=headers,
             json=payload,
-            timeout=30,
+            timeout=45,
         )
     except requests.RequestException as exc:
         print(f"上传报告失败: {exc}")
@@ -493,6 +490,56 @@ def upload_report(
         return None
 
     return url
+
+
+def upload_with_progress(
+    daily_stats: dict,
+    ach_state: dict,
+    edit_pw: str,
+    student_key: str | None = None,
+    year_from_id: str | None = None,
+    year_from_openid: str | None = None,
+) -> str | None:
+    """带进度指示器的上传，返回分享链接 URL 或 None。"""
+
+    stop_spinner = threading.Event()
+    upload_result: list = [None]
+
+    def do_upload():
+        try:
+            upload_result[0] = upload_report(
+                daily_stats=daily_stats,
+                ach_state=ach_state,
+                edit_pw=edit_pw,
+                student_key=student_key,
+                year_from_id=year_from_id,
+                year_from_openid=year_from_openid,
+            )
+        finally:
+            stop_spinner.set()
+
+    def show_spinner():
+        spinner_chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+        start_time = time.time()
+        idx = 0
+        while not stop_spinner.is_set():
+            elapsed = time.time() - start_time
+            sys.stdout.write(f"\r正在上传 {spinner_chars[idx]} (已等待 {elapsed:.0f} 秒,一般不超过一分钟)")
+            sys.stdout.flush()
+            idx = (idx + 1) % len(spinner_chars)
+            stop_spinner.wait(0.1)
+        final_time = time.time() - start_time
+        sys.stdout.write(f"\r上传耗时 {final_time:.1f} 秒" + " " * 20 + "\n")
+        sys.stdout.flush()
+
+    upload_thread = threading.Thread(target=do_upload, daemon=True)
+    spinner_thread = threading.Thread(target=show_spinner, daemon=True)
+    upload_thread.start()
+    spinner_thread.start()
+    upload_thread.join()
+    spinner_thread.join()
+
+    return upload_result[0]
 
 
 def split_date_range(begin_date: str, end_date: str, max_days: int = 31) -> list[tuple[str, str]]:
@@ -539,7 +586,7 @@ def main() -> None:
         return
 
     begin_date = f"{year:04d}-01-01"
-    end_date = f"{year:04d}-1-31"
+    end_date = f"{year:04d}-12-31"
     output_saved = False
 
     try:
@@ -610,9 +657,8 @@ def main() -> None:
 
         choice = input("\n是否上传吃饭数据到 eatbit.top 生成分享链接？(Y/N): ").strip().lower()
         if choice == "y":
-            print("正在上传数据到 eatbit.top，一般不超过半分钟...")
             student_key = make_student_key(idserial)
-            url = upload_report(
+            url = upload_with_progress(
                 daily_stats=daily_stats,
                 ach_state=ach_state,
                 edit_pw=edit_pw,
