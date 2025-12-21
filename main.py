@@ -533,6 +533,7 @@ def main() -> None:
 
     begin_date = f"{year:04d}-01-01"
     end_date = f"{year:04d}-1-31"
+    output_saved = False
 
     try:
         print("\n正在尝试获取 JSESSIONID...")
@@ -598,6 +599,7 @@ def main() -> None:
             used_default_password=used_default_password,
         )
         print(f"\n已生成本地网页版报告: {html_report_path}。")
+        output_saved = True
 
         choice = input("\n是否上传吃饭数据到 eatbit.top 生成分享链接？(Y/N): ").strip().lower()
         if choice == "y":
@@ -617,6 +619,11 @@ def main() -> None:
                 # 从 URL 中提取报告 ID，更新本地条形码
                 report_id = url.rsplit("/", 1)[-1]
                 update_html_barcode(html_report_path, report_id)
+                # 保存链接到 txt 文件
+                links_path = os.path.join("output", "分享链接.txt")
+                with open(links_path, "w", encoding="utf-8") as f:
+                    f.write(f"分享链接: {url}\n")
+                    f.write(f"编辑模式链接（请勿分享给他人）: {url}#pw={edit_pw}\n")
             else:
                 print("上传失败，请稍后重试或检查网络连接。")
     except DkyktError as err:
@@ -631,6 +638,11 @@ def main() -> None:
     except Exception as exc:  # noqa: BLE001
         print("发生错误:", exc)
     finally:
+        # 只在成功时才自动打开 output 文件夹
+        if output_saved:
+            output_dir = os.path.abspath("output")
+            if os.path.isdir(output_dir):
+                os.startfile(output_dir)
         input("\n按回车键退出...")
 
 
