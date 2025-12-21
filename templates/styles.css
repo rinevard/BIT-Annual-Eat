@@ -310,17 +310,21 @@ body:not(.has-active-card) .poster-frame:hover {
     transform: rotate(-0deg);
 }
 
-.badge-item img {
-    display: block;
+
+/* 精灵图图标样式 */
+.badge-sprite {
     width: 60px;
     height: 60px;
-    border: 2px solid #000;
+    outline: 2px solid #000;
+    background-size: auto;
+    background-repeat: no-repeat;
 }
 
 .badge-item:hover {
     transform: rotate(-4deg) scale(1.1);
     box-shadow: 3px 3px 0 #000;
 }
+
 
 /* 右侧 Stack */
 .card-stack-wrapper {
@@ -891,7 +895,7 @@ body:not(.has-active-card) .card.main:hover {
     width: 60px;
     /* Matched main card icon size */
     height: 60px;
-    border: 2px solid #000;
+    outline: 2px solid #000;
     flex-shrink: 0;
     background: #eee;
     object-fit: contain;
@@ -1174,6 +1178,14 @@ body.has-active-card .card.right.focused {
     position: relative;
     z-index: 2;
     /* 图标悬浮在圆圈之上 */
+    width: 60px;
+    height: 60px;
+}
+
+/* 精灵图支持 */
+.ach-icon-wrapper .ach-icon.ach-sprite {
+    background-size: auto;
+    background-repeat: no-repeat;
 }
 
 /* 选中状态：黑色潦草圆圈 */

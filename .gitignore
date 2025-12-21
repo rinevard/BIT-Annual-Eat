@@ -182,5 +182,6 @@ prototypes/refs/
 templates/visual/images
 tmp/
 templates/images
+templates/images_backup
 cloudflare_worker/worker_used.js
 cloudflare_worker/worker_template_with_protect.js

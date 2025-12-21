@@ -251,8 +251,78 @@ function reassignClasses() {
 // 2. 徽章逻辑
 // 徽章的渲染和交互逻辑
 
+// 精灵图配置（从 compute.py 分析得出）
+const SPRITE_CONFIG = {
+    src: 'images/ach.jpg',
+    cols: 6,
+    rows: 4,
+    iconWidth: 222,      // 精灵图中图标的原始尺寸
+    iconHeight: 222,
+    gapX: 149,
+    gapY: 74,
+    startX: 139,
+    startY: 77,
+    imgWidth: 2360,      // 原始图片真实尺寸
+    imgHeight: 1640,
+    displaySize: 60      // 页面上显示的尺寸
+};
+
+// 计算缩放比例
+const SPRITE_SCALE = SPRITE_CONFIG.displaySize / SPRITE_CONFIG.iconWidth;
+
+// 根据索引计算精灵图中的 background-position（考虑缩放）
+function getSpritePosition(index) {
+    const row = Math.floor(index / SPRITE_CONFIG.cols);
+    const col = index % SPRITE_CONFIG.cols;
+    const x = SPRITE_CONFIG.startX + col * (SPRITE_CONFIG.iconWidth + SPRITE_CONFIG.gapX);
+    const y = SPRITE_CONFIG.startY + row * (SPRITE_CONFIG.iconHeight + SPRITE_CONFIG.gapY);
+    // 返回缩放后的坐标
+    return { x: Math.round(-x * SPRITE_SCALE), y: Math.round(-y * SPRITE_SCALE) };
+}
+
+// 获取精灵图的 background-size（使用真实图片尺寸）
+function getSpriteBackgroundSize() {
+    return `${Math.round(SPRITE_CONFIG.imgWidth * SPRITE_SCALE)}px ${Math.round(SPRITE_CONFIG.imgHeight * SPRITE_SCALE)}px`;
+}
+// 精灵图中图标的实际顺序（从左到右，从上到下）
+// 用于将成就 ID 映射到精灵图中的位置索引
+const SPRITE_ORDER = [
+    // 第一行
+    "hello_world",      // 0: 你好世界
+    "eater",            // 1: 干饭人
+    "hundred_days",     // 2: 百日焰火
+    "default_setting",  // 3: 西西弗斯
+    "early_bird",       // 4: 早八人
+    "night_owl",        // 5: 守夜人
+    // 第二行
+    "big_meal",         // 6: 加个鸡腿
+    "minimalist",       // 7: 极限生存
+    "missing_breakfast",// 8: 消失的早餐
+    "good_meals",       // 9: 好好吃饭
+    "make_it_round",    // 10: 凑单领域大神
+    "cosmic_meal",      // 11: 我全都要
+    // 第三行
+    "error_404",        // 12: Error 404
+    "pi",               // 13: PI
+    "secure_call",      // 14: 加密通话
+    "perfect_week",     // 15: 完美一周
+    "my_turn",          // 16: 我的回合
+    "full_timer",       // 17: 全勤奖
+    // 第四行
+    "lost_kid",         // 18: 迷途之羊
+    "story_start",      // 19: 故事的开始
+    "another_year",     // 20: 又一年
+    "noticed",          // 21: 注意到
+    "edge_runner",      // 22: 边缘行者
+];
+
+// 根据成就 ID 获取其在精灵图中的索引
+function getSpriteIndexById(achId) {
+    const idx = SPRITE_ORDER.indexOf(achId);
+    return idx >= 0 ? idx : 0;
+}
+
 // 完整成就数据（用于打印机显示及徽章生成）
-// ID 对应 images/ 下的文件名
 // 完整成就配置
 const ACH_CONFIG = [
     { id: "lost_kid", name: "迷途之羊", rarity: 4, condition: "全年就餐天数 < 50 天", desc: "你迷路了吗", time: "2025-03-15" },
@@ -351,11 +421,18 @@ function renderMainBadges() {
         el.className = 'badge-item';
         el.dataset.id = badge.id;
 
-        const img = document.createElement('img');
-        img.src = `images/${badge.id}.png`;
-        img.alt = badge.name;
+        // 使用精灵图
+        const spriteIdx = getSpriteIndexById(badge.id);
+        const pos = getSpritePosition(spriteIdx);
 
-        el.appendChild(img);
+        const iconEl = document.createElement('div');
+        iconEl.className = 'badge-sprite';
+        iconEl.style.backgroundImage = `url('${SPRITE_CONFIG.src}')`;
+        iconEl.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
+        iconEl.style.backgroundSize = getSpriteBackgroundSize();
+        iconEl.title = badge.name;
+
+        el.appendChild(iconEl);
         badgeRack.appendChild(el);
 
         el.addEventListener('click', (e) => {
@@ -823,8 +900,12 @@ function createAchievementReceipt(pageIndex, state) {
     // 构建成就行
     let rowsHTML = '';
     pageData.forEach(ach => {
-        // 查找对应图片
-        const imgSrc = `images/${ach.id}.png`;
+        // 使用精灵图定位
+        const spriteIdx = getSpriteIndexById(ach.id);
+        const pos = getSpritePosition(spriteIdx);
+        const bgSize = getSpriteBackgroundSize();
+        const spriteStyle = `background-image: url('${SPRITE_CONFIG.src}'); background-position: ${pos.x}px ${pos.y}px; background-size: ${bgSize};`;
+
         const lockedClass = ach.locked ? 'locked' : '';
         // 检查是否被选中
         const selectedClass = selectedBadgeIds.has(ach.id) ? 'selected' : '';
@@ -839,7 +920,7 @@ function createAchievementReceipt(pageIndex, state) {
         rowsHTML += `
                 <div class="achievement-row ${lockedClass}" data-ach-id="${ach.id}">
                     <div class="ach-icon-wrapper ${selectedClass}">
-                        <img class="ach-icon" src="${imgSrc}" data-id="${ach.id}">
+                        <div class="ach-icon ach-sprite" style="${spriteStyle}" data-id="${ach.id}"></div>
                     </div>
                     <div class="ach-content">
                         <div class="ach-header">
