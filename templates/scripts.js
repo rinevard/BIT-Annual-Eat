@@ -89,6 +89,9 @@ function initSaveButton() {
                 ? Array.from(selectedBadgeIds)
                 : [];
 
+            // 收集头像（如果有新上传的）
+            const avatar = typeof pendingAvatar !== 'undefined' ? pendingAvatar : null;
+
             // 验证数据
             if (userName && userName.length > 20) {
                 throw new Error('名称最多 20 个字符');
@@ -96,7 +99,9 @@ function initSaveButton() {
 
             if (IS_SAVABLE) {
                 // 真实保存到云端
-                await saveToCloud({ userName, selectedBadges });
+                const payload = { userName, selectedBadges };
+                if (avatar) payload.avatar = avatar;
+                await saveToCloud(payload);
 
                 saveBtn.classList.add('success');
                 saveBtnText.textContent = 'SAVED';
@@ -131,6 +136,14 @@ function applyProfile() {
         const userNameEl = document.querySelector('.user-name');
         if (userNameEl) {
             userNameEl.textContent = PROFILE.userName;
+        }
+    }
+
+    // 应用头像
+    if (PROFILE.avatar) {
+        const avatarImg = document.getElementById('avatar-img');
+        if (avatarImg) {
+            avatarImg.src = PROFILE.avatar;
         }
     }
 

@@ -147,6 +147,21 @@ export default {
                 }
             }
 
+            // 验证 avatar（Base64 图片，限制 100KB）
+            if (updates.avatar !== undefined) {
+                if (typeof updates.avatar !== "string") {
+                    return new Response("Invalid avatar type", { status: 400 });
+                }
+                // Base64 data URL 格式检查
+                if (!updates.avatar.startsWith("data:image/")) {
+                    return new Response("Invalid avatar format", { status: 400 });
+                }
+                // 限制大小（Base64 字符串长度，约等于原始大小 * 1.37）
+                if (updates.avatar.length > 140_000) {
+                    return new Response("Avatar too large (max ~100KB)", { status: 413 });
+                }
+            }
+
             // 更新 profile
             data.profile = data.profile || {};
             if (updates.userName !== undefined) {
@@ -154,6 +169,9 @@ export default {
             }
             if (updates.selectedBadges !== undefined) {
                 data.profile.selectedBadges = updates.selectedBadges;
+            }
+            if (updates.avatar !== undefined) {
+                data.profile.avatar = updates.avatar;
             }
 
             // 保存回 KV
