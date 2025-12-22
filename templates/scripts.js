@@ -1285,6 +1285,11 @@ interactiveCards.forEach(card => {
             updateFocus(card);
         }
     });
+    card.addEventListener('mouseleave', () => {
+        if (currentState !== 'none') {
+            interactiveCards.forEach(c => c.classList.remove('focused', 'unfocused'));
+        }
+    });
 });
 
 function triggerSlam(el) {
