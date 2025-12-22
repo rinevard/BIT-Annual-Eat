@@ -52,7 +52,7 @@ def get_openid(session: requests.Session, idserial: str, dingtalk_ua: str) -> st
     if not loc:
         raise DkyktError(
             user_message="无法推断 openid（可能登录态已过期）。",
-            hint="尝试打开钉钉、查询一次消费记录，然后从托盘退出钉钉，再重试。",
+            hint="尝试打开钉钉、进入校园卡界面，然后从托盘退出钉钉，再重试。",
             evidence=f"status={resp.status_code}, headers={dict(resp.headers)!r}",
         )
 
@@ -112,7 +112,7 @@ def query_trades(
     if resp.status_code != 200:
         raise DkyktError(
             user_message=f"查询请求失败，HTTP 状态码 {resp.status_code}。",
-            hint="尝试打开钉钉、查询一次消费记录，然后从托盘退出钉钉，再重试；若仍失败，可以来 https://github.com/rinevard/BIT-Annual-Eat 提 issue。",
+            hint="尝试打开钉钉、进入校园卡界面，然后从托盘退出钉钉，再重试；若仍失败，可以来 https://github.com/rinevard/BIT-Annual-Eat 提 issue。",
             evidence=resp.text[:2000],
         )
 
@@ -121,7 +121,7 @@ def query_trades(
     except json.JSONDecodeError:
         raise DkyktError(
             user_message="查询接口返回的不是 JSON（可能登录失效或接口变更）。",
-            hint="尝试打开钉钉、查询一次消费记录，然后从托盘退出钉钉，再重试；若仍失败，可以来 https://github.com/rinevard/BIT-Annual-Eat 提 issue。",
+            hint="尝试打开钉钉、进入校园卡界面，然后从托盘退出钉钉，再重试；若仍失败，可以来 https://github.com/rinevard/BIT-Annual-Eat 提 issue。",
             evidence=resp.text[:2000],
         )
 

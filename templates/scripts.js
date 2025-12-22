@@ -356,7 +356,7 @@ const ACH_CONFIG = [
     { id: "missing_breakfast", name: "消失的早餐", rarity: 3, condition: "全年9点前消费次数 < 10 次", desc: "那些从来不吃早饭的人，现在都怎么样了？", time: "2025-06-15" },
     { id: "good_meals", name: "好好吃饭", rarity: 3, condition: "单日内同时有早、中、晚三餐记录", desc: "你拥有令人羡慕的健康作息", time: "2025-03-05" },
     { id: "make_it_round", name: "凑单领域大神", rarity: 3, condition: "单日消费总金额>=20且为10的倍数", desc: "学校也有满减吗", time: "2025-04-10" },
-    { id: "error_404", name: "Error 404", rarity: 3, condition: "单笔消费金额恰为 4.04 元", desc: "404 Not Found", time: "2025-04-04" },
+    { id: "error_404", name: "Error 404", rarity: 4, condition: "单笔消费金额恰为 4.04 元", desc: "404 Not Found", time: "2025-04-04" },
     { id: "secure_call", name: "加密通话", rarity: 4, condition: "密码不是默认值 123456", desc: "你的账户安全系数击败了99％的同学", time: "2025-01-15" },
     { id: "perfect_week", name: "完美一周", rarity: 3, condition: "连续七天一日三餐", desc: "医生看了都说好", time: "2025-05-20" },
     { id: "hundred_days", name: "百日烟火", rarity: 2, condition: "全年就餐天数 >= 100 天", desc: "食堂阿姨可能都认识你了", time: "2025-07-10" },
