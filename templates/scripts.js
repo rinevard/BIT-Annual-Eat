@@ -694,7 +694,7 @@ function renderRhythm() {
     }
 
     // 2. 每 6 天聚合一次
-    const CHUNK_SIZE = 6;
+    const CHUNK_SIZE = 7;
 
     for (let i = 0; i < dailyRecords.length; i += CHUNK_SIZE) {
         const chunkRecords = dailyRecords.slice(i, i + CHUNK_SIZE);

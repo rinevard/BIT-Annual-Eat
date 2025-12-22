@@ -846,7 +846,7 @@ body:not(.has-active-card) .card.main:hover {
     }
 
     100% {
-        transform: translateY(120vh) translateX(-50px) rotate(-15deg);
+        transform: translateY(160vh) translateX(-50px) rotate(-15deg);
     }
 }
 
