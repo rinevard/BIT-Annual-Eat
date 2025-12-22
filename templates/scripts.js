@@ -172,6 +172,23 @@ function applyBadgeSelection() {
 document.addEventListener('DOMContentLoaded', () => {
     applyProfile();
     initSaveButton();
+
+    const rigEl = document.getElementById('cameraRig');
+    if (rigEl) {
+        const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+        const MAIN_W = 1100;
+        const MAIN_H = 750;
+        const RIGHT_W = 420;
+        const GAP = 20;
+        const DESIGN_W = MAIN_W + GAP + RIGHT_W;
+        const DESIGN_H = MAIN_H;
+        const MARGIN = 80;
+
+        const vw = Math.max(0, (window.innerWidth || 0) - MARGIN);
+        const vh = Math.max(0, (window.innerHeight || 0) - MARGIN);
+        const scale = clamp(Math.min(vw / DESIGN_W, vh / DESIGN_H, 1), 0.3, 1);
+        rigEl.style.setProperty('--init-scale', String(scale));
+    }
 });
 
 /* --- Stat Logic --- */
