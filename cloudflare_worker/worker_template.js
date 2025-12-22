@@ -200,8 +200,11 @@ export default {
         // 从 KV 读取 JSON 数据，动态填充模板返回 HTML
         if (request.method === "GET" && pathname.startsWith("/r/")) {
             const id = pathname.slice("/r/".length);
+            const ip = request.headers.get("CF-Connecting-IP");
 
-            if (!id) {
+            // ID 格式校验：必须是 8 位十六进制，否则直接返回 404，不读 KV
+            if (!/^[0-9a-f]{8}$/.test(id)) {
+                console.log("Invalid report ID format", { id, ip });
                 return new Response("Not found", { status: 404 });
             }
 
