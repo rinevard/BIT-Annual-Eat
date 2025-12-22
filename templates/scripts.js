@@ -712,24 +712,25 @@ function renderRhythm() {
         });
     }
 
-    // 3. 归一化并渲染
-    const MAX_VAL = 4;
+    // 3. 基于最大值归一化并渲染
+    const maxAvg = Math.max(...RHYTHM_CHUNKS.map(c => c.avg), 0.01); // 防止除零
 
     RHYTHM_CHUNKS.forEach((chunk, index) => {
         const val = chunk.avg;
         const bar = document.createElement('div');
         bar.className = 'rhythm-bar';
 
-        let hPercent = (val / MAX_VAL) * 100;
-        hPercent = Math.min(100, Math.max(0, hPercent));
+        // 归一化到 0~1
+        const normalized = val / maxAvg;
 
-        if (val > 3.0) bar.classList.add('l5');
-        else if (val > 2.2) bar.classList.add('l4');
-        else if (val > 1.5) bar.classList.add('l3');
-        else if (val > 0.5) bar.classList.add('l2');
+        // 映射到 5 级（基于相对值）
+        if (normalized > 0.9) bar.classList.add('l5');
+        else if (normalized > 0.6) bar.classList.add('l4');
+        else if (normalized > 0.4) bar.classList.add('l3');
+        else if (normalized > 0.05) bar.classList.add('l2');
         else bar.classList.add('l1');
 
-        bar.style.height = Math.max(5, hPercent) + '%';
+        bar.style.height = 20 + 80 * Math.pow(normalized, 1.3) + '%';
         // bar.title = `${chunk.startDate} ~ ${chunk.endDate}\nAvg: ${val.toFixed(1)} meals`; // Removed
 
         // 格式化日期：2025-05-31 -> 5.31
