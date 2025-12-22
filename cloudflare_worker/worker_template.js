@@ -94,7 +94,7 @@ export default {
 
             return new Response(JSON.stringify({
                 id,
-                url: `https://eatbit.top/r/${id}`,
+                url: `https://r.eatbit.top/r/${id}`,
             }), {
                 status: 200,
                 headers: { "Content-Type": "application/json; charset=utf-8" },

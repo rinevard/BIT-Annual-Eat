@@ -1,7 +1,7 @@
 // EAT_DATA and ACH_STATE are injected by the HTML template
 
 /* --- 编辑模式逻辑 --- */
-const IS_CLOUD = window.location.hostname === "eatbit.top";
+const IS_CLOUD = window.location.hostname === "r.eatbit.top";
 
 // 从 URL hash 中提取密码（例如 #pw=1234 -> "1234"）
 function getPasswordFromHash() {

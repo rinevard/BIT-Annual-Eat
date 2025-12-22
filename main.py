@@ -465,7 +465,7 @@ def upload_report(
 
     try:
         resp = requests.post(
-            "https://eatbit.top/api/reports",
+            "https://r.eatbit.top/api/reports",
             headers=headers,
             json=payload,
             timeout=60,
