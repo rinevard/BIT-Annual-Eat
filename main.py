@@ -1,4 +1,7 @@
 import csv
+
+from colorama import Fore, init as colorama_init
+colorama_init()
 import json
 import os
 import shutil
@@ -571,7 +574,7 @@ def main() -> None:
     print("百丽宫大学吃饭年度报告")
     print("-----------------------------")
     print("所有查询在本地进行，查询完成后可选是否上传吃饭数据到云端生成分享链接。无论是否上传都能生成本地报告。")
-    print("交流 QQ 群 1015011529")
+    print("交流 QQ 群 1015011529\n")
 
     idserial = input("请输入学号: ").strip()
     year_str = input("请输入年份 (YYYY，回车使用默认值 2025): ").strip() or "2025"
@@ -587,7 +590,7 @@ def main() -> None:
         return
 
     begin_date = f"{year:04d}-01-01"
-    end_date = f"{year:04d}-12-31"
+    end_date = f"{year:04d}-1-31"
     output_saved = False
 
     try:
@@ -634,10 +637,6 @@ def main() -> None:
 
         total_amount = sum(r["amount"] for r in records)
         html_report_path = os.path.join("output", "report.html")
-
-        print(f"已保存明细到: {csv_path}")
-        print(f"已保存按商户消费金额柱状图到: {img_amount_path}")
-        print(f"已保存按商户消费次数柱状图到: {img_count_path}")
         print(f"总消费金额: {total_amount:.2f} 元")
 
         used_default_password = None
@@ -653,7 +652,7 @@ def main() -> None:
             student_id=idserial,
             used_default_password=used_default_password,
         )
-        print(f"\n已生成本地网页版报告: {html_report_path}。")
+        print(f"\n{Fore.GREEN}已生成本地网页版报告:{Fore.RESET} {html_report_path}。")
         output_saved = True
 
         choice = input("\n是否上传吃饭数据到 eatbit.top 生成分享链接？(Y/N): ").strip().lower()
@@ -668,8 +667,9 @@ def main() -> None:
                 year_from_openid=openid[94:98],
             )
             if url:
-                print(f"上传成功！分享链接: {url}")
-                print(f"编辑模式链接（请勿分享给他人）: {url}#pw={edit_pw}")
+                print(f"上传成功！\n{Fore.GREEN}分享链接:{Fore.RESET} {url}")
+                print(f"{Fore.GREEN}编辑模式链接{Fore.RED}（请勿分享给他人）:{Fore.RESET} {url}#pw={edit_pw}")
+                print("链接已保存在 output 文件夹中")
                 # 从 URL 中提取报告 ID，更新本地条形码
                 report_id = url.rsplit("/", 1)[-1]
                 update_html_barcode(html_report_path, report_id)
