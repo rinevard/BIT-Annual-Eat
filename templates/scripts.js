@@ -678,10 +678,24 @@ function renderDayDetailsHtml(dateStr, dayData, isTooltip = false) {
 // Tooltip Logic Extended
 const tooltipEl = document.getElementById('custom-tooltip');
 
+// Helper to get current scale
+function getRigScale() {
+    const rigEl = document.getElementById('cameraRig');
+    if (!rigEl) return 1;
+    const val = getComputedStyle(rigEl).getPropertyValue('--init-scale');
+    return parseFloat(val) || 1;
+}
+
 // Generic simple text tooltip
 function showTooltip(e, text) {
     tooltipEl.textContent = text;
     tooltipEl.className = 'custom-tooltip';
+
+    // Apply scale
+    const scale = getRigScale();
+    tooltipEl.style.transform = `scale(${scale})`;
+    tooltipEl.style.transformOrigin = 'top left';
+
     tooltipEl.style.display = 'block';
     moveTooltip(e);
 }
@@ -693,6 +707,12 @@ window.showDayTooltip = function (e, dateStr) {
     // Add specific class for theming (white bg, black text, etc.)
     tooltipEl.className = 'custom-tooltip receipt-theme';
     tooltipEl.innerHTML = renderDayDetailsHtml(dateStr, dayData, true);
+
+    // Apply scale
+    const scale = getRigScale();
+    tooltipEl.style.transform = `scale(${scale})`;
+    tooltipEl.style.transformOrigin = 'top left';
+
     tooltipEl.style.display = 'block';
 
     moveDayTooltip(e);
