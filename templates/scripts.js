@@ -36,6 +36,36 @@ if (!IS_EDIT_MODE) {
 // 保存按钮逻辑
 let isSaving = false;
 
+// === 本地存储功能 ===
+const LOCAL_STORAGE_KEY = 'biteat_local_profile';
+
+// 保存到 localStorage（仅本地模式使用）
+function saveToLocal(payload) {
+    try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(payload));
+        console.log('[本地存储] 已保存:', payload);
+        return true;
+    } catch (err) {
+        console.error('[本地存储] 保存失败:', err);
+        return false;
+    }
+}
+
+// 从 localStorage 读取（仅本地模式使用）
+function loadFromLocal() {
+    try {
+        const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (data) {
+            const parsed = JSON.parse(data);
+            console.log('[本地存储] 已读取:', parsed);
+            return parsed;
+        }
+    } catch (err) {
+        console.error('[本地存储] 读取失败:', err);
+    }
+    return null;
+}
+
 // 向云端保存个人资料
 async function saveToCloud(payload) {
     const pw = getPasswordFromHash();
@@ -106,11 +136,26 @@ function initSaveButton() {
                 saveBtn.classList.add('success');
                 saveBtnText.textContent = 'SAVED';
             } else {
-                // 本地模式：只显示提示，不发请求
+                // 本地模式：保存到 localStorage
+                // 先读取已有数据，合并后再保存（避免覆盖已有头像）
+                const existingData = loadFromLocal() || {};
+                const payload = {
+                    ...existingData,        // 保留已有数据（如头像）
+                    userName,               // 覆盖用户名
+                    selectedBadges          // 覆盖徽章选择
+                };
+                // 如果有新头像，覆盖旧的
+                if (avatar) payload.avatar = avatar;
+
+                const success = saveToLocal(payload);
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                saveBtn.classList.add('success');
-                saveBtnText.textContent = 'LOCAL';
+                if (success) {
+                    saveBtn.classList.add('success');
+                    saveBtnText.textContent = 'LOCAL';
+                } else {
+                    throw new Error('localStorage 保存失败');
+                }
             }
         } catch (err) {
             saveBtn.classList.add('error');
@@ -128,24 +173,40 @@ function initSaveButton() {
 }
 
 // 页面加载时应用保存的个人资料
+// 策略：云端优先，本地回退
+// - 云端模式 (IS_CLOUD=true)：使用服务器注入的 PROFILE
+// - 本地模式 (IS_CLOUD=false)：使用 localStorage 中的数据
 function applyProfile() {
-    if (typeof PROFILE === 'undefined' || !PROFILE) return;
+    let profile = null;
+
+    if (IS_CLOUD) {
+        // 云端优先：使用服务器数据
+        profile = (typeof PROFILE !== 'undefined') ? PROFILE : null;
+    } else {
+        // 本地回退：使用 localStorage
+        profile = loadFromLocal();
+    }
+
+    if (!profile) return;
 
     // 应用用户名
-    if (PROFILE.userName) {
+    if (profile.userName) {
         const userNameEl = document.querySelector('.user-name');
         if (userNameEl) {
-            userNameEl.textContent = PROFILE.userName;
+            userNameEl.textContent = profile.userName;
         }
     }
 
     // 应用头像
-    if (PROFILE.avatar) {
+    if (profile.avatar) {
         const avatarImg = document.getElementById('avatar-img');
         if (avatarImg) {
-            avatarImg.src = PROFILE.avatar;
+            avatarImg.src = profile.avatar;
         }
     }
+
+    // 暂存 profile 供徽章选择使用
+    window._appliedProfile = profile;
 
     // 应用徽章选择（在徽章初始化后调用）
     applyBadgeSelection();
@@ -153,11 +214,13 @@ function applyProfile() {
 
 // 应用保存的徽章选择（需要在 selectedBadgeIds 和 unlockedBadges 初始化后调用）
 function applyBadgeSelection() {
-    if (typeof PROFILE === 'undefined' || !PROFILE || !PROFILE.selectedBadges) return;
+    // 使用 applyProfile 中暂存的 profile，兼容云端和本地模式
+    const profile = window._appliedProfile || ((typeof PROFILE !== 'undefined') ? PROFILE : null);
+    if (!profile || !profile.selectedBadges) return;
     if (typeof selectedBadgeIds === 'undefined' || typeof unlockedBadges === 'undefined') return;
 
     // 验证保存的徽章ID是否都是已解锁的
-    const validIds = PROFILE.selectedBadges.filter(id =>
+    const validIds = profile.selectedBadges.filter(id =>
         unlockedBadges.some(b => b.id === id)
     );
 
