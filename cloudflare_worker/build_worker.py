@@ -18,6 +18,17 @@ def escape_js_string(content: str) -> str:
     )
 
 
+def rewrite_asset_urls(content: str) -> str:
+    sprite_url = "https://test.fukit.cn/autoupload/f/jT7VR8rd7t4gIkOL6WFhoJmesdO83n0jJRcmVXjsIsc/default/ach.jpg"
+    avatar_url = "https://test.fukit.cn/autoupload/f/jT7VR8rd7t4gIkOL6WFhoJmesdO83n0jJRcmVXjsIsc/default/default-avatar.jpg"
+
+    return (
+        content
+        .replace("images/ach.jpg", sprite_url)
+        .replace("images/eatbit.jpg", avatar_url)
+    )
+
+
 def build_worker() -> None:
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
@@ -28,13 +39,22 @@ def build_worker() -> None:
 
     # 读取模板文件
     with open(os.path.join(templates_dir, "index.html"), "r", encoding="utf-8") as f:
-        index_html = f.read()
+        index_html = rewrite_asset_urls(f.read())
 
     with open(os.path.join(templates_dir, "styles.css"), "r", encoding="utf-8") as f:
         styles_css = f.read()
 
     with open(os.path.join(templates_dir, "scripts.js"), "r", encoding="utf-8") as f:
-        scripts_js = f.read()
+        scripts_js = rewrite_asset_urls(f.read())
+
+    with open(os.path.join(templates_dir, "mobile.html"), "r", encoding="utf-8") as f:
+        mobile_html = rewrite_asset_urls(f.read())
+
+    with open(os.path.join(templates_dir, "mobile.css"), "r", encoding="utf-8") as f:
+        mobile_css = f.read()
+
+    with open(os.path.join(templates_dir, "mobile.js"), "r", encoding="utf-8") as f:
+        mobile_js = rewrite_asset_urls(f.read())
 
     # 读取 worker 模板
     with open(template_path, "r", encoding="utf-8") as f:
@@ -46,6 +66,9 @@ def build_worker() -> None:
         .replace("__INDEX_HTML__", escape_js_string(index_html))
         .replace("__STYLES_CSS__", escape_js_string(styles_css))
         .replace("__SCRIPTS_JS__", escape_js_string(scripts_js))
+        .replace("__MOBILE_HTML__", escape_js_string(mobile_html))
+        .replace("__MOBILE_CSS__", escape_js_string(mobile_css))
+        .replace("__MOBILE_JS__", escape_js_string(mobile_js))
     )
 
     # 写入输出文件

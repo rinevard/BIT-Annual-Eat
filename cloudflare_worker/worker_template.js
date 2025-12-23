@@ -3,6 +3,10 @@ const INDEX_HTML = `__INDEX_HTML__`;
 const STYLES_CSS = `__STYLES_CSS__`;
 const SCRIPTS_JS = `__SCRIPTS_JS__`;
 
+const MOBILE_HTML = `__MOBILE_HTML__`;
+const MOBILE_CSS = `__MOBILE_CSS__`;
+const MOBILE_JS = `__MOBILE_JS__`;
+
 async function sha256Hex(str) {
     const data = new TextEncoder().encode(str);
     const hashBuf = await crypto.subtle.digest("SHA-256", data);
@@ -21,6 +25,21 @@ function generateHtml(dailyStats, achState, barcodeId, profile) {
         .replace("__ACH_STATE__", JSON.stringify(achState))
         .replace("__BARCODE_ID__", JSON.stringify(barcodeId))
         .replace("__PROFILE__", JSON.stringify(profile || {}));
+}
+
+function generateMobileHtml(dailyStats, achState, barcodeId, profile) {
+    return MOBILE_HTML
+        .replace("/*__INLINE_STYLE__*/", MOBILE_CSS)
+        .replace("//__INLINE_SCRIPT__", MOBILE_JS)
+        .replace("__EAT_DATA__", JSON.stringify(dailyStats))
+        .replace("__ACH_STATE__", JSON.stringify(achState))
+        .replace("__BARCODE_ID__", JSON.stringify(barcodeId))
+        .replace("__PROFILE__", JSON.stringify(profile || {}));
+}
+
+function isMobileUA(ua) {
+    if (!ua) return false;
+    return /Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(ua);
 }
 
 export default {
@@ -201,6 +220,7 @@ export default {
         if (request.method === "GET" && pathname.startsWith("/r/")) {
             const id = pathname.slice("/r/".length);
             const ip = request.headers.get("CF-Connecting-IP");
+            const ua = request.headers.get("User-Agent") || "";
 
             // ID 格式校验：必须是 8 位十六进制，否则直接返回 404，不读 KV
             if (!/^[0-9a-f]{8}$/.test(id)) {
@@ -222,7 +242,9 @@ export default {
                 return new Response("Corrupted data", { status: 500 });
             }
 
-            const html = generateHtml(data.daily_stats, data.ach_state, id, data.profile);
+            const html = isMobileUA(ua)
+                ? generateMobileHtml(data.daily_stats, data.ach_state, id, data.profile)
+                : generateHtml(data.daily_stats, data.ach_state, id, data.profile);
 
             return new Response(html, {
                 status: 200,
