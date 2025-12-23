@@ -130,14 +130,14 @@ def extract_jsessionid_from_dingtalk() -> str:
     if _is_dingtalk_running():
         raise DecryptError(
             user_message="检测到钉钉正在运行，无法推断 JSESSIONID",
-            hint="请完全退出钉钉（包括系统托盘）后重试，或尝试手动输入 JSESSIONID。",
+            hint="尝试打开钉钉、进入校园卡界面，然后从托盘退出钉钉，再重试；或尝试手动用 Reqable 等软件抓包并输入 JSESSIONID。",
         )
 
     local = Path(os.environ.get("LOCALAPPDATA", ""))
     if not local.exists():
         raise DecryptError(
             user_message="未找到环境变量 LOCALAPPDATA，无法自动读取钉钉数据。",
-            hint="请手动输入 JSESSIONID。",
+            hint="目前仅支持 Windows 系统。可以来 https://github.com/rinevard/BIT-Annual-Eat 提 PR 以支持更多系统。",
         )
 
     candidates: list[Candidate] = []
@@ -153,8 +153,8 @@ def extract_jsessionid_from_dingtalk() -> str:
 
     if not candidates:
         raise DecryptError(
-            user_message="在本机未找到钉钉的 Cookie 数据库。",
-            hint="请确认已安装并登录钉钉，或尝试手动输入 JSESSIONID。",
+            user_message="未在本地找到钉钉存储的 Cookies。",
+            hint="请确认已安装钉钉（而非 i北理），然后尝试打开钉钉、进入校园卡界面，然后从托盘退出钉钉，再重试；或尝试手动用 Reqable 等软件抓包并输入 JSESSIONID。",
         )
 
     for cand in candidates:
@@ -200,5 +200,5 @@ def extract_jsessionid_from_dingtalk() -> str:
 
     raise DecryptError(
         user_message="未能得到 JSESSIONID。",
-        hint="请手动输入 JSESSIONID。若钉钉正在运行，请从托盘完全退出后重试。",
+        hint="请确认已安装钉钉（而非 i北理），然后尝试打开钉钉、进入校园卡界面，然后从托盘退出钉钉，再重试；或尝试手动用 Reqable 等软件抓包并输入 JSESSIONID。",
     )

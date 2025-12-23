@@ -568,9 +568,10 @@ def split_date_range(begin_date: str, end_date: str, max_days: int = 31) -> list
 
 
 def main() -> None:
-    print("百丽宫大学校园卡年度报告")
+    print("百丽宫大学吃饭年度报告")
     print("-----------------------------")
-    print("所有查询在本地进行，查询完成后可选是否上传吃饭数据到云端生成分享链接。")
+    print("所有查询在本地进行，查询完成后可选是否上传吃饭数据到云端生成分享链接。无论是否上传都能生成本地报告。")
+    print("交流 QQ 群 1015011529")
 
     idserial = input("请输入学号: ").strip()
     year_str = input("请输入年份 (YYYY，回车使用默认值 2025): ").strip() or "2025"
@@ -597,7 +598,7 @@ def main() -> None:
             print(err.user_message)
             if err.hint:
                 print("提示：", err.hint)
-            jsessionid = input("请输入 JSESSIONID（32位十六进制，回车退出程序）: ").strip()
+            jsessionid = input("请手动抓包并输入 JSESSIONID（32位十六进制，回车退出程序）: ").strip()
             if not jsessionid:
                 return
 
