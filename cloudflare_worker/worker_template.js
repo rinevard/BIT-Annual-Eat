@@ -254,7 +254,29 @@ export default {
 
         // 首页
         if (pathname === "/" || pathname === "/index.html") {
-            return new Response("Hello from eatbit.top worker", { status: 200 });
+            const landingHtml = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>百丽宫年度吃饭报告生成器</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 600px; margin: 80px auto; padding: 20px; line-height: 1.6; }
+        h1 { margin-bottom: 1em; }
+        a { color: #0066cc; }
+    </style>
+</head>
+<body>
+    <h2>百丽宫年度吃饭报告生成器</h2>
+    <p>想生成自己的报告？</p>
+    <p>在 <a href="https://rinevard.lanzn.com/iBeMU3ea7sbe">蓝奏云</a> 下载并解压运行。</p>
+    <p>源码开源在 <a href="https://github.com/rinevard/BIT-Annual-Eat">GitHub</a>。</p>
+</body>
+</html>`;
+            return new Response(landingHtml, {
+                status: 200,
+                headers: { "Content-Type": "text/html; charset=utf-8" },
+            });
         }
 
         return new Response("Not found", { status: 404 });
