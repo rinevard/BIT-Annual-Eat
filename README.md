@@ -4,34 +4,26 @@
 
 ## 项目简介
 
-本项目是一个用于统计百丽宫大学学生校园卡消费情况的脚本。它获取学生的校园卡消费记录并可视化。
+本项目是一个用于统计百丽宫大学学生校园卡消费情况的脚本。它获取学生的校园卡消费记录并生成报告。
 
 本项目受[PKU-Annual-Eat](https://github.com/KingRayCao/PKU-Annual-Eat)启发，感谢原作者的贡献。
 
-![demo](./images/demo.png)
+![demo](./images/demo.jpg)
 
 ## 使用方法
 
-下载[ release 里的文件](https://github.com/rinevard/BIT-Annual-Eat/releases/download/v0.1.0/eatbit_0.1.0.zip)，然后先解压再运行。也可以选择 `pip install -r requirements.txt` 然后 `python main.py` 来从源码运行。
+[![GitHub Release](https://img.shields.io/github/v/release/rinevard/BIT-Annual-Eat?label=GitHub%20下载)](https://github.com/rinevard/BIT-Annual-Eat/releases/latest)
+[![蓝奏云](https://img.shields.io/badge/蓝奏云-下载-blue)](https://rinevard.lanzn.com/iBeMU3ea7sbe)
+
+下载后先解压再运行。也可以选择 `pip install -r requirements.txt` 然后 `python main.py` 来从源码运行。
 
 生成的网页、图片和表格会保存在 `output` 文件夹中。
 
-强烈建议同学们修改校园卡密码以保护个人隐私和安全。校园卡的初始密码是 123456 或 000000，如果你从未修改过密码，请尽快修改为只有你自己知道的密码。据我所知目前（2025年11月）校园卡密码仅支持线下修改，良乡的同学们可以去学生服务中心修改。
-
 ## 其他或许有用的文章
 
-[security.md](./docs/security.md) 里记载了安全性，如果担心校园卡号和密码的泄露可以读一读。
-[dev.md](./docs/dev.md) 里记载了项目概述，如果对源码有兴趣可以读一读。
+[privacy](./docs/privacy.md) 里记载了隐私保护，担心学号泄露可以读一读。
 
-## TODO
-
-1. 成就持久化保存，而不是新上传一次 html 就没了
-2. 把分享链接记录在output的某个文本文件里
-3. 可选：强调年度报告性，输入年份而不是日期
-
-1. 成就墙没拿到的成就除了勾选框变暗，文字和图片也要变暗，变暗程度和左边的勾选框变暗程度一致
-2. 隐藏成就做特殊边框
-3. 凑成就到 20/25 个普通成就
+[overview](./docs/overview.md) 里记载了项目概述，如果对源码有兴趣可以读一读。
 
 ## LICENSE
 

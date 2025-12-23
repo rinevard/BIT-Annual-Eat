@@ -2,3 +2,4 @@ requests
 psutil
 cryptography
 pillow
+colorama

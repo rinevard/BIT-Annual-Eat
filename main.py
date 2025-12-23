@@ -590,7 +590,7 @@ def main() -> None:
         return
 
     begin_date = f"{year:04d}-01-01"
-    end_date = f"{year:04d}-1-31"
+    end_date = f"{year:04d}-12-31"
     output_saved = False
 
     try:
