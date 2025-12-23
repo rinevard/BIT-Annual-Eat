@@ -124,7 +124,7 @@ export default {
         // 接收 JSON 格式：{ userName }
         // 需要 X-Edit-Password 头验证
         if (request.method === "PATCH" && pathname.match(/^\/api\/reports\/[^/]+\/profile$/)) {
-            const id = pathname.split("/")[3];
+            const id = pathname.split("/")[3].toLowerCase();
             const key = `report:${id}`;
 
             const stored = await env.REPORTS_KV.get(key);
@@ -218,7 +218,7 @@ export default {
         // 查看报告：GET /r/<id>
         // 从 KV 读取 JSON 数据，动态填充模板返回 HTML
         if (request.method === "GET" && pathname.startsWith("/r/")) {
-            const id = pathname.slice("/r/".length);
+            const id = pathname.split("/")[2].toLowerCase();
             const ip = request.headers.get("CF-Connecting-IP");
             const ua = request.headers.get("User-Agent") || "";
 
