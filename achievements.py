@@ -327,7 +327,7 @@ def ach_default_setting(ctx: AchContext) -> AchievementResult:
 
 
 def ach_story_start(ctx: AchContext) -> AchievementResult:
-    """故事的开始：在本年第一天吃饭。"""
+    """故事的开始：在第一天吃饭。"""
 
     if not ctx.records_sorted_by_time:
         return AchievementResult(id="story_start", unlocked=False)
@@ -354,7 +354,7 @@ def ach_story_start(ctx: AchContext) -> AchievementResult:
 
 
 def ach_another_year(ctx: AchContext) -> AchievementResult:
-    """又一年：在本年最后一天吃饭。"""
+    """又一年：在最后一天吃饭。"""
 
     if not ctx.records_sorted_by_time:
         return AchievementResult(id="another_year", unlocked=False)
@@ -627,7 +627,7 @@ def ach_error_404(ctx: AchContext) -> AchievementResult:
 
 
 def ach_hello_world(ctx: AchContext) -> AchievementResult:
-    """Hello World：本年有消费过（记录时间为第一笔消费）。"""
+    """Hello World：在这一年消费过（记录时间为第一笔消费）。"""
 
     if not ctx.records_sorted_by_time:
         return AchievementResult(id="hello_world", unlocked=False)
