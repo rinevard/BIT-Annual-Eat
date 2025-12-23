@@ -605,6 +605,18 @@ function getDayData(dateStr) {
     return EAT_DATA[year][dateStr]; // Returns day object { count, amount, txs... } or undefined
 }
 
+function formatMerchantLabel(name) {
+    const s = String(name ?? '').trim();
+    if (!s.includes('良')) return s;
+    for (const c of s) {
+        if (c === '一') return s + '（南）';
+        if (c === '二') return s + '（北）';
+        if (c === '七') return s + '（清真）';
+        if (c === '四') return s + '（东）';
+    }
+    return s;
+}
+
 // Helper to render detailed HTML for a single day (used in Rhythm receipt and Tooltip)
 function renderDayDetailsHtml(dateStr, dayData, isTooltip = false) {
     // Basic formatting helpers
@@ -632,16 +644,17 @@ function renderDayDetailsHtml(dateStr, dayData, isTooltip = false) {
         txRows = dayData.txs.map(tx => {
             let timeStr = tx.time ? tx.time : '--:--:--';
             let txAmt = `¥${Number(tx.amount).toFixed(1)}`;
+            const mer = formatMerchantLabel(tx.mername);
             return `
                 <div style="display: flex; justify-content: space-between; font-size: 13px; color: #444; margin-top: 2px;">
-                    <span><span style="color:#999; margin-right:6px; font-family:'JetBrains Mono'; font-size: 12px;">${timeStr}</span>${tx.mername}</span>
+                    <span><span style="color:#999; margin-right:6px; font-family:'JetBrains Mono'; font-size: 12px;">${timeStr}</span>${mer}</span>
                     <span style="font-family:'JetBrains Mono'; font-size: 12px;">${txAmt}</span>
                 </div>
             `;
         }).join('');
     } else if (dayData.merchants && dayData.merchants.length > 0) {
         // Fallback to merchants array if txs is missing
-        const details = dayData.merchants.map(m => `${m.name} (¥${Number(m.amount).toFixed(1)})`).join(', ');
+        const details = dayData.merchants.map(m => `${formatMerchantLabel(m.name)} (¥${Number(m.amount).toFixed(1)})`).join(', ');
         txRows = `<div style="font-size: 13px; color: #444; margin-top: 2px;">${details}</div>`;
     }
 
