@@ -523,7 +523,6 @@ function renderMainBadges() {
         iconEl.style.backgroundImage = `url('${SPRITE_CONFIG.src}')`;
         iconEl.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
         iconEl.style.backgroundSize = getSpriteBackgroundSize();
-        iconEl.title = badge.name;
 
         el.appendChild(iconEl);
         badgeRack.appendChild(el);
