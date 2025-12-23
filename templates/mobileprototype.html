@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=400, user-scalable=no">
+    <title>BIT 吃饭年度报告 - Mobile</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --accent-color: #CCFF00;
+            /* 荧光黄，强烈的视觉冲击 */
+            --secondary-color: #FF3366;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            font-family: 'Noto Sans SC', sans-serif;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .poster-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            background: var(--bg-color);
+            position: relative;
+            overflow-x: hidden;
+            padding-bottom: 60px;
+            color: var(--text-color);
+        }
+
+        /* --- 背景纹理 --- */
+        .noise-overlay {
+            position: absolute;
+            inset: 0;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* --- 1. 顶部大标题区域 --- */
+        .header-section {
+            padding: 30px 20px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .huge-title {
+            font-size: 60px;
+            font-weight: 900;
+            line-height: 0.9;
+            text-transform: uppercase;
+            transform: rotate(-2deg);
+            margin-bottom: 10px;
+        }
+
+        .year-badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: #000;
+            font-size: 24px;
+            font-weight: 900;
+            padding: 4px 12px;
+            transform: rotate(4deg);
+            margin-left: 20px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.7;
+            margin-top: 20px;
+            max-width: 300px;
+            border-left: 2px solid var(--accent-color);
+            padding-left: 12px;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* --- 2. 个人信息 --- */
+        .profile-sticker {
+            background: #fff;
+            color: #000;
+            padding: 8px;
+            transform: rotate(3deg);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            background: #000;
+            color: #fff;
+            border-radius: 0;
+            /* Square for image */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            overflow: hidden;
+            border: 2px solid #000;
+        }
+
+        .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- 3. 核心数据 --- */
+        .stats-flow {
+            display: flex;
+            flex-wrap: nowrap;
+            padding: 0 24px;
+            gap: 16px;
+            margin-top: 12px;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 12px;
+        }
+
+        .stat-num {
+            font-size: 64px;
+            font-weight: 900;
+            color: var(--accent-color);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+
+        /* --- 4. C位成就墙 --- */
+        .achievements-poster-section {
+            background: #E0E0E0;
+            color: #000;
+            padding: 30px 20px;
+            transform: skewY(-3deg);
+            margin: 20px 0;
+            position: relative;
+        }
+
+        /* 反向倾斜内容，使其视觉水平 */
+        .achievements-content {
+            transform: skewY(3deg);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 900;
+            margin: 0 0 15px 0;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        .trophy-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .trophy-icon-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #fff;
+            border: 2px solid #000;
+            cursor: pointer;
+            transition: transform 0.1s;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .trophy-icon-btn.selected {
+            background: #000;
+            border-color: #000;
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        /* 选中状态下，让内部图标反色或保持原样？保持原样即可，因为背景黑了 */
+        /* 但这里我们用的 sprite 是带白色底的吗？ ach.jpg 是整张图。
+           如果是 jpg，也是矩形切片。
+           选中的边框变白，背景变黑。
+         */
+
+        .focus-card-container {
+            min-height: 90px;
+            /* 预留高度 */
+        }
+
+        /* Trophy Card Styles (Used for Focus Card) */
+        .trophy-card {
+            display: flex;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000;
+            padding: 14px;
+            align-items: center;
+            /* Center vertically specifically for the focus card look */
+            gap: 14px;
+            box-shadow: none;
+            /* Hard shadow */
+            /* transform: rotate(-1deg); Removed rotation for focus card clarity */
+            margin-top: 6px;
+            transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+        }
+
+        .trophy-card.is-leaving {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .trophy-card.is-entering {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .trophy-icon-frame {
+            width: 70px;
+            height: 70px;
+            border: 2px solid #000;
+            background: #fff;
+            flex-shrink: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .badge-sprite {
+            width: 60px;
+            height: 60px;
+            background-repeat: no-repeat;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+        }
+
+        .trophy-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .trophy-name {
+            font-size: 20px;
+            font-weight: 900;
+            color: #000;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .trophy-cond {
+            font-size: 13px;
+            font-weight: 900;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .trophy-desc {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.4;
+            font-weight: 900;
+        }
+
+        /* --- 5. 年度关键词：印章风格 --- */
+        .keyword-stamp {
+            position: absolute;
+            right: 20px;
+            top: -40px;
+            width: 140px;
+            height: 140px;
+            background: var(--secondary-color);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transform: rotate(15deg);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            font-weight: 900;
+            font-size: 24px;
+            line-height: 1.2;
+            z-index: 20;
+            border: 4px dashed #fff;
+        }
+
+        /* --- 6. 饭力图 --- */
+        .heatmap-art {
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .heatmap-lines {
+            display: flex;
+            height: 150px;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .heatmap-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            opacity: 0.5;
+        }
+
+        .line {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 1.5px;
+            min-width: 20px;
+        }
+
+        .line.active {
+            background: var(--accent-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="poster-container">
+        <div class="noise-overlay"></div>
+
+        <!-- 顶部大标题 -->
+        <div class="header-section">
+            <div class="header-left">
+                <div class="huge-title">
+                    BIT<br>
+                    EAT<span class="year-badge">2025</span>
+                </div>
+                <div class="subtitle">一份在百丽宫大学食堂的生存与探索记录</div>
+            </div>
+            <!-- 个人信息贴纸 -->
+            <div class="profile-sticker">
+                <div class="avatar-circle">
+                    <img src="images/eatbit.jpg" alt="avatar">
+                </div>
+                <div style="font-weight: 700; font-size: 12px;">BITer</div>
+            </div>
+        </div>
+
+        <!-- 核心数据流 -->
+        <div class="stats-flow">
+            <div class="stat-item">
+                <div class="stat-num">166</div>
+                <div class="stat-label">吃饭天数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">3.1k</div>
+                <div class="stat-label">年度消费</div>
+            </div>
+
+        </div>
+
+        <!-- C位成就墙 (倾斜切割) -->
+        <div class="achievements-poster-section">
+            <div class="achievements-content">
+                <h2 class="section-title">年度成就</h2>
+                <div class="trophy-grid" id="trophy-grid">
+                    <!-- JS Injected Icons -->
+                </div>
+                <div class="focus-card-container" id="focus-area">
+                    <!-- JS Injected Focus Card -->
+                </div>
+
+                <!-- 关键词印章 -->
+                <!-- 关键词印章 Removed -->
+            </div>
+        </div>
+
+        <!-- 饭力图艺术化 -->
+        <div class="heatmap-art">
+            <div style="font-weight: 700; margin-bottom: 10px; letter-spacing: 1px;">吃饭节奏</div>
+            <div class="heatmap-lines" id="art-heatmap"></div>
+            <div class="heatmap-labels">
+                <div>一月</div>
+                <div>六月</div>
+                <div>十二月</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 生成艺术化热力图线条
+        // Sprite Logic
+        const SPRITE_CONFIG = {
+            src: 'images/ach.jpg',
+            cols: 6,
+            rows: 4,
+            iconWidth: 222,
+            iconHeight: 222,
+            gapX: 149,
+            gapY: 74,
+            startX: 139,
+            startY: 77,
+            imgWidth: 2360,
+            imgHeight: 1640,
+            displaySize: 60
+        };
+
+        const SPRITE_SCALE = SPRITE_CONFIG.displaySize / SPRITE_CONFIG.iconWidth;
+        const SPRITE_ORDER = [
+            "hello_world", "eater", "hundred_days", "default_setting", "early_bird", "night_owl",
+            "big_meal", "minimalist", "missing_breakfast", "good_meals", "make_it_round", "cosmic_meal",
+            "error_404", "pi", "secure_call", "perfect_week", "my_turn", "full_timer",
+            "lost_kid", "story_start", "another_year", "noticed", "edge_runner"
+        ];
+
+        function getSpritePosition(index) {
+            const row = Math.floor(index / SPRITE_CONFIG.cols);
+            const col = index % SPRITE_CONFIG.cols;
+            const x = SPRITE_CONFIG.startX + col * (SPRITE_CONFIG.iconWidth + SPRITE_CONFIG.gapX);
+            const y = SPRITE_CONFIG.startY + row * (SPRITE_CONFIG.iconHeight + SPRITE_CONFIG.gapY);
+            return { x: Math.round(-x * SPRITE_SCALE), y: Math.round(-y * SPRITE_SCALE) };
+        }
+
+        function getSpriteBackgroundSize() {
+            return `${Math.round(SPRITE_CONFIG.imgWidth * SPRITE_SCALE)}px ${Math.round(SPRITE_CONFIG.imgHeight * SPRITE_SCALE)}px`;
+        }
+
+        function getSpriteIndexById(achId) {
+            const idx = SPRITE_ORDER.indexOf(achId);
+            return idx >= 0 ? idx : 0;
+        }
+
+        // Sample Data for Demo
+        const DEMO_ACHIEVEMENTS = [
+            { id: "eater", name: "干饭人", condition: "全年就餐天数 >= 1 天", desc: "至少你找到了食堂" },
+            { id: "hundred_days", name: "百日烟火", condition: "全年就餐天数 >= 100 天", desc: "食堂阿姨可能都认识你了" },
+            { id: "early_bird", name: "早八人", condition: "06:00-08:00间消费过5次", desc: "你见过早上八点的百丽宫吗" },
+            { id: "big_meal", name: "加个鸡腿", condition: "单笔消费金额 > 25元", desc: "吃点好的" },
+            { id: "good_meals", name: "好好吃饭", condition: "单日内同时有早、中、晚三餐记录", desc: "你拥有令人羡慕的健康作息" },
+            { id: "secure_call", name: "加密通话", condition: "密码不是默认值 123456", desc: "你的账户安全系数击败了99％的同学" }
+        ];
+
+        // Render Achievements
+        // Render Achievements
+        const trophyGrid = document.getElementById('trophy-grid');
+        const focusArea = document.getElementById('focus-area');
+
+        // 1. Render Grid
+        const gridBgSize = getSpriteBackgroundSize(); // Re-use size
+
+        DEMO_ACHIEVEMENTS.forEach((ach, index) => {
+            const btn = document.createElement('div');
+            btn.className = 'trophy-icon-btn';
+            btn.dataset.id = ach.id;
+
+            const idx = getSpriteIndexById(ach.id);
+            const pos = getSpritePosition(idx);
+
+            // Create inner sprite div
+            const sprite = document.createElement('div');
+            sprite.className = 'badge-sprite';
+            sprite.style.backgroundImage = `url('${SPRITE_CONFIG.src}')`;
+            sprite.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
+            sprite.style.backgroundSize = gridBgSize;
+
+            // 图标是 60x60，网格按钮约 50px。
+            // 我们把 60px 的图放大 1.0 倍，然后用 translate(-50%, -50%) 居中。
+            // 这样图像会居中显示，并被 overflow:hidden 裁剪。
+            sprite.style.transform = 'translate(-50%, -50%) scale(0.8)';
+
+            btn.appendChild(sprite);
+
+            btn.onclick = () => {
+                renderFocusCard(ach);
+                // Highlight logic
+                document.querySelectorAll('.trophy-icon-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            };
+
+            trophyGrid.appendChild(btn);
+
+            // Auto-select first
+            if (index === 0) {
+                btn.click();
+            }
+        });
+
+        // 2. Render Focus Card
+        function renderFocusCard(ach) {
+            const idx = getSpriteIndexById(ach.id);
+            // Re-calc for larger icon in focus card? 
+            // Currently using same 60px sprite settings. 
+            // To make it bigger (80px), we need new scale. 
+            // Let's just scale the 60px element up via CSS transform or container size.
+            // For simplicity, we use same sprite pos but maybe center it.
+
+            // Actually, let's recalculate for High Res Look if needed. 
+            // Reuse getSpritePosition logic but with displaySize = 80?
+            // For Safety: stick to 60px sprite logic and just visual-scale it CSS.
+
+            const pos = getSpritePosition(idx);
+
+            const nextHtml = `
+                <div class="trophy-card is-entering">
+                    <div class="trophy-icon-frame">
+                        <div class="badge-sprite" style="
+                            background-image: url('${SPRITE_CONFIG.src}');
+                            background-position: ${pos.x}px ${pos.y}px;
+                            background-size: ${gridBgSize};
+                            transform: translate(-50%, -50%) scale(1.17);
+                        "></div>
+                    </div>
+                    <div class="trophy-info">
+                        <div class="trophy-name">${ach.name}</div>
+                        <div class="trophy-cond">${ach.condition}</div>
+                    </div>
+                </div>
+            `;
+
+            const currentCard = focusArea.querySelector('.trophy-card');
+            if (currentCard) {
+                currentCard.classList.add('is-leaving');
+                window.setTimeout(() => {
+                    focusArea.innerHTML = nextHtml;
+                    const nextCard = focusArea.querySelector('.trophy-card');
+                    if (!nextCard) return;
+                    requestAnimationFrame(() => {
+                        nextCard.classList.remove('is-entering');
+                    });
+                }, 100);
+                return;
+            }
+
+            focusArea.innerHTML = nextHtml;
+            const nextCard = focusArea.querySelector('.trophy-card');
+            if (!nextCard) return;
+            requestAnimationFrame(() => {
+                nextCard.classList.remove('is-entering');
+            });
+        }
+
+        // Art Heatmap - 12 bars for 12 months
+        const container = document.getElementById('art-heatmap');
+        const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+        for (let i = 0; i < 12; i++) {
+            const line = document.createElement('div');
+            line.className = 'line';
+            // Random height for demo
+            const height = 20 + Math.random() * 80;
+            line.style.height = height + '%';
+
+            // Active state based on demo data
+            if (Math.random() > 0.2) {
+                line.classList.add('active');
+                line.style.opacity = 0.5 + Math.random() * 0.5;
+            }
+            container.appendChild(line);
+        }
+    </script>
+
+</body>
+
+</html>
