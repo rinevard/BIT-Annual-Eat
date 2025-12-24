@@ -1,5 +1,9 @@
 // EAT_DATA and ACH_STATE are injected by the HTML template
 
+// 图片路径常量（本地使用路径，Python 脚本会替换为 Base64）
+const IMG_AVATAR_DEFAULT = "images/eatbit.jpg";
+const IMG_ACH_SPRITE = "images/ach.jpg";
+
 // --- Stats ---
 function pickLatestYear(eatData) {
     if (!eatData || typeof eatData !== 'object') return null;
@@ -38,9 +42,14 @@ function applyProfile() {
         nameEl.textContent = String(PROFILE.userName).trim();
     }
 
+    // 应用头像（优先使用已保存的，否则用默认常量）
     const avatarImg = document.getElementById('mobile-avatar-img');
-    if (avatarImg && PROFILE.avatar) {
-        avatarImg.src = PROFILE.avatar;
+    if (avatarImg) {
+        if (PROFILE.avatar) {
+            avatarImg.src = PROFILE.avatar;
+        } else {
+            avatarImg.src = IMG_AVATAR_DEFAULT;
+        }
     }
 }
 
@@ -56,7 +65,7 @@ function renderStats() {
 
 // --- Sprite Logic ---
 const SPRITE_CONFIG = {
-    src: 'images/ach.jpg',
+    src: IMG_ACH_SPRITE,
     cols: 6,
     rows: 4,
     iconWidth: 222,
