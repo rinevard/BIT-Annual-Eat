@@ -714,7 +714,7 @@ def ach_noticed(ctx: AchContext) -> AchievementResult:
         id="noticed",
         unlocked=unlocked,
         unlocked_at=_format_dt(last_dt) if last_dt is not None else None,
-        extra={"total_amount": total_amount, "id_suffix": suffix},
+        extra={"total_amount": total_amount},
     )
 
 

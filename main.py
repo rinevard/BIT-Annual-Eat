@@ -39,6 +39,9 @@ DINGTALK_UA = (
 
 FILTERS = ["浴室", "医院", "开水"] # 如果名称包含这些字符串，将被过滤掉
 
+# 调试模式：通过命令行 --debug 参数启用
+DEBUG = "--debug" in sys.argv or "-debug" in sys.argv
+
 
 def make_student_key(student_id: str) -> str:
     """根据学号计算本地 SHA-256 哈希十六进制字符串，上传时不暴露明文学号。"""
@@ -604,6 +607,9 @@ def split_date_range(begin_date: str, end_date: str, max_days: int = 31) -> list
 
 
 def main() -> None:
+    if DEBUG:
+        print(f"{Fore.YELLOW}[调试模式已启用]{Fore.RESET}\n")
+
     print("百丽宫大学吃饭年度报告")
     print("-----------------------------")
     print("所有查询在本地进行，查询完成后可选是否上传吃饭数据到云端生成分享链接。无论是否上传都能生成本地报告。")
@@ -717,13 +723,16 @@ def main() -> None:
         print("发生错误:", err.user_message)
         if err.hint:
             print("提示：", err.hint)
-        # 可以加个 -debug 命令行参数?
-        # if err.evidence:
-        #     print("调试信息：", err.evidence)
-        else:
+        if DEBUG and err.evidence:
+            print(f"{Fore.YELLOW}[调试信息]{Fore.RESET} {err.evidence}")
+        elif output_saved:
             print(f"可以打开 {html_report_path} 以本地查看报告。")
     except Exception as exc:  # noqa: BLE001
         print("发生错误:", exc)
+        if DEBUG:
+            import traceback
+            print(f"{Fore.YELLOW}[调试信息] 完整堆栈:{Fore.RESET}")
+            traceback.print_exc()
     finally:
         # 只在成功时才自动打开 output 文件夹
         if output_saved:
