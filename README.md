@@ -13,7 +13,7 @@
 ## 使用方法
 
 [![GitHub Release](https://img.shields.io/github/v/release/rinevard/BIT-Annual-Eat?label=GitHub%20下载)](https://github.com/rinevard/BIT-Annual-Eat/releases/latest)
-[![蓝奏云](https://img.shields.io/badge/蓝奏云-下载-blue)](https://rinevard.lanzn.com/iBeMU3ea7sbe)
+[![蓝奏云](https://img.shields.io/badge/蓝奏云-下载-blue)](https://rinevard.lanzn.com/ihAgz3ef6wvc)
 
 下载后先解压再运行。也可以选择 `pip install -r requirements.txt` 然后 `python main.py` 来从源码运行。
 
