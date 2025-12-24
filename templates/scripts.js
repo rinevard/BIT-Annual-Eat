@@ -326,6 +326,17 @@ function applyBadgeSelection() {
     if (validIds.length > 0) {
         selectedBadgeIds = new Set(validIds.slice(0, MAX_MAIN_BADGES));
         renderMainBadges();
+
+        // 同步右侧打印机的选中圈（如果已渲染）
+        const slot = document.getElementById('achievement-slot');
+        if (slot) {
+            slot.querySelectorAll('.ach-icon-wrapper').forEach(wrapper => {
+                const achId = wrapper.querySelector('.ach-icon')?.dataset?.id;
+                if (achId) {
+                    wrapper.classList.toggle('selected', selectedBadgeIds.has(achId));
+                }
+            });
+        }
     }
 }
 
