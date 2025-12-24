@@ -263,9 +263,9 @@ body:not(.has-active-card) .poster-frame:hover {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 导出成功：变为荧光绿背景 */
+/* 导出成功：变为白底黑字 */
 .export-btn-wrapper.success .export-layer-top {
-    background: var(--acid-green);
+    background: #fff;
     color: #000;
 }
 
