@@ -5,6 +5,7 @@
 生成可以直接复制到 Cloudflare Dashboard 的 worker.js 文件。
 """
 
+import base64
 import os
 
 
@@ -18,15 +19,43 @@ def escape_js_string(content: str) -> str:
     )
 
 
-def rewrite_asset_urls(content: str) -> str:
-    sprite_url = "https://test.fukit.cn/autoupload/f/jT7VR8rd7t4gIkOL6WFhoJmesdO83n0jJRcmVXjsIsc/default/ach.jpg"
-    avatar_url = "https://test.fukit.cn/autoupload/f/jT7VR8rd7t4gIkOL6WFhoJmesdO83n0jJRcmVXjsIsc/default/default-avatar.jpg"
+def image_to_base64(img_path: str) -> str:
+    """读取图片文件并转换为 base64 data URL。"""
+    ext = os.path.splitext(img_path)[1].lower()
+    mime_types = {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+    }
+    mime = mime_types.get(ext, "image/jpeg")
+    with open(img_path, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode("ascii")
+    return f"data:{mime};base64,{b64}"
 
-    return (
-        content
-        .replace("images/ach.jpg", sprite_url)
-        .replace("images/eatbit.jpg", avatar_url)
-    )
+
+def rewrite_asset_urls(content: str, templates_dir: str) -> str:
+    """将图片路径替换为 base64 data URL（避免 CORS 问题）。"""
+    avatar_path = os.path.join(templates_dir, "images", "eatbit.jpg")
+    sprite_path = os.path.join(templates_dir, "images", "ach.jpg")
+
+    avatar_b64 = image_to_base64(avatar_path) if os.path.exists(avatar_path) else ""
+    sprite_b64 = image_to_base64(sprite_path) if os.path.exists(sprite_path) else ""
+
+    result = content
+    if avatar_b64:
+        result = result.replace(
+            'const IMG_AVATAR_DEFAULT = "images/eatbit.jpg";',
+            f'const IMG_AVATAR_DEFAULT = "{avatar_b64}";'
+        )
+    if sprite_b64:
+        result = result.replace(
+            'const IMG_ACH_SPRITE = "images/ach.jpg";',
+            f'const IMG_ACH_SPRITE = "{sprite_b64}";'
+        )
+    return result
 
 
 def build_worker() -> None:
@@ -39,22 +68,22 @@ def build_worker() -> None:
 
     # 读取模板文件
     with open(os.path.join(templates_dir, "index.html"), "r", encoding="utf-8") as f:
-        index_html = rewrite_asset_urls(f.read())
+        index_html = rewrite_asset_urls(f.read(), templates_dir)
 
     with open(os.path.join(templates_dir, "styles.css"), "r", encoding="utf-8") as f:
         styles_css = f.read()
 
     with open(os.path.join(templates_dir, "scripts.js"), "r", encoding="utf-8") as f:
-        scripts_js = rewrite_asset_urls(f.read())
+        scripts_js = rewrite_asset_urls(f.read(), templates_dir)
 
     with open(os.path.join(templates_dir, "mobile.html"), "r", encoding="utf-8") as f:
-        mobile_html = rewrite_asset_urls(f.read())
+        mobile_html = rewrite_asset_urls(f.read(), templates_dir)
 
     with open(os.path.join(templates_dir, "mobile.css"), "r", encoding="utf-8") as f:
         mobile_css = f.read()
 
     with open(os.path.join(templates_dir, "mobile.js"), "r", encoding="utf-8") as f:
-        mobile_js = rewrite_asset_urls(f.read())
+        mobile_js = rewrite_asset_urls(f.read(), templates_dir)
 
     # 读取 worker 模板
     with open(template_path, "r", encoding="utf-8") as f:

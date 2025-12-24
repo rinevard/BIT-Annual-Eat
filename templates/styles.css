@@ -110,10 +110,10 @@ body:not(.has-active-card) .poster-frame:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 0.08em;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.02em;
     transition: all 0.15s ease;
 }
 
@@ -193,6 +193,125 @@ body:not(.has-active-card) .poster-frame:hover {
     75% {
         content: '...';
     }
+}
+
+/* --- 按钮组容器 --- */
+.btn-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* --- 导出按钮 --- */
+.export-btn-wrapper {
+    position: relative;
+    width: 110px;
+    height: 40px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.export-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    transition: all 0.15s ease;
+}
+
+.export-layer-bottom {
+    background: #878787;
+    border: 2px solid #000;
+    z-index: 1;
+}
+
+.export-layer-top {
+    background: #000;
+    color: #fff;
+    border: 2px solid #000;
+    z-index: 2;
+    transform-origin: left center;
+}
+
+/* 悬停：顶层逆时针旋转 */
+.export-btn-wrapper:not(.exporting):hover .export-layer-top {
+    transform: rotate(-10deg);
+}
+
+/* 点击瞬间 */
+.export-btn-wrapper:active:not(.exporting) .export-layer-top {
+    transform: rotate(0deg);
+    transition: 0.1s;
+}
+
+/* 导出中状态 */
+.export-btn-wrapper.exporting {
+    pointer-events: none;
+}
+
+.export-btn-wrapper.exporting .export-layer-top {
+    transform: rotate(0deg);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 导出成功：变为荧光绿背景 */
+.export-btn-wrapper.success .export-layer-top {
+    background: var(--acid-green);
+    color: #000;
+}
+
+/* 导出失败：变为粉色 */
+.export-btn-wrapper.error .export-layer-top {
+    background: var(--hot-pink);
+    color: #fff;
+}
+
+.export-layer-top span {
+    transition: opacity 0.2s;
+}
+
+/* 省略号动画 */
+.exporting-dots::after {
+    content: '...';
+    animation: export-ellipsis 1.5s infinite;
+    display: inline-block;
+    width: 1.5em;
+    text-align: left;
+}
+
+@keyframes export-ellipsis {
+    0% {
+        content: '';
+    }
+
+    25% {
+        content: '.';
+    }
+
+    50% {
+        content: '..';
+    }
+
+    75% {
+        content: '...';
+    }
+}
+
+/* --- 导出遮罩 --- */
+/* 导出模式：强制主卡片进入非悬停状态 */
+body.exporting-mode .poster-frame {
+    transform: rotate(-1deg) !important;
+    box-shadow: none !important;
+    transition: none !important;
 }
 
 /* --- 主体布局 --- */
@@ -874,9 +993,18 @@ body:not(.has-active-card) .card.main:hover {
     margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
-    border-bottom: 3px solid #000;
-    /* 加粗 */
+    position: relative;
     padding-bottom: 10px;
+}
+
+.receipt-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: #000;
 }
 
 .achievement-row {

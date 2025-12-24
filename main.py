@@ -1,3 +1,4 @@
+import base64
 import csv
 
 from colorama import Fore, init as colorama_init
@@ -374,6 +375,38 @@ def save_html_report(records: list[dict], path: str, student_id: str | None = No
         style = f.read()
     with open(script_path, "r", encoding="utf-8") as f:
         script = f.read()
+
+    # 将图片转为 base64 数据 URL
+    def image_to_base64(img_path: str) -> str:
+        """读取图片文件并转换为 base64 data URL。"""
+        ext = os.path.splitext(img_path)[1].lower()
+        mime_types = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".gif": "image/gif",
+            ".webp": "image/webp",
+        }
+        mime = mime_types.get(ext, "image/jpeg")
+        with open(img_path, "rb") as f:
+            data = f.read()
+        b64 = base64.b64encode(data).decode("ascii")
+        return f"data:{mime};base64,{b64}"
+
+    # 转换头像和成就精灵图
+    avatar_path = os.path.join("templates", "images", "eatbit.jpg")
+    sprite_path = os.path.join("templates", "images", "ach.jpg")
+
+    if os.path.exists(avatar_path):
+        script = script.replace(
+            'const IMG_AVATAR_DEFAULT = "images/eatbit.jpg";',
+            f'const IMG_AVATAR_DEFAULT = "{image_to_base64(avatar_path)}";',
+        )
+    if os.path.exists(sprite_path):
+        script = script.replace(
+            'const IMG_ACH_SPRITE = "images/ach.jpg";',
+            f'const IMG_ACH_SPRITE = "{image_to_base64(sprite_path)}";',
+        )
 
     data_json = json.dumps(daily_stats, ensure_ascii=False)
     ach_json = json.dumps(ach_state, ensure_ascii=False)

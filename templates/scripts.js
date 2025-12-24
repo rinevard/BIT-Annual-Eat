@@ -1,5 +1,9 @@
 // EAT_DATA and ACH_STATE are injected by the HTML template
 
+// 图片路径常量（本地使用路径，Python 脚本会替换为 Base64）
+const IMG_AVATAR_DEFAULT = "images/eatbit.jpg";
+const IMG_ACH_SPRITE = "images/ach.jpg";
+
 /* --- 编辑模式逻辑 --- */
 const IS_CLOUD = window.location.hostname === "r.eatbit.top";
 
@@ -108,7 +112,7 @@ function initSaveButton() {
 
         isSaving = true;
         saveBtn.classList.add('saving');
-        saveBtnText.innerHTML = '<span class="saving-dots">SAVING</span>';
+        saveBtnText.innerHTML = '<span class="saving-dots">保存中</span>';
 
         try {
             // 收集要保存的数据
@@ -134,7 +138,7 @@ function initSaveButton() {
                 await saveToCloud(payload);
 
                 saveBtn.classList.add('success');
-                saveBtnText.textContent = 'SAVED';
+                saveBtnText.textContent = '已保存';
             } else {
                 // 本地模式：保存到 localStorage
                 // 先读取已有数据，合并后再保存（避免覆盖已有头像）
@@ -152,14 +156,14 @@ function initSaveButton() {
 
                 if (success) {
                     saveBtn.classList.add('success');
-                    saveBtnText.textContent = 'LOCAL';
+                    saveBtnText.textContent = '已保存';
                 } else {
                     throw new Error('localStorage 保存失败');
                 }
             }
         } catch (err) {
             saveBtn.classList.add('error');
-            saveBtnText.textContent = 'ERROR';
+            saveBtnText.textContent = '出错了';
             console.error('Save failed:', err);
         }
 
@@ -167,8 +171,100 @@ function initSaveButton() {
         setTimeout(() => {
             isSaving = false;
             saveBtn.classList.remove('saving', 'success', 'error');
-            saveBtnText.textContent = 'SAVE';
+            saveBtnText.textContent = '保存修改';
         }, 1000);
+    });
+}
+
+// === 导出按钮逻辑 ===
+let isExporting = false;
+
+// 动态加载 snapDOM 库
+function loadSnapDOM() {
+    return new Promise((resolve, reject) => {
+        if (window.snapdom) {
+            resolve(window.snapdom);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/@zumer/snapdom/dist/snapdom.js';
+        script.onload = () => {
+            if (window.snapdom) {
+                resolve(window.snapdom);
+            } else {
+                reject(new Error('snapDOM 加载失败'));
+            }
+        };
+        script.onerror = () => reject(new Error('snapDOM CDN 加载失败'));
+        document.head.appendChild(script);
+    });
+}
+
+function initExportButton() {
+    const exportBtn = document.getElementById('exportBtn');
+    const exportBtnText = document.getElementById('exportBtnText');
+
+    if (!exportBtn) return;
+
+    // 仅在编辑模式下显示导出按钮
+    if (IS_EDIT_MODE) {
+        exportBtn.style.display = 'block';
+    }
+
+    exportBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+
+        if (isExporting) return;
+
+        isExporting = true;
+        exportBtn.classList.add('exporting');
+        exportBtnText.innerHTML = '<span class="exporting-dots">导出中</span>';
+
+        try {
+            // 加载 snapDOM 库
+            const snapdom = await loadSnapDOM();
+
+            // 禁用悬停效果（让主卡片进入非悬停态）
+            document.body.classList.add('exporting-mode');
+
+            // 等待一帧让样式生效
+            await new Promise(r => requestAnimationFrame(r));
+
+            // 获取要导出的元素（整个页面 body）
+            const targetElement = document.body;
+
+            // 使用 snapDOM 的 download 方法导出
+            await snapdom.download(targetElement, {
+                format: 'jpg',
+                quality: 0.95,
+                scale: 2,
+                backgroundColor: '#668000', // 页面背景色
+                filename: `BIT-EAT-2025-${Date.now()}`,
+                embedFonts: true, // 嵌入字体（确保 JetBrains Mono 等正确导出）
+                // 排除按钮
+                exclude: ['.btn-group', '.custom-tooltip'],
+                excludeMode: 'remove'
+            });
+
+            // 恢复悬停效果
+            document.body.classList.remove('exporting-mode');
+
+            exportBtn.classList.add('success');
+            exportBtnText.textContent = '完成';
+        } catch (err) {
+            // 确保出错时也恢复状态
+            document.body.classList.remove('exporting-mode');
+            exportBtn.classList.add('error');
+            exportBtnText.textContent = '出错了';
+            console.error('Export failed:', err);
+        }
+
+        // 重置状态
+        setTimeout(() => {
+            isExporting = false;
+            exportBtn.classList.remove('exporting', 'success', 'error');
+            exportBtnText.textContent = '导出图片';
+        }, 1500);
     });
 }
 
@@ -187,7 +283,7 @@ function applyProfile() {
         profile = loadFromLocal();
     }
 
-    if (!profile) return;
+    if (!profile) profile = {};
 
     // 应用用户名
     if (profile.userName) {
@@ -197,11 +293,13 @@ function applyProfile() {
         }
     }
 
-    // 应用头像
-    if (profile.avatar) {
-        const avatarImg = document.getElementById('avatar-img');
-        if (avatarImg) {
+    // 应用头像（优先使用已保存的，否则用默认常量）
+    const avatarImg = document.getElementById('avatar-img');
+    if (avatarImg) {
+        if (profile.avatar) {
             avatarImg.src = profile.avatar;
+        } else {
+            avatarImg.src = IMG_AVATAR_DEFAULT;
         }
     }
 
@@ -235,6 +333,7 @@ function applyBadgeSelection() {
 document.addEventListener('DOMContentLoaded', () => {
     applyProfile();
     initSaveButton();
+    initExportButton();
 
     const rigEl = document.getElementById('cameraRig');
     if (rigEl) {
@@ -346,7 +445,7 @@ function reassignClasses() {
 
 // 精灵图配置（从 compute.py 分析得出）
 const SPRITE_CONFIG = {
-    src: 'images/ach.jpg',
+    src: IMG_ACH_SPRITE,
     cols: 6,
     rows: 4,
     iconWidth: 222,      // 精灵图中图标的原始尺寸
