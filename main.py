@@ -694,7 +694,7 @@ def main() -> None:
         print(f"\n{Fore.GREEN}已生成本地网页版报告:{Fore.RESET} {html_report_path}。")
         output_saved = True
 
-        choice = input("\n是否上传吃饭数据到 eatbit.top 生成分享链接？(Y/N): ").strip().lower()
+        choice = input("\n是否上传吃饭数据到 eatbit.top 生成分享链接？(Y/N，回车使用默认值 N): ").strip().lower()
         if choice == "y":
             student_key = make_student_key(idserial)
             url = upload_with_progress(
