@@ -37,6 +37,30 @@ if (!IS_EDIT_MODE) {
     });
 }
 
+// 名称输入框：单行限制 + Enter 离开
+document.addEventListener('DOMContentLoaded', () => {
+    const userName = document.querySelector('.user-name');
+    if (!userName) return;
+
+    // 按 Enter 键离开编辑（阻止换行）
+    userName.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            userName.blur();
+        }
+    });
+
+    // 粘贴时去除换行符
+    userName.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData)
+            .getData('text')
+            .replace(/[\r\n]+/g, ' ')  // 换行替换为空格
+            .trim();
+        document.execCommand('insertText', false, text);
+    });
+});
+
 // 保存按钮逻辑
 let isSaving = false;
 

@@ -383,11 +383,13 @@ body.exporting-mode .poster-frame {
 }
 
 .avatar-frame:hover::after {
-    opacity: 1; /* 悬停时显示遮罩 */
+    opacity: 1;
+    /* 悬停时显示遮罩 */
 }
 
 .avatar-frame:active {
-    transform: scale(0.95); /* 点击时的物理反馈 */
+    transform: scale(0.95);
+    /* 点击时的物理反馈 */
 }
 
 .avatar-frame img {
@@ -424,6 +426,8 @@ body.exporting-mode .poster-frame {
     padding: 4px 8px;
     display: inline-block;
     margin-bottom: 6px;
+    /* 单行限制 */
+    white-space: nowrap;
 }
 
 /* 徽章展示架 */
@@ -634,7 +638,8 @@ body.exporting-mode .poster-frame {
     border-top: none;
     /* 模拟柱子间的间隙，避免鼠标经过时闪烁 */
     border-right: 3px solid #000;
-    cursor: pointer; /* 改成抓手 */
+    cursor: pointer;
+    /* 改成抓手 */
     transition: height 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
 }
 
