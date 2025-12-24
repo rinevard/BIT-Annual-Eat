@@ -51,7 +51,7 @@ def get_openid(session: requests.Session, idserial: str, dingtalk_ua: str) -> st
     loc = resp.headers.get("location", "")
     if not loc:
         raise DkyktError(
-            user_message="无法推断 openid，JSESSIONID 可能已过期）。",
+            user_message="无法推断 openid，JSESSIONID 可能已过期。",
             hint="尝试打开钉钉、进入校园卡界面，然后从托盘退出钉钉，再重试。",
             evidence=f"status={resp.status_code}, headers={dict(resp.headers)!r}",
         )
