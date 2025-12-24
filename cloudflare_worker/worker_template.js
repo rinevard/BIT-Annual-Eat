@@ -269,7 +269,7 @@ export default {
 <body>
     <h2>百丽宫年度吃饭报告生成器</h2>
     <p>想生成自己的报告？</p>
-    <p>在 <a href="https://rinevard.lanzn.com/iBeMU3ea7sbe">蓝奏云</a> 下载并解压运行。</p>
+    <p>在 <a href="https://rinevard.lanzn.com/ihAgz3ef6wvc">蓝奏云</a> 下载并解压运行。</p>
     <p>源码开源在 <a href="https://github.com/rinevard/BIT-Annual-Eat">GitHub</a>。</p>
 </body>
 </html>`;
