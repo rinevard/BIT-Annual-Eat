@@ -21,9 +21,15 @@
 
 ## 其他或许有用的文章
 
-[privacy](./docs/privacy.md) 里记载了隐私保护，担心学号泄露可以读一读。
+[Privacy](./docs/privacy.md) 里记载了隐私相关问题，担心学号泄露可以读一读。
 
-[overview](./docs/overview.md) 里记载了项目概述，如果对源码有兴趣可以读一读。
+[Overview](./docs/overview.md) 里记载了项目概述，如果对源码有兴趣可以读一读。
+
+## 制作团队
+
+代码：Rinevard
+
+美术：幽体離脱
 
 ## LICENSE
 

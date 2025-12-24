@@ -7,39 +7,34 @@ main.py 大致分为三步，登录并查询消费记录，生成并保存文件
 ```py
 
 def main() -> None:
-    # 登录并查询记录
-    session, openid = login_with_card(idserial, cardpwd)
+    # 从钉钉缓存获取登录凭证并查询记录
+    jsessionid = extract_jsessionid_from_dingtalk()
+    session = requests.Session()
+    session.cookies.set("JSESSIONID", jsessionid, domain="dkykt.info.bit.edu.cn")
+    openid = get_openid(session, idserial, DINGTALK_UA)
+    
     all_trades: list[dict] = []
     for sub_begin, sub_end in split_date_range(begin_date, end_date):
-        print(f"  查询区间: {sub_begin} ~ {sub_end} ...")
-        sub_trades = fetch_trades(session, openid, sub_begin, sub_end)
+        sub_trades = query_trades(session, openid, sub_begin, sub_end, DINGTALK_UA)
         all_trades.extend(sub_trades)
-        time.sleep(0.5)
 
     # 生成并保存文件
     records = to_spend_records(all_trades)
     save_csv(records, csv_path)
-    save_bar_chart(records, img_amount_path)
-    save_count_chart(records, img_count_path)
-    save_html_report(
-        records,
-        html_report_path,
-        student_id=idserial,
-        used_default_password=used_default_password,
-    )
+    save_html_report(records, html_report_path, student_id=idserial)
 
-    # 上传到服务器
+    # 上传到服务器（可选）
     student_key = make_student_key(idserial)
-    url = upload_report(daily_stats, ach_state, edit_pw, student_key=hashed_idserial)
+    url = upload_with_progress(daily_stats, ach_state, edit_pw, student_key=student_key)
 ```
 
-首先看看我们如何登录并查询消费记录。我们用 Fiddler 得知了校园卡系统登录、查流水的请求格式，然后根据请求格式模拟请求完成登录并查到记录。
+首先程序获取登录凭证后调用校园卡系统 API 查询消费记录（相关文件：dingtalk_decrypt.py、dkykt_api.py）。
 
 有了记录以后工作就比较朴素了，主要是生成并保存 csv 文件、柱状图、网页报告。为了减小包体体积，我们用 Pillow 生成柱状图而不是 matplotlib。
 
-接下来我们介绍 html 报告的生成。我们的 html 报告模板存在 templates 文件夹中，生成报告时会做占位符字符串替换从而把 CSS、JS、消费记录、成就数据嵌入 html 文件得到 output/report.html.
+我们的 html 报告模板存在 templates 文件夹中，生成报告时会做占位符字符串替换从而把 CSS、JS、消费记录、成就数据嵌入 html 文件得到 output/report.html.
 
-成就系统可以看 achievements.py 里的 evaluate_achievements 函数，我们这里讲讲这个系统是怎么设计的。每个成就有解锁条件，所以我们把判断是否解锁成就需要的所有数据定义为 AchContext 类，这样每个成就可以写成形如 `ach_name(ctx: AchContext) -> AchievementResult` 的函数，我们只要传入 AchContext 就知道这个成就是否解锁了。
+成就系统可以看 achievements.py 里的 evaluate_achievements 函数，每个成就有解锁条件，所以我们把判断是否解锁成就需要的所有数据定义为 AchContext 类，这样每个成就可以写成形如 `ach_name(ctx: AchContext) -> AchievementResult` 的函数，我们只要传入 AchContext 就知道这个成就是否解锁了。
 
 在 evaluate_achievements 里，我们会遍历 CHECKERS 里的所有成就并判断其是否解锁。AchievementResult 里的 id 则是每个成就的标识，report_script.js 根据这个 id 在 ACH_META 里找到对应的成就描述等信息并显示出来。
 
