@@ -127,8 +127,7 @@ let lastSaveTime = 0;
 function getSnapshot() {
     return JSON.stringify({
         userName: document.querySelector('.user-name')?.textContent?.trim() || "",
-        // 将 Set 转为排序数组以确保一致性
-        selectedBadges: Array.from(typeof selectedBadgeIds !== 'undefined' ? selectedBadgeIds : []).sort()
+        selectedBadges: Array.from(typeof selectedBadgeIds !== 'undefined' ? selectedBadgeIds : [])
     });
 }
 
@@ -148,7 +147,7 @@ async function performAutoSave(ignore_cd = false) {
 
     if (!ignore_cd) {
         const now = Date.now();
-        if (now - lastSaveTime < 12000) return;
+        if (now - lastSaveTime < 20000) return;
     }
 
     const currentSnapshot = getSnapshot();
