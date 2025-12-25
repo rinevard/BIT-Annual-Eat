@@ -95,7 +95,7 @@ function loadFromLocal() {
 }
 
 // 向云端保存个人资料
-async function saveToCloud(payload) {
+async function saveToCloud(payload, isBeacon = false) {
     const pw = getPasswordFromHash();
     if (!pw || typeof BARCODE_ID === 'undefined' || !BARCODE_ID) {
         throw new Error('Missing password or report ID');
@@ -103,6 +103,7 @@ async function saveToCloud(payload) {
 
     const resp = await fetch(`/api/reports/${BARCODE_ID}/profile`, {
         method: 'PATCH',
+        keepalive: isBeacon, // 允许请求在页面关闭后继续发送
         headers: {
             'Content-Type': 'application/json',
             'X-Edit-Password': pw
@@ -118,87 +119,164 @@ async function saveToCloud(payload) {
     return await resp.json();
 }
 
-function initSaveButton() {
-    const saveBtn = document.getElementById('saveBtn');
-    const saveBtnText = document.getElementById('saveBtnText');
+// === 自动保存逻辑 ===
+let lastSavedSnapshot = null;
+let lastSaveTime = 0;
 
-    if (!saveBtn) return;
-
-    // 仅在编辑模式下显示保存按钮
-    if (IS_EDIT_MODE) {
-        saveBtn.style.display = 'block';
-    }
-
-    saveBtn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-
-        if (isSaving) return;
-
-        isSaving = true;
-        saveBtn.classList.add('saving');
-        saveBtnText.innerHTML = '<span class="saving-dots">保存中</span>';
-
-        try {
-            // 收集要保存的数据
-            const userName = document.querySelector('.user-name')?.textContent?.trim();
-
-            // 收集选中的徽章ID
-            const selectedBadges = typeof selectedBadgeIds !== 'undefined'
-                ? Array.from(selectedBadgeIds)
-                : [];
-
-            // 收集头像（如果有新上传的）
-            const avatar = typeof pendingAvatar !== 'undefined' ? pendingAvatar : null;
-
-            // 验证数据
-            if (userName && userName.length > 20) {
-                throw new Error('名称最多 20 个字符');
-            }
-
-            if (IS_SAVABLE) {
-                // 真实保存到云端
-                const payload = { userName, selectedBadges };
-                if (avatar) payload.avatar = avatar;
-                await saveToCloud(payload);
-
-                saveBtn.classList.add('success');
-                saveBtnText.textContent = '已保存';
-            } else {
-                // 本地模式：保存到 localStorage
-                // 先读取已有数据，合并后再保存（避免覆盖已有头像）
-                const existingData = loadFromLocal() || {};
-                const payload = {
-                    ...existingData,        // 保留已有数据（如头像）
-                    userName,               // 覆盖用户名
-                    selectedBadges          // 覆盖徽章选择
-                };
-                // 如果有新头像，覆盖旧的
-                if (avatar) payload.avatar = avatar;
-
-                const success = saveToLocal(payload);
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                if (success) {
-                    saveBtn.classList.add('success');
-                    saveBtnText.textContent = '已保存';
-                } else {
-                    throw new Error('localStorage 保存失败');
-                }
-            }
-        } catch (err) {
-            saveBtn.classList.add('error');
-            saveBtnText.textContent = '出错了';
-            console.error('Save failed:', err);
-        }
-
-        // 重置状态
-        setTimeout(() => {
-            isSaving = false;
-            saveBtn.classList.remove('saving', 'success', 'error');
-            saveBtnText.textContent = '保存修改';
-        }, 1000);
+// 获取当前状态快照（仅包含文本/轻量数据，不含头像）
+function getSnapshot() {
+    return JSON.stringify({
+        userName: document.querySelector('.user-name')?.textContent?.trim() || "",
+        // 将 Set 转为排序数组以确保一致性
+        selectedBadges: Array.from(typeof selectedBadgeIds !== 'undefined' ? selectedBadgeIds : []).sort()
     });
 }
+
+// 检查是否有未保存的更改
+function checkIsDirty() {
+    const currentSnapshot = getSnapshot();
+    const isStateDirty = currentSnapshot !== lastSavedSnapshot;
+    const isAvatarDirty = (typeof pendingAvatar !== 'undefined') && (pendingAvatar !== null);
+    return isStateDirty || isAvatarDirty;
+}
+
+// ignore_cd: 是否忽略冷却时间，强制立即保存（用于页面卸载/隐藏等关键时刻）
+async function performAutoSave(ignore_cd = false) {
+    if (isSaving) return;
+
+    if (!(IS_SAVABLE || !IS_CLOUD)) return;
+
+    if (!ignore_cd) {
+        const now = Date.now();
+        if (now - lastSaveTime < 12000) return;
+    }
+
+    const currentSnapshot = getSnapshot();
+    const isStateDirty = currentSnapshot !== lastSavedSnapshot;
+    const avatarToSend = (typeof pendingAvatar !== 'undefined') ? pendingAvatar : null;
+    const isAvatarDirty = (avatarToSend !== null);
+    if (!isStateDirty && !isAvatarDirty) {
+        return;
+    }
+
+    const statusEl = document.getElementById('auto-save-status');
+
+    try {
+        isSaving = true;
+
+        // UI 更新：开始保存
+        if (statusEl) {
+            statusEl.className = 'auto-save-status saving';
+        }
+
+        const state = JSON.parse(currentSnapshot);
+        const payload = {
+            userName: state.userName,
+            selectedBadges: state.selectedBadges
+        };
+
+        // 如果有待上传头像，加入 payload
+        if (isAvatarDirty) {
+            payload.avatar = avatarToSend;
+        }
+
+        // 验证数据
+        if (payload.userName && payload.userName.length > 20) {
+            console.warn('AutoSave: Name too long, skipping.');
+            if (statusEl) {
+                statusEl.className = 'auto-save-status error';
+                setTimeout(() => {
+                    if (statusEl.classList.contains('error')) {
+                        statusEl.className = 'auto-save-status';
+                    }
+                }, 2000);
+            }
+            return;
+        }
+
+        if (IS_SAVABLE) {
+            // 云端保存 (如果是 ignore_cd 会启用 keepalive)
+            await saveToCloud(payload, ignore_cd);
+            console.log('[AutoSave] Cloud save success');
+        } else {
+            // 本地保存
+            const existingData = loadFromLocal() || {};
+            const localPayload = {
+                ...existingData,
+                userName: payload.userName,
+                selectedBadges: payload.selectedBadges
+            };
+            if (payload.avatar) localPayload.avatar = payload.avatar;
+
+            if (saveToLocal(localPayload)) {
+                console.log('[AutoSave] Local save success');
+            }
+        }
+
+        // === 清理逻辑 ===
+
+        // 1. 如果保存包含头像，且 avatarToSend 仍等于当前的 pendingAvatar（未被新上传覆盖）
+        // 则消费掉这个 pendingAvatar
+        if (isAvatarDirty) {
+            if (pendingAvatar === avatarToSend) {
+                pendingAvatar = null;
+                console.log('[AutoSave] pendingAvatar consumed.');
+            }
+        }
+
+        // 2. 更新状态快照
+        lastSavedSnapshot = currentSnapshot;
+        lastSaveTime = Date.now();
+
+        // UI 更新：保存成功
+        if (statusEl) {
+            statusEl.className = 'auto-save-status saved';
+            setTimeout(() => {
+                // 如果还是 saved 状态（没有变成 saving），则淡出
+                if (statusEl.classList.contains('saved')) {
+                    statusEl.className = 'auto-save-status';
+                }
+            }, 2000);
+        }
+
+    } catch (err) {
+        console.error('[AutoSave] Failed:', err);
+        // UI 更新：出错
+        if (statusEl) {
+            statusEl.className = 'auto-save-status error';
+            setTimeout(() => {
+                // 如果还是 error 状态（没有变成 saving），则淡出
+                if (statusEl.classList.contains('error')) {
+                    statusEl.className = 'auto-save-status';
+                }
+            }, 3000);
+        }
+    } finally {
+        isSaving = false;
+    }
+}
+
+function initAutoSave() {
+    // 初始化快照
+    lastSavedSnapshot = getSnapshot();
+
+    // 监听主卡片离开事件
+    const mainCard = document.getElementById('mainCard');
+    if (mainCard) {
+        mainCard.addEventListener('mouseleave', () => {
+            // 离开主卡片尝试保存
+            performAutoSave(false);
+        });
+    }
+
+    // 页面关闭/刷新前尝试借助 beacon 保存
+    window.addEventListener('beforeunload', () => {
+        if (checkIsDirty()) {
+            performAutoSave(true);
+        }
+    });
+}
+
 
 // === 导出按钮逻辑 ===
 let isExporting = false;
@@ -367,7 +445,7 @@ function applyBadgeSelection() {
 // 页面加载后初始化
 document.addEventListener('DOMContentLoaded', () => {
     applyProfile();
-    initSaveButton();
+    initAutoSave();
     initExportButton();
 
     const rigEl = document.getElementById('cameraRig');
@@ -1630,6 +1708,9 @@ window.handleCloseRight = function (e) {
         currentState = 'none';
         document.body.classList.remove('has-active-card');
         updateFocus(null);
+
+        // 关闭右卡时检测是否需要保存
+        performAutoSave();
     }
 };
 

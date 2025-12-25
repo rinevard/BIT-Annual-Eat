@@ -1463,3 +1463,58 @@ body.has-active-card .card.right.focused {
     background: #ccc;
     color: #000;
 }
+
+/* --- Auto Save Status --- */
+.auto-save-status {
+    position: absolute;
+    bottom: 15px;
+    left: 40px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: #999;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 60;
+    pointer-events: none;
+    letter-spacing: 1px;
+}
+
+.auto-save-status.saving {
+    opacity: 1;
+    color: #000;
+    /* animation: pulse 1s infinite alternate; */
+}
+
+.auto-save-status.saving::after {
+    content: "SAVING...";
+}
+
+.auto-save-status.saved {
+    opacity: 1;
+    color: #000;
+}
+
+.auto-save-status.saved::after {
+    content: "SAVED";
+}
+
+.auto-save-status.error {
+    opacity: 1;
+    color: var(--hot-pink);
+}
+
+.auto-save-status.error::after {
+    content: "ERROR";
+}
+
+@keyframes pulse {
+    from {
+        opacity: 0.4;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
